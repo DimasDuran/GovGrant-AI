@@ -1,0 +1,516 @@
+"""CLI entrypoints: ingest PDFs, hybrid query, table structured search."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+
+from govgrant.rag.config import get_settings
+from govgrant.rag.index.hybrid import HybridRAGService
+
+
+def ingest_main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Ingest PDFs into hybrid RAG (Qdrant + BM25 + tables)")
+    parser.add_argument(
+        "path",
+        nargs="?",
+        default=None,
+        help="PDF file or directory (default: data/fixtures/pdfs)",
+    )
+    parser.add_argument("--tenant", default=None, help="tenant_id")
+    parser.add_argument(
+        "--no-llamaparse",
+        action="store_true",
+        help="Use local pypdf only (no LlamaParse)",
+    )
+    parser.add_argument(
+        "--no-tables",
+        action="store_true",
+        help="Skip table extraction",
+    )
+    parser.add_argument(
+        "--no-figures",
+        action="store_true",
+        help="Skip figure/chart extraction (R4)",
+    )
+    parser.add_argument(
+        "--no-vision",
+        action="store_true",
+        help="Skip Ollama vision captions even if OLLAMA_VISION_MODEL is set",
+    )
+    args = parser.parse_args(argv)
+
+    settings = get_settings()
+    svc = HybridRAGService(settings)
+    target = args.path or str(settings.fixtures_pdf_dir)
+    use_lp = not args.no_llamaparse
+    extract_tables = not args.no_tables
+    extract_figures = not args.no_figures
+    use_vision = not args.no_vision
+
+    from pathlib import Path
+
+    p = Path(target)
+    if p.is_file():
+        result = svc.ingest_pdf(
+            p,
+            tenant_id=args.tenant,
+            use_llamaparse=use_lp,
+            extract_tables=extract_tables,
+            extract_figures=extract_figures,
+            use_vision=use_vision,
+        )
+        print(json.dumps(result, indent=2))
+    else:
+        results = svc.ingest_directory(
+            p,
+            tenant_id=args.tenant,
+            use_llamaparse=use_lp,
+            extract_tables=extract_tables,
+            extract_figures=extract_figures,
+            use_vision=use_vision,
+        )
+        print(json.dumps(results, indent=2))
+
+
+def query_main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Hybrid query against indexed docs")
+    parser.add_argument("query", help="Natural language query")
+    parser.add_argument("--tenant", default=None, help="tenant_id filter")
+    parser.add_argument("--doc-id", default=None, help="gg_doc_id filter")
+    parser.add_argument(
+        "--modality",
+        default=None,
+        choices=["prose", "table", "figure", "chart", "form"],
+        help="Filter by modality (e.g. table)",
+    )
+    parser.add_argument("--top-k", type=int, default=None)
+    args = parser.parse_args(argv)
+
+    svc = HybridRAGService()
+    hits = svc.retrieve(
+        args.query,
+        tenant_id=args.tenant,
+        doc_id=args.doc_id,
+        modality=args.modality,
+        top_k=args.top_k,
+    )
+    print(svc.format_hits(hits))
+
+
+def tables_main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Structured table store commands")
+    sub = parser.add_subparsers(dest="action", required=True)
+
+    p_list = sub.add_parser("list", help="List extracted tables")
+    p_list.add_argument("--tenant", default=None)
+    p_list.add_argument("--doc-id", default=None)
+
+    p_search = sub.add_parser("search", help="Keyword search over table cells")
+    p_search.add_argument("query")
+    p_search.add_argument("--tenant", default=None)
+    p_search.add_argument("--doc-id", default=None)
+    p_search.add_argument("--limit", type=int, default=15)
+
+    p_get = sub.add_parser("get", help="Get one table by table_id")
+    p_get.add_argument("table_id")
+
+    p_stats = sub.add_parser("stats", help="Table store counts")
+    p_stats.add_argument("--tenant", default=None)
+
+    args = parser.parse_args(argv)
+    svc = HybridRAGService()
+
+    if args.action == "list":
+        rows = svc.list_tables(tenant_id=args.tenant, doc_id=args.doc_id)
+        print(json.dumps(rows, indent=2, ensure_ascii=False))
+    elif args.action == "search":
+        rows = svc.search_tables(
+            args.query,
+            tenant_id=args.tenant,
+            doc_id=args.doc_id,
+            limit=args.limit,
+        )
+        print(svc.format_table_hits(rows))
+    elif args.action == "get":
+        data = svc.tabular.get_table(args.table_id)
+        print(json.dumps(data, indent=2, ensure_ascii=False))
+    elif args.action == "stats":
+        print(json.dumps(svc.tabular.stats(tenant_id=args.tenant), indent=2))
+
+
+def agent_main(argv: list[str] | None = None) -> None:
+    """R7 LangGraph agent entrypoint (+ optional Anthropic Haiku chat)."""
+    from govgrant.agent.graph import run_agent
+    from govgrant.agent.llm import ChatLLM
+
+    parser = argparse.ArgumentParser(description="LangGraph agent (R7 + Haiku)")
+    parser.add_argument("query")
+    parser.add_argument("--tenant", default=None)
+    parser.add_argument("--doc-id", default=None)
+    parser.add_argument("--agency", default=None)
+    parser.add_argument(
+        "--no-llm",
+        action="store_true",
+        help="Skip Anthropic Haiku; return raw retrieved evidence",
+    )
+    parser.add_argument("--json", action="store_true")
+    args = parser.parse_args(argv)
+
+    llm = ChatLLM()
+    if not args.no_llm and not llm.available:
+        print(
+            "[warn] Anthropic chat not available "
+            "(check ANTHROPIC_API_KEY / CHAT_ENABLED). Using retrieve-only mode.",
+            file=sys.stderr,
+        )
+
+    result = run_agent(
+        args.query,
+        tenant_id=args.tenant,
+        doc_id=args.doc_id,
+        agency=args.agency,
+        use_llm=not args.no_llm,
+    )
+    if args.json:
+        slim = {
+            "query": result.get("query"),
+            "intent": result.get("intent"),
+            "sources_used": result.get("sources_used"),
+            "insufficient": result.get("insufficient"),
+            "used_llm": result.get("used_llm"),
+            "meta": result.get("meta"),
+            "answer": result.get("answer"),
+        }
+        print(json.dumps(slim, indent=2, ensure_ascii=False))
+    else:
+        print(result.get("answer") or result.get("evidence") or "(empty)")
+
+
+def eval_main(argv: list[str] | None = None) -> None:
+    """R6 regression + golden runtime evaluation."""
+    from govgrant.rag.eval.runner import run_regression
+
+    parser = argparse.ArgumentParser(description="Run RAG regression / golden eval set")
+    parser.add_argument(
+        "--path",
+        default=None,
+        help="Path to regression JSON or eval directory (default data/eval/regression_min.json)",
+    )
+    parser.add_argument(
+        "--golden",
+        action="store_true",
+        help="Load all data/eval/01–08 golden files (unified schema)",
+    )
+    parser.add_argument(
+        "--backend",
+        choices=["router", "agent"],
+        default="router",
+        help="router=QueryRouter only; agent=LangGraph (+ optional LLM)",
+    )
+    parser.add_argument(
+        "--llm",
+        action="store_true",
+        help="With --backend agent, use Haiku to format answers",
+    )
+    parser.add_argument("--limit", type=int, default=None, help="Run only first N cases")
+    parser.add_argument(
+        "--id",
+        action="append",
+        dest="ids",
+        default=None,
+        help="Only these case ids (repeatable)",
+    )
+    parser.add_argument(
+        "--category",
+        action="append",
+        dest="categories",
+        default=None,
+        help="Filter by category (repeatable)",
+    )
+    parser.add_argument(
+        "--out",
+        default=None,
+        help="Write full JSON report to this path (includes per-case results)",
+    )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Print full per-case report to stdout (default: summary + failures only)",
+    )
+    args = parser.parse_args(argv)
+    from pathlib import Path
+
+    report = run_regression(
+        Path(args.path) if args.path else None,
+        golden=args.golden,
+        backend=args.backend,
+        use_llm=args.llm,
+        limit=args.limit,
+        ids=set(args.ids) if args.ids else None,
+        categories=set(args.categories) if args.categories else None,
+    )
+    # Compact summary first (fact-based metrics)
+    metrics = report.get("metrics") or {}
+    summary = {
+        "total": report["total"],
+        "passed": report["passed"],
+        "failed": report["failed"],
+        "backend": report.get("backend"),
+        "use_llm": report.get("use_llm"),
+        "pass_rate": metrics.get(
+            "pass_rate",
+            (
+                round(100.0 * report["passed"] / report["total"], 2)
+                if report["total"]
+                else 0.0
+            ),
+        ),
+        "avg_recall": metrics.get("avg_recall"),
+        "avg_precision": metrics.get("avg_precision"),
+        "avg_optional_recall": metrics.get("avg_optional_recall"),
+        "by_category": report.get("by_category"),
+    }
+    print(json.dumps(summary, indent=2, ensure_ascii=False))
+    failed_cases = [c for c in report["cases"] if not c["passed"]]
+    if failed_cases:
+        print("\n# failures")
+        slim = [
+            {
+                "id": c["id"],
+                "recall": c.get("recall"),
+                "precision": c.get("precision"),
+                "missing_required": c.get("missing_required"),
+                "hit_forbidden": c.get("hit_forbidden"),
+                "failures": c.get("failures"),
+                "preview": (c.get("preview") or "")[:180],
+            }
+            for c in failed_cases[:50]
+        ]
+        print(json.dumps(slim, indent=2, ensure_ascii=False))
+    if args.full:
+        print("\n# full_report")
+        print(json.dumps(report, indent=2, ensure_ascii=False))
+    if args.out:
+        out_path = Path(args.out)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        payload = {**report, "summary": summary}
+        out_path.write_text(
+            json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        print(f"\n# wrote {out_path}", file=__import__("sys").stderr)
+    if report["failed"]:
+        raise SystemExit(1)
+
+
+def ask_main(argv: list[str] | None = None) -> None:
+    """R5 multi-source routed question."""
+    from govgrant.rag.router.query_router import QueryRouter, RouteIntent
+
+    parser = argparse.ArgumentParser(description="Multi-source routed ask (R5)")
+    parser.add_argument("query", help="User question")
+    parser.add_argument("--tenant", default=None)
+    parser.add_argument("--doc-id", default=None)
+    parser.add_argument("--agency", default=None, help="SBIR agency filter e.g. DOD")
+    parser.add_argument("--top-k", type=int, default=5)
+    parser.add_argument(
+        "--intent",
+        default=None,
+        choices=[i.value for i in RouteIntent],
+        help="Force route intent (skip classifier)",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print full JSON (intent + meta + text)",
+    )
+    args = parser.parse_args(argv)
+
+    router = QueryRouter()
+    intent = RouteIntent(args.intent) if args.intent else None
+    result = router.ask(
+        args.query,
+        tenant_id=args.tenant,
+        doc_id=args.doc_id,
+        agency=args.agency,
+        top_k=args.top_k,
+        intent=intent,
+    )
+    if args.json:
+        print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    else:
+        print(f"# intent={result.intent.value} sources={result.sources_used}\n")
+        print(result.text)
+
+
+def sbir_main(argv: list[str] | None = None) -> None:
+    from govgrant.rag.sbir.service import SBIRTopicService
+
+    parser = argparse.ArgumentParser(description="SBIR.gov topics connector (R3)")
+    sub = parser.add_subparsers(dest="action", required=True)
+
+    p_sync = sub.add_parser("sync", help="Sync open topics (API or fixtures fallback)")
+    p_sync.add_argument("--keyword", default=None)
+    p_sync.add_argument("--agency", default=None, help="e.g. DOD, HHS, NASA")
+    p_sync.add_argument(
+        "--fixtures",
+        action="store_true",
+        help="Force load local sample fixtures (skip API)",
+    )
+
+    p_search = sub.add_parser("search", help="Hybrid search over indexed SBIR topics")
+    p_search.add_argument("query")
+    p_search.add_argument("--agency", default=None)
+    p_search.add_argument("--program", default=None, help="SBIR or STTR")
+    p_search.add_argument("--status", default="open")
+    p_search.add_argument("--top-k", type=int, default=5)
+    p_search.add_argument(
+        "--no-disclaimer",
+        action="store_true",
+        help="Omit mandatory SBIR disclaimer footer",
+    )
+
+    p_get = sub.add_parser("get", help="Get one topic by topic_id")
+    p_get.add_argument("topic_id")
+    p_get.add_argument("--no-disclaimer", action="store_true")
+
+    p_list = sub.add_parser("list", help="List topics from structured store")
+    p_list.add_argument("--agency", default=None)
+    p_list.add_argument("--program", default=None)
+    p_list.add_argument("--status", default="open")
+    p_list.add_argument("--limit", type=int, default=20)
+
+    args = parser.parse_args(argv)
+    svc = SBIRTopicService()
+
+    if args.action == "sync":
+        result = svc.sync(
+            keyword=args.keyword,
+            agency=args.agency,
+            force_fixtures=args.fixtures,
+        )
+        print(json.dumps(result, indent=2))
+    elif args.action == "search":
+        result = svc.search(
+            args.query,
+            agency=args.agency,
+            program=args.program,
+            status=args.status,
+            top_k=args.top_k,
+            include_disclaimer=not args.no_disclaimer,
+        )
+        print(result["text"])
+        meta = {
+            "topic_ids": result["topic_ids"],
+            "stale": result["stale"],
+            "source": result["source"],
+            "last_sync_at": result["last_sync_at"],
+        }
+        print("\n# meta:", json.dumps(meta))
+    elif args.action == "get":
+        result = svc.get_topic(
+            args.topic_id, include_disclaimer=not args.no_disclaimer
+        )
+        print(result["text"])
+    elif args.action == "list":
+        topics = svc.store.list_topics(
+            status=args.status,
+            agency=args.agency,
+            program=args.program,
+            limit=args.limit,
+        )
+        slim = [
+            {
+                "topic_id": t.topic_id,
+                "title": t.topic_title,
+                "agency": t.agency,
+                "program": t.program,
+                "status": t.status,
+                "close_date": t.close_date,
+                "citation_uri": t.citation_uri,
+                "stale": t.stale,
+                "source": t.source,
+            }
+            for t in topics
+        ]
+        print(json.dumps(slim, indent=2, ensure_ascii=False))
+
+
+def checklist_main(argv: list[str] | None = None) -> None:
+    """DARPA Phase II compliance checklist against indexed instructions."""
+    from govgrant.compliance.checklist import run_darpa_phase2_checklist
+
+    parser = argparse.ArgumentParser(description="DARPA Phase II compliance checklist")
+    parser.add_argument(
+        "--program",
+        choices=["sbir", "sttr"],
+        default="sbir",
+        help="Program type (default sbir)",
+    )
+    parser.add_argument(
+        "--ot",
+        action="store_true",
+        help="Include Other Transaction milestone controls",
+    )
+    parser.add_argument(
+        "--doc-id",
+        default="darpa-sbir-sttr-phase-II-instructions",
+        help="Instruction document id",
+    )
+    parser.add_argument("--json", action="store_true", help="Full JSON report")
+    args = parser.parse_args(argv)
+
+    run = run_darpa_phase2_checklist(
+        program=args.program,
+        use_ot=args.ot,
+        doc_id=args.doc_id,
+    )
+    if args.json:
+        print(json.dumps(run.to_dict(), indent=2, ensure_ascii=False))
+    else:
+        print(run.to_markdown())
+    # Non-zero if any critical control failed retrieve coverage
+    critical_fail = any(
+        i.status == "fail" and i.severity == "critical" for i in run.items
+    )
+    if critical_fail:
+        raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2 or sys.argv[1] not in {
+        "ingest",
+        "query",
+        "tables",
+        "sbir",
+        "ask",
+        "eval",
+        "agent",
+        "checklist",
+    }:
+        print(
+            "Usage: python -m govgrant.rag.cli "
+            "ingest|query|tables|sbir|ask|eval|agent|checklist ...",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    cmd = sys.argv[1]
+    rest = sys.argv[2:]
+    if cmd == "ingest":
+        ingest_main(rest)
+    elif cmd == "query":
+        query_main(rest)
+    elif cmd == "tables":
+        tables_main(rest)
+    elif cmd == "sbir":
+        sbir_main(rest)
+    elif cmd == "ask":
+        ask_main(rest)
+    elif cmd == "eval":
+        eval_main(rest)
+    elif cmd == "checklist":
+        checklist_main(rest)
+    else:
+        agent_main(rest)
