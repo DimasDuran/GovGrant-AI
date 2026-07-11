@@ -1,0 +1,533 @@
+[
+  {
+    "id": "F001",
+    "category": "fact",
+    "difficulty": "easy",
+    "question": "What minimum percentage of Phase II research and analytical work must the proposer perform under an SBIR award?",
+    "expected_answer": "A minimum of one-half (50%) of the Phase II research and/or analytical work, measured by direct and indirect costs, must be carried out by the proposer unless otherwise approved in writing by the Contracting Officer.",
+    "expected_facts": [
+      "one-half",
+      "50%",
+      "direct and indirect costs",
+      "SBIR"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Sub-contractors",
+    "facts_required": [
+      "one-half",
+      "50%",
+      "direct and indirect costs",
+      "SBIR"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F002",
+    "category": "fact",
+    "difficulty": "easy",
+    "question": "Under STTR Phase II, what minimum work-share percentages apply to the proposer and the Research Institution?",
+    "expected_answer": "A minimum of 40% must be carried out by the proposer and a minimum of 30% must be performed by the Research Institution (RI).",
+    "expected_facts": [
+      "40%",
+      "30%",
+      "Research Institution",
+      "STTR"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Sub-contractors",
+    "facts_required": [
+      "40%",
+      "30%",
+      "Research Institution",
+      "STTR"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F003",
+    "category": "fact",
+    "difficulty": "easy",
+    "question": "What is the maximum page length for the Phase II Technical Volume?",
+    "expected_answer": "Maximum page length for the technical proposal is 20 pages, unless otherwise determined by the Phase I topic instructions.",
+    "expected_facts": [
+      "20 pages"
+    ],
+    "source_pages": [
+      6
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Technical Volume",
+    "facts_required": [
+      "20 pages"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F004",
+    "category": "fact",
+    "difficulty": "easy",
+    "question": "What is the maximum dollar amount and duration for the Phase II Cost Volume including Options?",
+    "expected_answer": "The Phase II Cost Volume should not exceed $1,800,000 and a maximum duration of 36 months including proposed Option(s).",
+    "expected_facts": [
+      "1,800,000",
+      "36 months"
+    ],
+    "source_pages": [
+      10
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Cost Volume",
+    "facts_required": [
+      "1,800,000",
+      "36 months"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F005",
+    "category": "fact",
+    "difficulty": "easy",
+    "question": "Where must the Transition and Commercialization Strategy be placed, and what is its maximum length?",
+    "expected_answer": "It should be included at the end of the Technical Volume (Volume 2), should not exceed 5 pages, and will NOT count against the proposal page limit.",
+    "expected_facts": [
+      "end of the Technical Volume",
+      "5 pages",
+      "NOT count"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Commercialization",
+    "facts_required": [
+      "end of the Technical Volume",
+      "5 pages",
+      "NOT count"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "F006",
+    "category": "fact",
+    "difficulty": "easy",
+    "question": "What is the typical Phase II cost structure for Base and Option?",
+    "expected_answer": "The typical structure is an 18 to 24-month, $1,000,000 Base and a 6 to 12-month, $800,000 Option.",
+    "expected_facts": [
+      "1,000,000",
+      "800,000",
+      "18 to 24-month",
+      "6 to 12-month"
+    ],
+    "source_pages": [
+      10
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Cost Volume",
+    "facts_required": [
+      "1,000,000",
+      "800,000",
+      "18 to 24-month",
+      "6 to 12-month"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F007",
+    "category": "fact",
+    "difficulty": "easy",
+    "question": "When will the selection decision notice be available after proposal receipt?",
+    "expected_answer": "The selection decision notice will be available no later than 90 days after proposal receipt.",
+    "expected_facts": [
+      "90 days"
+    ],
+    "source_pages": [
+      3
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Selection",
+    "facts_required": [
+      "90 days"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F008",
+    "category": "fact",
+    "difficulty": "easy",
+    "question": "What is the DoW goal for Phase II award timing from the proposal receipt deadline?",
+    "expected_answer": "The DoW goal for Phase II award is within 180 calendar days from the proposal receipt deadline.",
+    "expected_facts": [
+      "180 calendar days"
+    ],
+    "source_pages": [
+      5
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Award Timing",
+    "facts_required": [
+      "180 calendar days"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F009",
+    "category": "fact",
+    "difficulty": "easy",
+    "question": "What minimum font size and margin size are required for the Technical Volume?",
+    "expected_answer": "Use no type smaller than 10-point on standard 8-1/2\" x 11\" paper with one-inch margins.",
+    "expected_facts": [
+      "10-point",
+      "one-inch margins",
+      "8-1/2"
+    ],
+    "source_pages": [
+      6
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Technical Volume",
+    "facts_required": [
+      "10-point",
+      "one-inch margins",
+      "8-1/2"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F010",
+    "category": "fact",
+    "difficulty": "easy",
+    "question": "Through which portal must Phase II proposals be submitted?",
+    "expected_answer": "The proposal must be submitted via the Defense SBIR/STTR Innovation Portal (DSIP) at https://www.dodsbirsttr.mil/submissions/login.",
+    "expected_facts": [
+      "DSIP",
+      "dodsbirsttr.mil"
+    ],
+    "source_pages": [
+      5
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Proposal Submission",
+    "facts_required": [
+      "DSIP",
+      "dodsbirsttr.mil"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F011",
+    "category": "fact",
+    "difficulty": "medium",
+    "question": "What is the official DARPA SBIR help desk email listed in these instructions?",
+    "expected_answer": "sbir@darpa.mil",
+    "expected_facts": [
+      "sbir@darpa.mil"
+    ],
+    "source_pages": [
+      1,
+      2
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Contact",
+    "facts_required": [
+      "sbir@darpa.mil"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F012",
+    "category": "fact",
+    "difficulty": "medium",
+    "question": "What is the maximum dollar amount of the Phase II Cost Volume?",
+    "expected_answer": "$1,800,000 including the proposed Option(s).",
+    "expected_facts": [
+      "1,800,000"
+    ],
+    "source_pages": [
+      10
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Cost Volume",
+    "facts_required": [
+      "1,800,000"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F013",
+    "category": "fact",
+    "difficulty": "medium",
+    "question": "Is use of the DARPA SBIR/STTR Information Portal (SSIP) mandatory?",
+    "expected_answer": "Yes. Use of the SSIP is MANDATORY for retrieving selection decision notice and technical evaluation narrative, and for uploading reports for awarded proposals.",
+    "expected_facts": [
+      "SSIP",
+      "MANDATORY"
+    ],
+    "source_pages": [
+      2
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "SSIP",
+    "facts_required": [
+      "SSIP",
+      "MANDATORY"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F014",
+    "category": "fact",
+    "difficulty": "medium",
+    "question": "Does DARPA's Transition and Commercialization Support Program (TCSP) cost Phase II awardees anything?",
+    "expected_answer": "DARPA will provide TCSP services to Phase II awardees upon contract execution at no cost.",
+    "expected_facts": [
+      "TCSP",
+      "no cost"
+    ],
+    "source_pages": [
+      5
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "TCSP",
+    "facts_required": [
+      "TCSP",
+      "no cost"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F015",
+    "category": "fact",
+    "difficulty": "easy",
+    "question": "What seven volumes make up a complete Phase II proposal?",
+    "expected_answer": "Volume 1 Cover Sheet, Volume 2 Technical Volume, Volume 3 Cost Volume, Volume 4 Company Commercialization Report, Volume 5 Supporting Documents, Volume 6 Fraud Waste and Abuse Training, Volume 7 Disclosures of Foreign Affiliations or Relationships to Foreign Countries.",
+    "expected_facts": [
+      "Volume 1",
+      "Volume 2",
+      "Volume 3",
+      "Volume 4",
+      "Volume 5",
+      "Volume 6",
+      "Volume 7"
+    ],
+    "source_pages": [
+      5
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Proposal Volumes",
+    "facts_required": [
+      "Volume 1",
+      "Volume 2",
+      "Volume 3",
+      "Volume 4",
+      "Volume 5",
+      "Volume 6",
+      "Volume 7"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F016",
+    "category": "fact",
+    "difficulty": "easy",
+    "question": "Are classified proposals accepted under the DoW SBIR/STTR Program per these instructions?",
+    "expected_answer": "No. Classified proposals are not accepted under the DoW SBIR/STTR Program.",
+    "expected_facts": [
+      "Classified proposals are not accepted"
+    ],
+    "source_pages": [
+      12
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Security",
+    "facts_required": [
+      "Classified proposals are not accepted"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F017",
+    "category": "fact",
+    "difficulty": "easy",
+    "question": "Is cost sharing required for Phase II proposals under this announcement?",
+    "expected_answer": "Cost sharing is permitted but is not required, nor will it be an evaluation factor.",
+    "expected_facts": [
+      "not required",
+      "not",
+      "evaluation factor"
+    ],
+    "source_pages": [
+      10
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Cost Volume",
+    "facts_required": [
+      "not required",
+      "not",
+      "evaluation factor"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F018",
+    "category": "fact",
+    "difficulty": "medium",
+    "question": "Within how many days after the announcement closing does the Corporate Official receive an email acknowledging proposal receipt?",
+    "expected_answer": "Within 7 business days after the announcement closing, the Corporate Official will receive a separate e-mail from sbir@darpa.mil acknowledging receipt for each proposal received.",
+    "expected_facts": [
+      "7 business days",
+      "sbir@darpa.mil"
+    ],
+    "source_pages": [
+      2
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Proposal Receipt",
+    "facts_required": [
+      "7 business days",
+      "sbir@darpa.mil"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F019",
+    "category": "fact",
+    "difficulty": "medium",
+    "question": "What template are proposers REQUIRED to use for the Phase II Cost Volume?",
+    "expected_answer": "Proposers are REQUIRED to use the Cost Volume template (Excel Spreadsheet) on the DARPA website for Phase II and Phase II Option costs.",
+    "expected_facts": [
+      "Cost Volume template",
+      "Excel",
+      "REQUIRED"
+    ],
+    "source_pages": [
+      10
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Cost Volume",
+    "facts_required": [
+      "Cost Volume template",
+      "Excel",
+      "REQUIRED"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "F020",
+    "category": "fact",
+    "difficulty": "hard",
+    "question": "How long does the Corporate Official have to retrieve the selection decision notice from the SSIP after the email is sent?",
+    "expected_answer": "The Corporate Official must retrieve the letter from the SSIP within 30 days from the date the e-mail is sent. After 30 days, a written request to sbir@darpa.mil is required.",
+    "expected_facts": [
+      "30 days",
+      "SSIP",
+      "sbir@darpa.mil"
+    ],
+    "source_pages": [
+      3
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Selection",
+    "facts_required": [
+      "30 days",
+      "SSIP",
+      "sbir@darpa.mil"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  }
+]

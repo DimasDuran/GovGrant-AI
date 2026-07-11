@@ -1,0 +1,737 @@
+[
+  {
+    "id": "S001",
+    "category": "scenario",
+    "difficulty": "hard",
+    "question": "My SBIR Phase II plan subcontracts 70% of the research work to a university. Is this compliant, and why?",
+    "expected_answer": "No. Under SBIR Phase II the proposer must perform at least one-half (50%) of the research and/or analytical work measured by direct and indirect costs, unless otherwise approved in writing by the Contracting Officer.",
+    "expected_facts": [
+      "one-half",
+      "50%",
+      "SBIR",
+      "proposer"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Sub-contractors",
+    "facts_required": [
+      "one-half",
+      "50%",
+      "SBIR",
+      "proposer"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "S002",
+    "category": "scenario",
+    "difficulty": "hard",
+    "question": "I want to submit essentially the same Phase II proposal to DARPA and another federal agency. What is allowed and what must I disclose?",
+    "expected_answer": "Submitting identical or essentially equivalent proposals is permissible, but entering awards requiring essentially equivalent effort is unlawful. Any question must be disclosed to the soliciting agency or agencies before award.",
+    "expected_facts": [
+      "permissible",
+      "unlawful",
+      "before award"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Prior Support",
+    "facts_required": [
+      "permissible",
+      "unlawful",
+      "before award"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "S003",
+    "category": "scenario",
+    "difficulty": "medium",
+    "question": "My team includes an FFRDC subcontractor on an SBIR Phase II. Do I need a waiver, and can DARPA pay the FFRDC directly?",
+    "expected_answer": "No waiver is required, but you must certify use of the FFRDC on the Cover Sheet. The Agency cannot send SBIR/STTR funding directly to the Federal Laboratory or FFRDC; the Small Business Concern must contract with them.",
+    "expected_facts": [
+      "waiver is not required",
+      "Cover Sheet",
+      "cannot send",
+      "SBC"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Sub-contractors",
+    "facts_required": [
+      "waiver is not required",
+      "Cover Sheet",
+      "cannot send",
+      "SBC"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "S004",
+    "category": "scenario",
+    "difficulty": "hard",
+    "question": "I am requesting an Other Transaction (OT) and plan to commercialize. What mandatory items must my proposal include for the OT and for commercialization?",
+    "expected_answer": "Include a detailed OT Milestone Plan (description, exit criteria, due date, payment schedule, Government data rights per deliverable) and a Transition and Commercialization Strategy at the end of Volume 2 (max 5 pages, not counting against page limit).",
+    "expected_facts": [
+      "Milestone Plan",
+      "Due date",
+      "Volume 2",
+      "5 pages",
+      "Commercialization Strategy"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "OT + Commercialization",
+    "facts_required": [
+      "Milestone Plan",
+      "Due date",
+      "Volume 2",
+      "5 pages",
+      "Commercialization Strategy"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "S005",
+    "category": "scenario",
+    "difficulty": "medium",
+    "question": "My Technical Volume is 25 pages including the SOW. Will it be accepted as-is under the default instructions?",
+    "expected_answer": "No under the default maximum of 20 pages for the technical proposal (unless the Phase I topic instructions set a different limit).",
+    "expected_facts": [
+      "20 pages"
+    ],
+    "source_pages": [
+      6
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Technical Volume",
+    "facts_required": [
+      "20 pages"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "S006",
+    "category": "scenario",
+    "difficulty": "hard",
+    "question": "My commercialization strategy is 5 pages at the end of Volume 2, and my Technical Volume body is 20 pages. Do the commercialization pages reduce my remaining page budget?",
+    "expected_answer": "No. The Transition and Commercialization Strategy should not exceed 5 pages and will NOT count against the proposal page limit.",
+    "expected_facts": [
+      "5 pages",
+      "NOT count"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Commercialization",
+    "facts_required": [
+      "5 pages",
+      "NOT count"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR"
+    ]
+  },
+  {
+    "id": "S007",
+    "category": "scenario",
+    "difficulty": "medium",
+    "question": "I plan to add cost sharing hoping it improves my evaluation score. Does that help under these instructions?",
+    "expected_answer": "No. Cost sharing is permitted but is not required and will not be an evaluation factor.",
+    "expected_facts": [
+      "not required",
+      "not",
+      "evaluation factor"
+    ],
+    "source_pages": [
+      10
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Cost Volume",
+    "facts_required": [
+      "not required",
+      "not",
+      "evaluation factor"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR"
+    ]
+  },
+  {
+    "id": "S008",
+    "category": "scenario",
+    "difficulty": "hard",
+    "question": "I need to submit a classified Phase II proposal under this program. How should I submit it?",
+    "expected_answer": "Classified proposals are not accepted under the DoW SBIR/STTR Program. If classified effort or information is involved, security clearance requirements apply per DOD 5220.22M, but classified proposals themselves are not accepted.",
+    "expected_facts": [
+      "Classified proposals are not accepted"
+    ],
+    "source_pages": [
+      12
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Security",
+    "facts_required": [
+      "Classified proposals are not accepted"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "S009",
+    "category": "scenario",
+    "difficulty": "hard",
+    "question": "Are Advocacy Letters and Letters of Intent mandatory, and do they count against the Technical Volume page limit?",
+    "expected_answer": "No. Advocacy Letters and Letters of Intent/Commitment are optional, do NOT count against any page limit, and should ONLY be submitted to substantiate transition or commercialization claims.",
+    "expected_facts": [
+      "optional",
+      "do NOT count",
+      "Advocacy Letters"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Commercialization Letters",
+    "facts_required": [
+      "optional",
+      "do NOT count",
+      "Advocacy Letters"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "S010",
+    "category": "scenario",
+    "difficulty": "medium",
+    "question": "My Cost Volume proposes $1.2M Base and $700k Option over 40 months total. Is that within the stated maxima?",
+    "expected_answer": "Dollar amount ($1.9M) exceeds the $1,800,000 maximum, and 40 months exceeds the 36-month maximum duration including Options.",
+    "expected_facts": [
+      "1,800,000",
+      "36 months"
+    ],
+    "source_pages": [
+      10
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Cost Volume",
+    "facts_required": [
+      "1,800,000",
+      "36 months"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR"
+    ]
+  },
+  {
+    "id": "S011",
+    "category": "scenario",
+    "difficulty": "medium",
+    "question": "I encrypted my Technical Volume PDF with a password for security. Will DSIP accept it?",
+    "expected_answer": "No. Do not lock or encrypt the uploaded file.",
+    "expected_facts": [
+      "encrypt",
+      "lock"
+    ],
+    "source_pages": [
+      6
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Technical Volume Format",
+    "facts_required": [
+      "encrypt",
+      "lock"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "S012",
+    "category": "scenario",
+    "difficulty": "hard",
+    "question": "My research involves human subjects using publicly available datasets. What approvals should I plan for before using DoW/DARPA funding?",
+    "expected_answer": "Plan for local IRB review/approval and headquarters-level human subjects administrative review. Funding cannot be used toward human subjects research until ALL approvals are granted, including participant recruitment. Separating human-use tasks in Technical and Cost Volumes is encouraged to avoid award delay.",
+    "expected_facts": [
+      "IRB",
+      "headquarters-level",
+      "ALL approvals"
+    ],
+    "source_pages": [
+      4,
+      6
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Human Subjects",
+    "facts_required": [
+      "IRB",
+      "headquarters-level",
+      "ALL approvals"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "S013",
+    "category": "scenario",
+    "difficulty": "medium",
+    "question": "I have never won a DoW or non-DoW SBIR/STTR award. What do I do for Volume 4 CCR?",
+    "expected_answer": "Volume 4 completion is still required for all submissions. Firms with no prior awards can select \"No\" for the question about uploading a new or revised Company Commercialization Report.",
+    "expected_facts": [
+      "Volume 4",
+      "No",
+      "CCR"
+    ],
+    "source_pages": [
+      11
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "CCR",
+    "facts_required": [
+      "Volume 4",
+      "No",
+      "CCR"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "S014",
+    "category": "scenario",
+    "difficulty": "hard",
+    "question": "My STTR team has the small business doing 35% of the work and the university RI doing 35%, with consultants making up the rest. Is the work-share compliant?",
+    "expected_answer": "No for the proposer minimum. STTR requires a minimum of 40% by the proposer and a minimum of 30% by the Research Institution. 35% by the proposer fails the 40% floor.",
+    "expected_facts": [
+      "40%",
+      "30%",
+      "Research Institution"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "STTR Work-share",
+    "facts_required": [
+      "40%",
+      "30%",
+      "Research Institution"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "S015",
+    "category": "scenario",
+    "difficulty": "medium",
+    "question": "After award I want free help transitioning beyond Phase II. What DARPA program applies and when is it available?",
+    "expected_answer": "DARPA provides the Transition and Commercialization Support Program (TCSP) to Phase II awardees upon contract execution at no cost.",
+    "expected_facts": [
+      "TCSP",
+      "no cost",
+      "Phase II"
+    ],
+    "source_pages": [
+      5
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "TCSP",
+    "facts_required": [
+      "TCSP",
+      "no cost",
+      "Phase II"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "S016",
+    "category": "scenario",
+    "difficulty": "hard",
+    "question": "I labeled my proposal \"Government Only\" because of sensitive content. Can non-government advisors still review it?",
+    "expected_answer": "Non-Government technical consultants/experts will not have access to proposals labeled by their proposers as \"Government Only.\"",
+    "expected_facts": [
+      "Government Only",
+      "will not have access"
+    ],
+    "source_pages": [
+      12
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Evaluation",
+    "facts_required": [
+      "Government Only",
+      "will not have access"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "S017",
+    "category": "scenario",
+    "difficulty": "medium",
+    "question": "My Corporate Official changed email addresses after we submitted the proposal. What risk does the document warn about?",
+    "expected_answer": "Updates to the Corporate Official e-mail after proposal submission may cause significant delays to communication retrieval and contract negotiation if selected.",
+    "expected_facts": [
+      "delays",
+      "Corporate Official",
+      "e-mail"
+    ],
+    "source_pages": [
+      2
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "SSIP",
+    "facts_required": [
+      "delays",
+      "Corporate Official",
+      "e-mail"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "S018",
+    "category": "scenario",
+    "difficulty": "expert",
+    "question": "I'm preparing a multi-part compliance checklist: SBIR work-share with a university and FFRDC, equivalent proposals to another agency, and OT milestones plus optional LOI. What are the key rules for each?",
+    "expected_answer": "SBIR: proposer must do ≥50%/one-half; FFRDC allowed without waiver if Cover Sheet certified; no direct Agency funding to FFRDC. Equivalent proposals: submission permissible, dual awards for equivalent effort unlawful, disclose before award. OT: Milestone Plan with description, exit criteria, due date, payment, data rights. LOI/Advocacy letters optional and do not count against page limits; commercialization strategy max 5 pages at end of Volume 2.",
+    "expected_facts": [
+      "50%",
+      "one-half",
+      "Cover Sheet",
+      "before award",
+      "Milestone",
+      "5 pages",
+      "optional"
+    ],
+    "source_pages": [
+      8,
+      9
+    ],
+    "expected_chunks": 3,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Multi-part compliance",
+    "facts_required": [
+      "50%",
+      "one-half",
+      "Cover Sheet",
+      "before award",
+      "Milestone",
+      "5 pages",
+      "optional"
+    ],
+    "facts_optional": [
+      "40%",
+      "30%",
+      "Advocacy Letters",
+      "Volume 2",
+      "NOT count"
+    ],
+    "facts_forbidden": [
+      "Volume 5",
+      "CCR",
+      "Volume 4"
+    ],
+    "required_recall_threshold": 0.7,
+    "must_not_include": [
+      "Volume 5",
+      "CCR",
+      "Volume 4"
+    ]
+  },
+  {
+    "id": "S019",
+    "category": "scenario",
+    "difficulty": "medium",
+    "question": "I want to embed a product demo video in Volume 2. Is that allowed?",
+    "expected_answer": "No. Do not include or embed active graphics such as videos, moving pictures, or other similar media in the document.",
+    "expected_facts": [
+      "videos",
+      "active"
+    ],
+    "source_pages": [
+      6
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Technical Volume Format",
+    "facts_required": [
+      "videos",
+      "active"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "S020",
+    "category": "scenario",
+    "difficulty": "hard",
+    "question": "My Phase I was with a non-DoW agency and I now want to submit a DARPA Phase II. What special submission path is described?",
+    "expected_answer": "For Cross Agency Award (Adoption)/Non-DoW Submissions, select Non-DoW as the agency and provide corresponding Phase I and/or Phase II award information including topic number and Phase I proposal number, then select DARPA as the DoD component to initiate the Phase II submission.",
+    "expected_facts": [
+      "Non-DoW",
+      "DARPA",
+      "topic number"
+    ],
+    "source_pages": [
+      2
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Cross Agency",
+    "facts_required": [
+      "Non-DoW",
+      "DARPA",
+      "topic number"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  }
+]

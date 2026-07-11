@@ -1,0 +1,591 @@
+[
+  {
+    "id": "C001",
+    "category": "comparison",
+    "difficulty": "easy",
+    "question": "Compare the Phase II work-share requirements for SBIR versus STTR.",
+    "expected_answer": "SBIR requires the proposer to perform at least one-half (50%) of the Phase II research/analytical work. STTR requires at least 40% by the proposer and at least 30% by the Research Institution.",
+    "expected_facts": [
+      "one-half",
+      "50%",
+      "40%",
+      "30%",
+      "Research Institution"
+    ],
+    "source_pages": [
+      8,
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Sub-contractors",
+    "facts_required": [
+      "one-half",
+      "50%",
+      "40%",
+      "30%",
+      "Research Institution"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C002",
+    "category": "comparison",
+    "difficulty": "medium",
+    "question": "How do Advocacy Letters differ from Letters of Intent/Commitment?",
+    "expected_answer": "Advocacy Letters provide feedback from potential Commercial and/or DoW customers and end-users about interest in the technology. Letters of Intent/Commitment show established relationships, support, and commitment from commercial customers, DoW PM/PEO, Defense Primes, or vendors in the integration path.",
+    "expected_facts": [
+      "Advocacy Letters",
+      "interest",
+      "Letters of Intent",
+      "commitment"
+    ],
+    "source_pages": [
+      9,
+      10
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Commercialization",
+    "facts_required": [
+      "Advocacy Letters",
+      "interest",
+      "Letters of Intent",
+      "commitment"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C003",
+    "category": "comparison",
+    "difficulty": "hard",
+    "question": "Compare DARPA's TCSP with the proposer's Transition and Commercialization Strategy in Volume 2.",
+    "expected_answer": "TCSP is a free DARPA service provided to Phase II awardees after contract execution to help move technology beyond Phase II. The Transition and Commercialization Strategy is a required proposal section at the end of Volume 2 (max 5 pages, does not count against the page limit) describing dual-use transition pathways.",
+    "expected_facts": [
+      "TCSP",
+      "no cost",
+      "Volume 2",
+      "5 pages",
+      "NOT count"
+    ],
+    "source_pages": [
+      5,
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "TCSP vs Commercialization Strategy",
+    "facts_required": [
+      "TCSP",
+      "no cost",
+      "Volume 2",
+      "5 pages",
+      "NOT count"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "C004",
+    "category": "comparison",
+    "difficulty": "medium",
+    "question": "Compare treatment of Federal Laboratories/FFRDCs versus other federal organizations as subcontractors.",
+    "expected_answer": "SBIR/STTR efforts may include subcontracts with Federal Laboratories and FFRDCs without a waiver if certified on the Cover Sheet; funding cannot go directly to the lab/FFRDC. Subcontracts with other federal organizations are not permitted.",
+    "expected_facts": [
+      "FFRDC",
+      "no waiver",
+      "Cover Sheet",
+      "other federal organizations",
+      "not permitted"
+    ],
+    "source_pages": [
+      8,
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Sub-contractors",
+    "facts_required": [
+      "FFRDC",
+      "no waiver",
+      "Cover Sheet",
+      "other federal organizations",
+      "not permitted"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C005",
+    "category": "comparison",
+    "difficulty": "easy",
+    "question": "Compare what counts against the Technical Volume page limit versus what does not for commercialization materials.",
+    "expected_answer": "The Technical Volume is generally limited to 20 pages (or topic instructions). The Transition and Commercialization Strategy (max 5 pages) does NOT count against the proposal page limit. Optional Advocacy Letters and Letters of Intent/Commitment also do NOT count against any page limit.",
+    "expected_facts": [
+      "20 pages",
+      "5 pages",
+      "NOT count",
+      "Advocacy Letters"
+    ],
+    "source_pages": [
+      6,
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Page Limits",
+    "facts_required": [
+      "20 pages",
+      "5 pages",
+      "NOT count",
+      "Advocacy Letters"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C006",
+    "category": "comparison",
+    "difficulty": "medium",
+    "question": "Compare the typical Base period cost/duration with the typical Option cost/duration.",
+    "expected_answer": "Typical Base is 18 to 24 months and $1,000,000. Typical Option is 6 to 12 months and $800,000. Combined maximum is $1,800,000 and 36 months.",
+    "expected_facts": [
+      "1,000,000",
+      "800,000",
+      "18 to 24",
+      "6 to 12",
+      "1,800,000"
+    ],
+    "source_pages": [
+      10
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Cost Volume",
+    "facts_required": [
+      "1,000,000",
+      "800,000",
+      "18 to 24",
+      "6 to 12",
+      "1,800,000"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C007",
+    "category": "comparison",
+    "difficulty": "medium",
+    "question": "Compare submitting substantially equivalent proposals to multiple agencies versus receiving awards for essentially equivalent effort.",
+    "expected_answer": "It is permissible to submit identical or essentially equivalent proposals under numerous federal announcements. It is unlawful to enter into contracts or grants requiring essentially equivalent effort. Any question must be disclosed before award.",
+    "expected_facts": [
+      "permissible",
+      "unlawful",
+      "before award"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Prior Support",
+    "facts_required": [
+      "permissible",
+      "unlawful",
+      "before award"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C008",
+    "category": "comparison",
+    "difficulty": "medium",
+    "question": "How does cost sharing differ from being an evaluation factor in Phase II proposals?",
+    "expected_answer": "Cost sharing is permitted under this announcement, but it is not required and will not be an evaluation factor in consideration of a proposal.",
+    "expected_facts": [
+      "permitted",
+      "not required",
+      "not",
+      "evaluation factor"
+    ],
+    "source_pages": [
+      10
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Cost Volume",
+    "facts_required": [
+      "permitted",
+      "not required",
+      "not",
+      "evaluation factor"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C009",
+    "category": "comparison",
+    "difficulty": "hard",
+    "question": "Compare local IRB approval with headquarters-level human subjects review for DoW/DARPA-funded research.",
+    "expected_answer": "In addition to local IRB approval, a headquarters-level human subjects administrative review and approval is required for all research conducted or supported by the DoW. DoW/DARPA funding cannot be used toward human subjects research until ALL approvals are granted, including participant recruitment.",
+    "expected_facts": [
+      "IRB",
+      "headquarters-level",
+      "ALL approvals"
+    ],
+    "source_pages": [
+      6
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Human/Animal Use",
+    "facts_required": [
+      "IRB",
+      "headquarters-level",
+      "ALL approvals"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C010",
+    "category": "comparison",
+    "difficulty": "easy",
+    "question": "Compare marketing material with technical content for evaluation of Volume 2.",
+    "expected_answer": "Do not include marketing material. Marketing material will NOT be evaluated. The Technical Volume should cover significance, objectives, SOW, related work, key personnel, and other listed technical items.",
+    "expected_facts": [
+      "marketing material",
+      "NOT be evaluated"
+    ],
+    "source_pages": [
+      6
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Technical Volume",
+    "facts_required": [
+      "marketing material",
+      "NOT be evaluated"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C011",
+    "category": "comparison",
+    "difficulty": "medium",
+    "question": "Compare Volume 4 (CCR) requirements for firms with prior SBIR/STTR awards versus firms with no prior awards.",
+    "expected_answer": "Completion of Volume 4 is required for all submissions. Firms with no prior DoW or non-DoW SBIR/STTR awards can select \"No\" for uploading a new/revised CCR. Firms with prior awards must complete the CCR on sbir.gov regardless of commercialization to date.",
+    "expected_facts": [
+      "Volume 4",
+      "CCR",
+      "prior",
+      "No"
+    ],
+    "source_pages": [
+      11
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Company Commercialization Report",
+    "facts_required": [
+      "Volume 4",
+      "CCR",
+      "prior",
+      "No"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C012",
+    "category": "comparison",
+    "difficulty": "hard",
+    "question": "Compare what the Phase II Base SOW should cover versus the Phase II Option SOW.",
+    "expected_answer": "The Base SOW provides an explicit detailed description of the Phase II approach: what is planned, how and where work will be carried out, schedule of major events, final product, and methods for each task. The Option SOW similarly details activities planned during the Option if exercised. For a 24-month Base and 12-month Option, tasks should be split across Base Year 1, Base Year 2 (Option 1), and Option 2. Option SOW counts toward the Technical Volume page limit.",
+    "expected_facts": [
+      "Statement of Work",
+      "Option",
+      "schedule",
+      "page limit"
+    ],
+    "source_pages": [
+      5,
+      6
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Statement of Work",
+    "facts_required": [
+      "Statement of Work",
+      "Option",
+      "schedule",
+      "page limit"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C013",
+    "category": "comparison",
+    "difficulty": "medium",
+    "question": "Compare the 90-day selection notice timeline with the 180-day award goal.",
+    "expected_answer": "The selection decision notice will be available no later than 90 days after proposal receipt. The DoW goal for Phase II award is within 180 calendar days from the proposal receipt deadline.",
+    "expected_facts": [
+      "90 days",
+      "180 calendar days"
+    ],
+    "source_pages": [
+      3,
+      5
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Timelines",
+    "facts_required": [
+      "90 days",
+      "180 calendar days"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C014",
+    "category": "comparison",
+    "difficulty": "hard",
+    "question": "Compare data-rights assertions that count against the page limit with supporting data that can go in Volume 5.",
+    "expected_answer": "Only the assertion table is included in the page limitation. Supporting data concerning contract/grant number, awarding agency, and planned use or need of the asserted data can be provided in Volume 5, Supporting Documents.",
+    "expected_facts": [
+      "table",
+      "page limitation",
+      "Volume 5"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Data Rights",
+    "facts_required": [
+      "table",
+      "page limitation",
+      "Volume 5"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C015",
+    "category": "comparison",
+    "difficulty": "medium",
+    "question": "Compare optional commercialization letters with mandatory OT Milestone Plan requirements.",
+    "expected_answer": "Advocacy Letters and Letters of Intent/Commitment are optional and do not count against page limits. All proposers requesting an OT must include a detailed Milestone Plan with description, exit criteria, due date, payment schedule, and Government data rights for each data deliverable.",
+    "expected_facts": [
+      "optional",
+      "Milestone Plan",
+      "Due date",
+      "data rights"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "OT vs Letters",
+    "facts_required": [
+      "optional",
+      "Milestone Plan",
+      "Due date",
+      "data rights"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C016",
+    "category": "comparison",
+    "difficulty": "easy",
+    "question": "Compare the role of the Corporate Official email for SSIP accounts versus after proposal submission updates.",
+    "expected_answer": "The Corporate Official email from the Proposal Cover Sheet is used to create the DARPA Extranet/SSIP account. Updates to this email after proposal submission may cause significant delays to communication retrieval and contract negotiation.",
+    "expected_facts": [
+      "Corporate Official",
+      "Extranet",
+      "delays"
+    ],
+    "source_pages": [
+      2
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "SSIP",
+    "facts_required": [
+      "Corporate Official",
+      "Extranet",
+      "delays"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C017",
+    "category": "comparison",
+    "difficulty": "medium",
+    "question": "Compare prime contractor cost detail requirements with subcontractor and consultant cost detail requirements.",
+    "expected_answer": "All subcontractor costs and consultant costs must be detailed at the same level as prime contractor costs regarding labor, travel, equipment, etc., and must be substantiated with Subcontractor Pricing Considerations.",
+    "expected_facts": [
+      "same level",
+      "subcontractor",
+      "consultant",
+      "substantiated"
+    ],
+    "source_pages": [
+      10,
+      11
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Cost Volume",
+    "facts_required": [
+      "same level",
+      "subcontractor",
+      "consultant",
+      "substantiated"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C018",
+    "category": "comparison",
+    "difficulty": "hard",
+    "question": "Compare Advocacy Letters with Letters of Intent/Commitment for Phase II commercialization.",
+    "expected_answer": "Advocacy Letters capture feedback/interest from potential Commercial and/or DoW customers and end-users. Letters of Intent/Commitment show established relationships, support, and commitment. Both are optional and do NOT count against page limits.",
+    "expected_facts": [
+      "Advocacy Letters",
+      "Letters of Intent",
+      "optional",
+      "do NOT count"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Commercialization Letters",
+    "facts_required": [
+      "Advocacy Letters",
+      "Letters of Intent",
+      "optional",
+      "do NOT count"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C019",
+    "category": "comparison",
+    "difficulty": "medium",
+    "question": "Compare encrypted/password-protected files and embedded active media with acceptable Technical Volume format.",
+    "expected_answer": "Do not lock or encrypt the uploaded file. Do not include or embed active graphics such as videos, moving pictures, or similar media. Use at least 10-point font, 8.5x11 paper, one-inch margins, consecutive page numbering starting at page 1.",
+    "expected_facts": [
+      "encrypt",
+      "videos",
+      "10-point",
+      "one-inch"
+    ],
+    "source_pages": [
+      6
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Technical Volume Format",
+    "facts_required": [
+      "encrypt",
+      "videos",
+      "10-point",
+      "one-inch"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "C020",
+    "category": "comparison",
+    "difficulty": "hard",
+    "question": "Compare what non-government advisors may do versus what they are prohibited from doing in proposal review.",
+    "expected_answer": "Non-government advisors may review proposals and provide comments/recommendations to Government decision makers. They will not establish final risk assessments, will not rate or rank proposals, and are prohibited from competing for DARPA SBIR/STTR awards in topics they review. They will not have access to proposals labeled \"Government Only.\"",
+    "expected_facts": [
+      "non-Government",
+      "not rate or rank",
+      "Government Only"
+    ],
+    "source_pages": [
+      11,
+      12
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Evaluation",
+    "facts_required": [
+      "non-Government",
+      "not rate or rank",
+      "Government Only"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  }
+]

@@ -1,0 +1,445 @@
+[
+  {
+    "id": "EC001",
+    "category": "edge_case_negative",
+    "difficulty": "medium",
+    "question": "What is the maximum indirect cost rate allowed by DARPA for Phase II proposals?",
+    "expected_answer": "The document does not specify a maximum indirect cost rate.",
+    "expected_facts": [],
+    "source_pages": [],
+    "expected_chunks": 0,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "none",
+    "should_refuse": true,
+    "notes": "Model should explicitly state that the information is not provided.",
+    "facts_required": [],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC002",
+    "category": "edge_case_false_premise",
+    "difficulty": "medium",
+    "question": "Which section explains how classified Phase II proposals should be submitted?",
+    "expected_answer": "The document does not provide submission instructions because classified proposals are not accepted.",
+    "expected_facts": [
+      "classified proposals are not accepted"
+    ],
+    "source_pages": [
+      11
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "should_refuse": false,
+    "facts_required": [
+      "classified proposals are not accepted"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC003",
+    "category": "edge_case_false_premise",
+    "difficulty": "hard",
+    "question": "What waiver is required before working with an FFRDC?",
+    "expected_answer": "No waiver is required to use an FFRDC. The proposer must certify its use on the Cover Sheet.",
+    "expected_facts": [
+      "no waiver",
+      "Cover Sheet"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "facts_required": [
+      "no waiver",
+      "Cover Sheet"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC004",
+    "category": "edge_case_negative",
+    "difficulty": "medium",
+    "question": "What evaluation score is required to receive a Phase II award?",
+    "expected_answer": "The document does not specify a minimum evaluation score.",
+    "expected_facts": [],
+    "source_pages": [],
+    "expected_chunks": 0,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "none",
+    "should_refuse": true,
+    "facts_required": [],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC005",
+    "category": "edge_case_partial",
+    "difficulty": "hard",
+    "question": "Does DARPA require both cost sharing and commercialization letters for every proposal?",
+    "expected_answer": "No. Cost sharing is optional and not an evaluation factor. Advocacy Letters and Letters of Intent are also optional.",
+    "expected_facts": [
+      "cost sharing optional",
+      "letters optional"
+    ],
+    "source_pages": [
+      9,
+      11
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "facts_required": [
+      "cost sharing optional",
+      "letters optional"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC006",
+    "category": "edge_case_ambiguity",
+    "difficulty": "medium",
+    "question": "What is the required page limit?",
+    "expected_answer": "The question is ambiguous because different proposal sections have different page limits. The Technical Volume is limited to 20 pages, while the Transition and Commercialization Strategy is limited to five pages and does not count toward the proposal page limit.",
+    "expected_facts": [
+      "20 pages",
+      "5 pages"
+    ],
+    "source_pages": [
+      6,
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "facts_required": [
+      "20 pages",
+      "5 pages"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC007",
+    "category": "edge_case_negative",
+    "difficulty": "medium",
+    "question": "Which cybersecurity framework must proposers follow during Phase II?",
+    "expected_answer": "The document does not specify a required cybersecurity framework.",
+    "expected_facts": [],
+    "source_pages": [],
+    "expected_chunks": 0,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "none",
+    "should_refuse": true,
+    "facts_required": [],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC008",
+    "category": "edge_case_reasoning",
+    "difficulty": "hard",
+    "question": "Can a proposer assume that all Federal Laboratories are Research Institutions for STTR work-share calculations?",
+    "expected_answer": "The document does not state that Federal Laboratories are Research Institutions for STTR work-share purposes, so that assumption cannot be made.",
+    "expected_facts": [
+      "Research Institution",
+      "Federal Laboratory"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "facts_required": [
+      "Research Institution",
+      "Federal Laboratory"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC009",
+    "category": "edge_case_false_premise",
+    "difficulty": "medium",
+    "question": "Where should the mandatory Advocacy Letters be uploaded?",
+    "expected_answer": "Advocacy Letters are optional. The document does not describe a mandatory upload location.",
+    "expected_facts": [
+      "optional"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "facts_required": [
+      "optional"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC010",
+    "category": "edge_case_negative",
+    "difficulty": "medium",
+    "question": "What is the required Technology Readiness Level (TRL) for Phase II proposals?",
+    "expected_answer": "The document does not specify a required Technology Readiness Level.",
+    "expected_facts": [],
+    "source_pages": [],
+    "expected_chunks": 0,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "none",
+    "should_refuse": true,
+    "facts_required": [],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC011",
+    "category": "edge_case_conflict",
+    "difficulty": "hard",
+    "question": "Can an SBIR proposer subcontract 80% of the work to a university if the university is also an FFRDC?",
+    "expected_answer": "No. SBIR requires the proposer to perform at least 50% of the Phase II research work. The document does not provide any exception based on the subcontractor's status.",
+    "expected_facts": [
+      "one-half",
+      "SBIR"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "facts_required": [
+      "one-half",
+      "SBIR"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC012",
+    "category": "edge_case_negative",
+    "difficulty": "medium",
+    "question": "Which proposal template should be used for Volume 2?",
+    "expected_answer": "The document does not name a specific Volume 2 template; it specifies Technical Volume formatting (e.g. 10-point type, margins, page limits).",
+    "expected_facts": [
+      "Technical Volume",
+      "10-point"
+    ],
+    "source_pages": [
+      6
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "facts_required": [
+      "Technical Volume",
+      "10-point"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC013",
+    "category": "edge_case_partial",
+    "difficulty": "hard",
+    "question": "Does the document specify both the maximum budget and the recommended budget for Phase II?",
+    "expected_answer": "The document specifies the maximum budget but does not provide a recommended budget.",
+    "expected_facts": [
+      "1,800,000",
+      "1,000,000",
+      "800,000"
+    ],
+    "source_pages": [
+      10
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "facts_required": [
+      "1,800,000",
+      "1,000,000",
+      "800,000"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC014",
+    "category": "edge_case_false_premise",
+    "difficulty": "medium",
+    "question": "What section explains how encrypted PDF files should be submitted?",
+    "expected_answer": "Encrypted/locked files must not be uploaded; the Technical Volume must not be locked or encrypted.",
+    "expected_facts": [
+      "encrypt",
+      "lock"
+    ],
+    "source_pages": [
+      6
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "should_refuse": false,
+    "facts_required": [
+      "encrypt",
+      "lock"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC015",
+    "category": "edge_case_reasoning",
+    "difficulty": "hard",
+    "question": "Can a proposer conclude that commercialization letters improve evaluation scores?",
+    "expected_answer": "No. The document states that the letters support commercialization claims but does not state that they increase evaluation scores.",
+    "expected_facts": [
+      "support commercialization claims"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "facts_required": [
+      "support commercialization claims"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC016",
+    "category": "edge_case_negative",
+    "difficulty": "medium",
+    "question": "What minimum type size is required for the Technical Volume?",
+    "expected_answer": "The document does not require a specific font family; it requires no type smaller than 10-point.",
+    "expected_facts": [
+      "10-point"
+    ],
+    "source_pages": [
+      6
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "should_refuse": false,
+    "facts_required": [
+      "10-point"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC017",
+    "category": "edge_case_false_premise",
+    "difficulty": "medium",
+    "question": "What section explains the process for renewing a Phase II award?",
+    "expected_answer": "The document does not describe a Phase II renewal process.",
+    "expected_facts": [],
+    "source_pages": [],
+    "expected_chunks": 0,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "none",
+    "facts_required": [],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC018",
+    "category": "edge_case_conflict",
+    "difficulty": "hard",
+    "question": "Can the Government award the SBIR contract directly to an FFRDC if the Small Business Concern agrees?",
+    "expected_answer": "No. SBIR/STTR awards must be made to the qualifying Small Business Concern, and funding cannot be provided directly to an FFRDC.",
+    "expected_facts": [
+      "SBC",
+      "cannot fund FFRDC directly"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "facts_required": [
+      "SBC",
+      "cannot fund FFRDC directly"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC019",
+    "category": "edge_case_negative",
+    "difficulty": "medium",
+    "question": "Does the document specify a deadline for obtaining IRB approval?",
+    "expected_answer": "No. The document states approvals are required before DoD funding may be used but does not specify a deadline.",
+    "expected_facts": [
+      "before DoD funding"
+    ],
+    "source_pages": [
+      7
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "facts_required": [
+      "before DoD funding"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "EC020",
+    "category": "edge_case_reasoning",
+    "difficulty": "very_hard",
+    "question": "Based only on this document, can a proposer determine every requirement needed for award?",
+    "expected_answer": "No. The document provides proposal preparation guidance but also references topic-specific BAAs and external guidance that may contain additional requirements.",
+    "expected_facts": [
+      "topic-specific instructions",
+      "external guidance"
+    ],
+    "source_pages": [
+      5,
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "facts_required": [
+      "topic-specific instructions",
+      "external guidance"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  }
+]

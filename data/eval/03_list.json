@@ -1,0 +1,650 @@
+[
+  {
+    "id": "L001",
+    "category": "list",
+    "difficulty": "easy",
+    "question": "List every required element of an Other Transaction (OT) Milestone Plan.",
+    "expected_answer": "An OT Milestone Plan must include the milestone description, completion/exit criteria, due date, payment or funding schedule, and proposed Government data rights for each data deliverable.",
+    "expected_facts": [
+      "Milestone description",
+      "Completion/Exit criteria",
+      "Due date",
+      "Payment/funding schedule",
+      "Government data rights"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Other Transaction",
+    "facts_required": [
+      "Milestone description",
+      "Completion/Exit criteria",
+      "Due date",
+      "Payment/funding schedule",
+      "Government data rights"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "L002",
+    "category": "list",
+    "difficulty": "easy",
+    "question": "What formatting requirements apply to the Technical Volume?",
+    "expected_answer": "The Technical Volume must begin on page 1, use at least a 10-point font, standard 8.5 x 11 inch pages, one-inch margins, and consecutive page numbering.",
+    "expected_facts": [
+      "page 1",
+      "10-point",
+      "8.5",
+      "one-inch margins",
+      "consecutively"
+    ],
+    "source_pages": [
+      6
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Technical Volume",
+    "facts_required": [
+      "page 1",
+      "10-point",
+      "8.5",
+      "one-inch margins",
+      "consecutively"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L003",
+    "category": "list",
+    "difficulty": "easy",
+    "question": "List all file or content types that are prohibited in the Technical Volume.",
+    "expected_answer": "Marketing material, encrypted or password-protected files, and embedded active content such as videos or animations are prohibited.",
+    "expected_facts": [
+      "marketing material",
+      "encrypt",
+      "videos"
+    ],
+    "source_pages": [
+      6
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Technical Volume",
+    "facts_required": [
+      "marketing material",
+      "encrypt",
+      "videos"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L004",
+    "category": "list",
+    "difficulty": "medium",
+    "question": "What information must be included in the Phase II Statement of Work?",
+    "expected_answer": "The Statement of Work must describe what will be done, how it will be performed, where it will be performed, the schedule of major events, the expected final product, and the detailed methods for each task.",
+    "expected_facts": [
+      "what",
+      "how",
+      "where",
+      "schedule",
+      "final product",
+      "methods"
+    ],
+    "source_pages": [
+      6
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Statement of Work",
+    "facts_required": [
+      "what",
+      "how",
+      "where",
+      "schedule",
+      "final product",
+      "methods"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L005",
+    "category": "list",
+    "difficulty": "medium",
+    "question": "What information must be provided when describing related work?",
+    "expected_answer": "Provide a description of the work, the client, contact information, and the completion date.",
+    "expected_facts": [
+      "description",
+      "client",
+      "contact information",
+      "completion date"
+    ],
+    "source_pages": [
+      7
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Related Work",
+    "facts_required": [
+      "description",
+      "client",
+      "contact information",
+      "completion date"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L006",
+    "category": "list",
+    "difficulty": "medium",
+    "question": "What information should be included for each key person?",
+    "expected_answer": "Education, relevant experience, publications, awards, patents, and other qualifications relevant to the proposed effort.",
+    "expected_facts": [
+      "education",
+      "experience",
+      "publications",
+      "awards",
+      "patents"
+    ],
+    "source_pages": [
+      7
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Key Personnel",
+    "facts_required": [
+      "education",
+      "experience",
+      "publications",
+      "awards",
+      "patents"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L007",
+    "category": "list",
+    "difficulty": "medium",
+    "question": "What information must be disclosed for each foreign national participating in the project?",
+    "expected_answer": "The proposal must disclose the individual's country of origin, visa or work permit status, and expected level of involvement.",
+    "expected_facts": [
+      "country of origin",
+      "visa",
+      "work permit",
+      "level of involvement"
+    ],
+    "source_pages": [
+      7
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Foreign Citizens",
+    "facts_required": [
+      "country of origin",
+      "visa",
+      "work permit",
+      "level of involvement"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L008",
+    "category": "list",
+    "difficulty": "medium",
+    "question": "What are the characteristics of the Transition and Commercialization Strategy?",
+    "expected_answer": "It must be included at the end of Volume 2, must not exceed five pages, does not count toward the proposal page limit, and should follow the DARPA Transition and Commercialization Strategy Development Guide.",
+    "expected_facts": [
+      "Volume 2",
+      "end of Technical Volume",
+      "5 pages",
+      "does not count",
+      "Development Guide"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Commercialization",
+    "facts_required": [
+      "Volume 2",
+      "end of Technical Volume",
+      "5 pages",
+      "does not count",
+      "Development Guide"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "L009",
+    "category": "list",
+    "difficulty": "medium",
+    "question": "Which optional documents may support the Transition and Commercialization Strategy?",
+    "expected_answer": "Advocacy Letters and Letters of Intent or Commitment.",
+    "expected_facts": [
+      "Advocacy Letters",
+      "Letters of Intent/Commitment"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Commercialization",
+    "facts_required": [
+      "Advocacy Letters",
+      "Letters of Intent/Commitment"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "L010",
+    "category": "list",
+    "difficulty": "medium",
+    "question": "Who may provide Letters of Intent or Commitment?",
+    "expected_answer": "Commercial customers, DoD PM/PEOs, Defense Primes, vendors or suppliers to Defense Primes, and other suppliers involved in technology integration.",
+    "expected_facts": [
+      "Commercial customer",
+      "DoD PM/PEO",
+      "Defense Prime",
+      "vendors",
+      "suppliers"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Commercialization",
+    "facts_required": [
+      "Commercial customer",
+      "DoD PM/PEO",
+      "Defense Prime",
+      "vendors",
+      "suppliers"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L011",
+    "category": "list",
+    "difficulty": "medium",
+    "question": "Which supporting documents may be included in Volume 5?",
+    "expected_answer": "Subcontract Pricing Considerations, Data Rights Assertions, Verification of Eligibility of Small Business Joint Ventures, and Letters of Support.",
+    "expected_facts": [
+      "Subcontract Pricing Considerations",
+      "Data Rights Assertions",
+      "Joint Venture Verification",
+      "Letters of Support"
+    ],
+    "source_pages": [
+      11
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Supporting Documents",
+    "facts_required": [
+      "Subcontract Pricing Considerations",
+      "Data Rights Assertions",
+      "Joint Venture Verification",
+      "Letters of Support"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L012",
+    "category": "list",
+    "difficulty": "medium",
+    "question": "List examples of documentation that may be used to justify proposed costs.",
+    "expected_answer": "Examples include pay stubs, indirect rate agreements, consultant contracts, invoices, vendor quotes, and market research.",
+    "expected_facts": [
+      "pay stubs",
+      "indirect rate agreements",
+      "consultant contracts",
+      "invoices",
+      "quotes",
+      "market research"
+    ],
+    "source_pages": [
+      10
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Cost Volume",
+    "facts_required": [
+      "pay stubs",
+      "indirect rate agreements",
+      "consultant contracts",
+      "invoices",
+      "quotes",
+      "market research"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L013",
+    "category": "list",
+    "difficulty": "hard",
+    "question": "List every required proposal volume for a complete DARPA Phase II submission.",
+    "expected_answer": "Volume 1 Proposal Cover Sheet, Volume 2 Technical Volume, Volume 3 Cost Volume, Volume 4 Company Commercialization Report, Volume 5 Supporting Documents, Volume 6 Fraud, Waste and Abuse Training, and Volume 7 Foreign Affiliations and Relationships.",
+    "expected_facts": [
+      "Volume 1",
+      "Volume 2",
+      "Volume 3",
+      "Volume 4",
+      "Volume 5",
+      "Volume 6",
+      "Volume 7"
+    ],
+    "source_pages": [
+      5
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Proposal Submission",
+    "facts_required": [
+      "Volume 1",
+      "Volume 2",
+      "Volume 3",
+      "Volume 4",
+      "Volume 5",
+      "Volume 6",
+      "Volume 7"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L014",
+    "category": "list",
+    "difficulty": "hard",
+    "question": "List the major sections that make up the Technical Volume.",
+    "expected_answer": "The Technical Volume includes the Significance of the Problem, Technical Objectives, Statement of Work, Human and Animal Use, Related Work, Relationship with Future Research, Key Personnel, Foreign Citizens, Subcontractors, Prior Support, and the Transition and Commercialization Strategy.",
+    "expected_facts": [
+      "Significance",
+      "Technical Objectives",
+      "Statement of Work",
+      "Human/Animal Use",
+      "Related Work",
+      "Future Research",
+      "Key Personnel",
+      "Foreign Citizens",
+      "Subcontractors",
+      "Prior Support",
+      "Commercialization Strategy"
+    ],
+    "source_pages": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "expected_chunks": 3,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Technical Volume",
+    "facts_required": [
+      "Significance",
+      "Technical Objectives",
+      "Statement of Work",
+      "Human/Animal Use",
+      "Related Work",
+      "Future Research",
+      "Key Personnel",
+      "Foreign Citizens",
+      "Subcontractors",
+      "Prior Support",
+      "Commercialization Strategy"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L015",
+    "category": "list",
+    "difficulty": "hard",
+    "question": "What requirements apply when using an FFRDC or Federal Laboratory?",
+    "expected_answer": "No waiver is required, proposers must certify the facility on the Cover Sheet, the Small Business Concern remains the award recipient, and funding cannot be sent directly to the FFRDC or Federal Laboratory.",
+    "expected_facts": [
+      "no waiver",
+      "Cover Sheet",
+      "SBC",
+      "cannot receive funding directly"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Sub-contractors",
+    "facts_required": [
+      "no waiver",
+      "Cover Sheet",
+      "SBC",
+      "cannot receive funding directly"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L016",
+    "category": "list",
+    "difficulty": "hard",
+    "question": "Summarize the rules regarding substantially equivalent proposals.",
+    "expected_answer": "Submitting similar proposals is permitted, multiple awards requiring essentially equivalent effort are unlawful, and any concerns must be disclosed before award.",
+    "expected_facts": [
+      "permitted",
+      "equivalent effort unlawful",
+      "before award"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Prior Support",
+    "facts_required": [
+      "permitted",
+      "equivalent effort unlawful",
+      "before award"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L017",
+    "category": "list",
+    "difficulty": "hard",
+    "question": "What funding-related information must be included in an OT Milestone Plan?",
+    "expected_answer": "The payment schedule, funding schedule, awardee share when cost sharing is proposed, Government share when cost sharing is proposed, and due dates.",
+    "expected_facts": [
+      "payment schedule",
+      "funding schedule",
+      "awardee share",
+      "Government share",
+      "due date"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Other Transaction",
+    "facts_required": [
+      "payment schedule",
+      "funding schedule",
+      "awardee share",
+      "Government share",
+      "due date"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L018",
+    "category": "list",
+    "difficulty": "hard",
+    "question": "What restrictions apply to non-government advisors involved in proposal evaluations?",
+    "expected_answer": "They may review proposals and advise the Government, but they may not make final award decisions or compete for the topics they evaluate.",
+    "expected_facts": [
+      "non-Government",
+      "review",
+      "not rate or rank",
+      "Government Only"
+    ],
+    "source_pages": [
+      11
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Evaluation",
+    "facts_required": [
+      "non-Government",
+      "review",
+      "not rate or rank",
+      "Government Only"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L019",
+    "category": "list",
+    "difficulty": "hard",
+    "question": "What information must be disclosed regarding Organizational Conflicts of Interest?",
+    "expected_answer": "Relevant OCI facts, affected individuals or organizations, the mitigation plan, and actions taken to avoid bias or unfair competitive advantage.",
+    "expected_facts": [
+      "OCI facts",
+      "mitigation plan",
+      "bias",
+      "competitive advantage"
+    ],
+    "source_pages": [
+      12
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Organizational Conflicts of Interest",
+    "facts_required": [
+      "OCI facts",
+      "mitigation plan",
+      "bias",
+      "competitive advantage"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "L020",
+    "category": "list",
+    "difficulty": "hard",
+    "question": "Summarize the key requirements for the Cost Volume.",
+    "expected_answer": "The Cost Volume must use the DARPA Excel template, remain within the maximum funding and duration limits, provide adequate cost justification, and may include optional cost sharing that is not an evaluation factor.",
+    "expected_facts": [
+      "Excel template",
+      "$1.8 million",
+      "36 months",
+      "cost justification",
+      "cost sharing optional"
+    ],
+    "source_pages": [
+      10,
+      11
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Cost Volume",
+    "facts_required": [
+      "Excel template",
+      "$1.8 million",
+      "36 months",
+      "cost justification",
+      "cost sharing optional"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  }
+]

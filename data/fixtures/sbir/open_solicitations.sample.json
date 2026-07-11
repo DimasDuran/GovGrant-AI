@@ -1,0 +1,140 @@
+[
+  {
+    "solicitation_title": "NIH, CDC and FDA Small Business Innovation Research Grant (Parent SBIR [R43/R44] Clinical Trial Optional)",
+    "solicitation_number": "PA-25-SBIR-PARENT",
+    "program": "SBIR",
+    "phase": "BOTH",
+    "agency": "HHS",
+    "branch": "NIH",
+    "solicitation_year": "2026",
+    "release_date": "2026-05-28",
+    "open_date": "2026-08-05",
+    "close_date": "2027-04-06",
+    "application_due_date": ["2026-09-05", "2027-01-05", "2027-04-06"],
+    "solicitation_agency_url": "https://grants.nih.gov",
+    "current_status": "open",
+    "solicitation_topics": [
+      {
+        "topic_title": "NIH Parent SBIR Clinical Trial Optional",
+        "topic_number": "12563",
+        "topic_description": "Supports small businesses conducting innovative research and development that has the potential for commercialization. Clinical trial optional under parent SBIR (R43/R44). Applicants should align specific aims with NIH institute priorities and demonstrate scientific merit, innovation, and a credible commercialization path.",
+        "topic_code": "NIH-SBIR-PARENT"
+      }
+    ]
+  },
+  {
+    "solicitation_title": "Next-Gen Thermal Batteries for Missile Defense Application",
+    "solicitation_number": "DOD-SBIR-2026-MDA-TB",
+    "program": "SBIR",
+    "phase": "BOTH",
+    "agency": "DOD",
+    "branch": "MDA",
+    "solicitation_year": "2026",
+    "release_date": "2026-07-01",
+    "open_date": "2026-07-22",
+    "close_date": "2026-08-19",
+    "application_due_date": ["2026-08-19"],
+    "solicitation_agency_url": "https://www.dodsbirsttr.mil",
+    "current_status": "open",
+    "solicitation_topics": [
+      {
+        "topic_title": "Next-Gen Thermal Batteries for Missile Defense Application",
+        "topic_number": "12799",
+        "topic_description": "Current thermal battery technologies, while highly reliable for critical power applications in missile defense, present limitations that directly impact the performance and capabilities of advanced interceptor systems. Key constraints include specific energy density, activation time, and thermal management under extreme environments. The Missile Defense Agency seeks innovative next-generation thermal battery solutions with improved energy density, faster activation, and enhanced reliability for interceptor and missile defense applications.",
+        "topic_code": "MDA-TB-01"
+      }
+    ]
+  },
+  {
+    "solicitation_title": "Advanced Stand-Off Detection of Concealed Materials (ASDCM)",
+    "solicitation_number": "DOD-SBIR-2026-SOCOM-ASDCM",
+    "program": "SBIR",
+    "phase": "BOTH",
+    "agency": "DOD",
+    "branch": "SOCOM",
+    "solicitation_year": "2026",
+    "release_date": "2026-07-01",
+    "open_date": "2026-07-22",
+    "close_date": "2026-08-19",
+    "application_due_date": ["2026-08-19"],
+    "solicitation_agency_url": "https://www.dodsbirsttr.mil",
+    "current_status": "open",
+    "solicitation_topics": [
+      {
+        "topic_title": "Advanced Stand-Off Detection of Concealed Materials (ASDCM)",
+        "topic_number": "12814",
+        "topic_description": "USSOCOM seeks a field-deployable capability to enable detection, discrimination, and triangulation of dangerous or restricted materials without direct sampling, physical breach, or active signal emission. As part of this feasibility study, proposers should address stand-off ranges, false alarm rates, environmental robustness, and pathways to a man-portable or vehicle-mounted system.",
+        "topic_code": "SOCOM-ASDCM-01"
+      }
+    ]
+  },
+  {
+    "solicitation_title": "High-speed Photon-Number-Resolution Quanta Imaging Sensor Array",
+    "solicitation_number": "DOD-STTR-2026-QIS",
+    "program": "STTR",
+    "phase": "BOTH",
+    "agency": "DOD",
+    "branch": "OSD",
+    "solicitation_year": "2026",
+    "release_date": "2026-07-01",
+    "open_date": "2026-07-22",
+    "close_date": "2026-08-19",
+    "application_due_date": ["2026-08-19"],
+    "solicitation_agency_url": "https://www.dodsbirsttr.mil",
+    "current_status": "open",
+    "solicitation_topics": [
+      {
+        "topic_title": "High-speed Photon-Number-Resolution Quanta Imaging Sensor Array",
+        "topic_number": "12836",
+        "topic_description": "Single-photon counting and timing achieves light detection at the fundamental quantum limit, unlocking next generation capabilities in quantum imaging and environmental sensing. Many applications require counting/timing photons at very high rates (>GHz). This STTR topic seeks high-speed photon-number-resolving quanta imaging sensor arrays suitable for defense sensing and quantum applications.",
+        "topic_code": "OSD-QIS-01"
+      }
+    ]
+  },
+  {
+    "solicitation_title": "NIH Small Business Technology Transfer Grant (Parent STTR [R41/R42] Clinical Trial Optional)",
+    "solicitation_number": "PA-25-STTR-PARENT",
+    "program": "STTR",
+    "phase": "BOTH",
+    "agency": "HHS",
+    "branch": "NIH",
+    "solicitation_year": "2026",
+    "release_date": "2026-05-28",
+    "open_date": "2026-08-05",
+    "close_date": "2027-04-06",
+    "application_due_date": ["2026-09-05", "2027-01-05", "2027-04-06"],
+    "solicitation_agency_url": "https://grants.nih.gov",
+    "current_status": "open",
+    "solicitation_topics": [
+      {
+        "topic_title": "NIH Parent STTR Clinical Trial Optional",
+        "topic_number": "12564",
+        "topic_description": "Supports cooperative research and development between small businesses and research institutions under the STTR program (R41/R42), clinical trial optional. Proposals must include a research institution partner and address technology transfer, scientific merit, and commercialization potential.",
+        "topic_code": "NIH-STTR-PARENT"
+      }
+    ]
+  },
+  {
+    "solicitation_title": "Potential Application of Very Large Array (VLA) over Transmission Infrastructure",
+    "solicitation_number": "DOD-SBIR-2026-MDA-VLA",
+    "program": "SBIR",
+    "phase": "BOTH",
+    "agency": "DOD",
+    "branch": "MDA",
+    "solicitation_year": "2026",
+    "release_date": "2026-07-01",
+    "open_date": "2026-07-22",
+    "close_date": "2026-08-19",
+    "application_due_date": ["2026-08-19"],
+    "solicitation_agency_url": "https://www.dodsbirsttr.mil",
+    "current_status": "open",
+    "solicitation_topics": [
+      {
+        "topic_title": "Potential Application of Very Large Array (VLA) over Transmission Infrastructure",
+        "topic_number": "12802",
+        "topic_description": "The Missile Defense Agency (MDA) seeks to add multiple resilient layers to the Missile Defense System. The proposed system uses current power infrastructure to detect potential anomalies generated by unknown sources. Proposers should explore very large array sensing concepts leveraging transmission infrastructure for wide-area anomaly detection relevant to ballistic missile defense.",
+        "topic_code": "MDA-VLA-01"
+      }
+    ]
+  }
+]

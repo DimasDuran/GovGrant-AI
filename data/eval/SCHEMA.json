@@ -1,0 +1,64 @@
+{
+  "description": "Unified golden dataset for runtime RAG evaluation (post-ingest). Fact-based scoring, not full-string match.",
+  "evaluation_mode": "runtime_post_ingest",
+  "default_doc_id": "darpa-sbir-sttr-phase-II-instructions",
+  "philosophy": "Like RAGAS / NVIDIA RAG benchmarks: measure fact recall, optional coverage, and precision (no off-topic digressions). expected_answer is reference only.",
+  "cli": {
+    "regression": "python -m govgrant.rag.cli eval",
+    "golden_router": "python -m govgrant.rag.cli eval --golden",
+    "golden_agent_llm": "python -m govgrant.rag.cli eval --golden --backend agent --llm",
+    "user_multipart": "python -m govgrant.rag.cli eval --golden --backend agent --llm --id MH015",
+    "filter": "python -m govgrant.rag.cli eval --golden --category multi_hop"
+  },
+  "scoring": {
+    "facts_required": "Must appear (loose match). recall = hits/total. Pass if recall ≥ required_recall_threshold (default 0.6).",
+    "facts_optional": "Bonus facts (Development Guide, dual use, …). Never fails the case. optional_recall reported.",
+    "facts_forbidden": "Must NOT appear in the synthesized answer (precision). Skipped on raw retrieval dumps. Aliases: must_not_include.",
+    "expected_facts": "Legacy alias of facts_required (kept in sync).",
+    "source_pages": "Soft: if pages appear in evidence, at least one expected page must overlap.",
+    "should_refuse": "Synthesized answers must use not-found / insufficient language.",
+    "backends": {
+      "router": "Scores required facts on evidence pack (retrieval coverage). Forbidden not applied.",
+      "agent+llm": "Scores required/optional/forbidden on the final answer (answer quality + precision)."
+    },
+    "metrics_reported": ["avg_recall", "avg_precision", "avg_optional_recall", "pass_rate"]
+  },
+  "fields": {
+    "id": "unique case id (F###, B###, L###, C###, S###, MH###, NF###, EC###)",
+    "category": "fact|boolean|list|comparison|scenario|multi_hop|not_found|edge_*",
+    "difficulty": "easy|medium|hard|expert",
+    "question": "user question",
+    "expected_answer": "human reference only (not used for exact match)",
+    "facts_required": "core facts that must be covered (primary pass criterion)",
+    "facts_optional": "nice-to-have facts (bonus; never fails)",
+    "facts_forbidden": "off-topic / digression facts that lower precision if present in answer",
+    "expected_facts": "alias of facts_required",
+    "must_not_include": "alias of facts_forbidden",
+    "required_recall_threshold": "override default 0.6 (e.g. 0.7 for multi-hop)",
+    "source_pages": "pages that should be retrieved (1-indexed PDF pages)",
+    "expected_chunks": "approx retrieval breadth hint",
+    "doc_id": "gg_doc_id of corpus document",
+    "retrieval": "single_chunk|multi_chunk|none",
+    "section": "optional section label",
+    "expected_boolean": "optional for boolean cases",
+    "should_refuse": "true if model should abstain / say not in document",
+    "notes": "optional free text"
+  },
+  "example_multi_hop": {
+    "id": "MH015",
+    "facts_required": ["50%", "40%", "30%", "Cover Sheet", "before award", "Milestone description", "5 pages", "Volume 2", "Advocacy Letters", "Letters of Intent/Commitment"],
+    "facts_optional": ["Development Guide", "dual use", "NOT count"],
+    "facts_forbidden": ["Volume 5", "CCR", "Company Commercialization Report", "Cost Volume template"]
+  },
+  "files": [
+    "01_fact_lookup.json",
+    "02_boolean.json",
+    "03_list.json",
+    "04_comparison.json",
+    "05_scenario.json",
+    "06_multi_hop.json",
+    "07_not_found.json",
+    "08_edge_case.json"
+  ],
+  "legacy": "regression_min.json (router multi-source smoke tests)"
+}

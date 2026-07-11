@@ -1,0 +1,893 @@
+[
+  {
+    "id": "MH001",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "I'm preparing a DARPA Phase II proposal. Compare SBIR vs STTR work-share if I use a university and an FFRDC; what must I disclose if I also submit a similar proposal elsewhere; and for an OT, what must the Milestone Plan and Commercialization Strategy include, including optional letters?",
+    "expected_answer": "SBIR requires the proposer to perform at least one-half/50% of Phase II work; STTR requires at least 40% by the proposer and 30% by the RI. FFRDCs are allowed without waiver but must be certified on the Cover Sheet; other federal orgs are not permitted; funding cannot go directly to the lab/FFRDC. Similar proposals may be submitted but essentially equivalent awards are unlawful and must be disclosed before award. OT requires a Milestone Plan with description, exit criteria, due date, payment schedule, and Government data rights; Commercialization Strategy goes at the end of Volume 2, max 5 pages, not counting against the page limit; optional Advocacy Letters and Letters of Intent/Commitment do not count against page limits.",
+    "expected_facts": [
+      "50%",
+      "one-half",
+      "40%",
+      "30%",
+      "Cover Sheet",
+      "before award",
+      "Milestone description",
+      "Completion/Exit criteria",
+      "Due date",
+      "Payment",
+      "data rights",
+      "5 pages",
+      "Volume 2",
+      "Advocacy Letters",
+      "Letters of Intent/Commitment"
+    ],
+    "source_pages": [
+      8,
+      9
+    ],
+    "expected_chunks": 3,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Sub-contractors + Prior Support + Other Transaction",
+    "facts_required": [
+      "50%",
+      "one-half",
+      "40%",
+      "30%",
+      "Cover Sheet",
+      "before award",
+      "Milestone description",
+      "Completion/Exit criteria",
+      "Due date",
+      "Payment",
+      "data rights",
+      "5 pages",
+      "Volume 2",
+      "Advocacy Letters",
+      "Letters of Intent/Commitment"
+    ],
+    "facts_optional": [
+      "no waiver",
+      "cannot send",
+      "Development Guide",
+      "dual use",
+      "NOT count",
+      "other federal organizations",
+      "not permitted",
+      "proprietary data",
+      "Agreements Officer"
+    ],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template",
+      "Volume 4",
+      "Fraud, Waste"
+    ],
+    "required_recall_threshold": 0.7,
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template",
+      "Volume 4",
+      "Fraud, Waste"
+    ]
+  },
+  {
+    "id": "MH002",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "If my SBIR Phase II team includes a university and an FFRDC, what work-share minimum applies to me, what Cover Sheet action is required for the FFRDC, and can the Agency pay the FFRDC directly?",
+    "expected_answer": "The proposer must perform at least one-half of the research/analytical work. FFRDC use requires Cover Sheet certification but no waiver. The Agency cannot send SBIR/STTR funding directly to the Federal Laboratory or FFRDC; the SBC must contract with them.",
+    "expected_facts": [
+      "one-half",
+      "Cover Sheet",
+      "cannot send",
+      "FFRDC",
+      "SBC"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Sub-contractors",
+    "facts_required": [
+      "one-half",
+      "Cover Sheet",
+      "cannot send",
+      "FFRDC",
+      "SBC"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "MH003",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "For STTR Phase II, what minimum percentages apply to the proposer and the Research Institution, and are FFRDC subcontracts allowed?",
+    "expected_answer": "At least 40% by the proposer and at least 30% by the RI. FFRDC/Federal Laboratory subcontracts are allowed without a waiver if certified on the Cover Sheet.",
+    "expected_facts": [
+      "40%",
+      "30%",
+      "Research Institution",
+      "FFRDC",
+      "Cover Sheet"
+    ],
+    "source_pages": [
+      8,
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Sub-contractors",
+    "facts_required": [
+      "40%",
+      "30%",
+      "Research Institution",
+      "FFRDC",
+      "Cover Sheet"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "MH004",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Can I submit essentially the same proposal to two agencies, and separately, what five fields must each OT milestone include?",
+    "expected_answer": "Submitting essentially equivalent proposals is permissible, but awards requiring essentially equivalent effort are unlawful and any question must be disclosed before award. Each OT milestone must include description, completion/exit criteria, due date, payment/funding schedule, and Government data rights for each data deliverable.",
+    "expected_facts": [
+      "permissible",
+      "unlawful",
+      "before award",
+      "Milestone description",
+      "Completion/Exit criteria",
+      "Due date",
+      "Payment",
+      "data rights"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Prior Support + Other Transaction",
+    "facts_required": [
+      "permissible",
+      "unlawful",
+      "before award",
+      "Milestone description",
+      "Completion/Exit criteria",
+      "Due date",
+      "Payment",
+      "data rights"
+    ],
+    "facts_optional": [
+      "essentially equivalent"
+    ],
+    "facts_forbidden": [
+      "Volume 5",
+      "CCR",
+      "TCSP"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "CCR",
+      "TCSP"
+    ]
+  },
+  {
+    "id": "MH005",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "For an OT Phase II proposal, where does the Transition and Commercialization Strategy go, what is its page limit, and which optional letters may support it?",
+    "expected_answer": "It must be included at the end of the Technical Volume (Volume 2), must not exceed 5 pages, and does not count against the proposal page limit. Optional Advocacy Letters and Letters of Intent/Commitment may support transition/commercialization claims and also do not count against page limits.",
+    "expected_facts": [
+      "Volume 2",
+      "Technical Volume",
+      "5 pages",
+      "NOT count",
+      "Advocacy Letters",
+      "Letters of Intent/Commitment"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Other Transaction + Commercialization",
+    "facts_required": [
+      "Volume 2",
+      "Technical Volume",
+      "5 pages",
+      "NOT count",
+      "Advocacy Letters",
+      "Letters of Intent/Commitment"
+    ],
+    "facts_optional": [
+      "Development Guide",
+      "dual use"
+    ],
+    "facts_forbidden": [
+      "Volume 5",
+      "CCR",
+      "Cost Volume",
+      "1,800,000"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "CCR",
+      "Cost Volume",
+      "1,800,000"
+    ]
+  },
+  {
+    "id": "MH006",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Distinguish the proposal Transition and Commercialization Strategy requirements from optional supporting letters, including page-count treatment.",
+    "expected_answer": "The Strategy is required at the end of Volume 2, max 5 pages, and does not count against the Technical Volume page limit. Advocacy Letters and Letters of Intent/Commitment are optional, do not count against page limits, and should only substantiate commercialization claims.",
+    "expected_facts": [
+      "5 pages",
+      "Volume 2",
+      "optional",
+      "Advocacy Letters",
+      "Letters of Intent"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Commercialization",
+    "facts_required": [
+      "5 pages",
+      "Volume 2",
+      "optional",
+      "Advocacy Letters",
+      "Letters of Intent"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "MH007",
+    "category": "multi_hop",
+    "difficulty": "expert",
+    "question": "An STTR proposer using an FFRDC also wants an OT. What STTR work-share rules apply and what mandatory OT planning document is required?",
+    "expected_answer": "STTR requires at least 40% work by the proposer and 30% by the RI; FFRDC use needs Cover Sheet certification. An OT requires a detailed Milestone Plan.",
+    "expected_facts": [
+      "40%",
+      "30%",
+      "Cover Sheet",
+      "Milestone Plan",
+      "OT"
+    ],
+    "source_pages": [
+      8,
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Sub-contractors + Other Transaction",
+    "facts_required": [
+      "40%",
+      "30%",
+      "Cover Sheet",
+      "Milestone Plan",
+      "OT"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "MH008",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "What is the Technical Volume page limit, and does the Transition and Commercialization Strategy count against that limit?",
+    "expected_answer": "The Technical Volume has a defined page limit (commonly 20 pages in the instructions). The Transition and Commercialization Strategy should not exceed 5 pages and will NOT count against the proposal page limit.",
+    "expected_facts": [
+      "Technical Volume",
+      "5 pages",
+      "NOT count"
+    ],
+    "source_pages": [
+      6,
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Technical Volume + Commercialization",
+    "facts_required": [
+      "Technical Volume",
+      "5 pages",
+      "NOT count"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "MH009",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "If I plan both an FFRDC subcontract under SBIR and simultaneous similar proposals to another agency, what certification and disclosure rules apply?",
+    "expected_answer": "FFRDC use must be certified on the Cover Sheet (no waiver). Similar/identical proposals may be submitted, but essentially equivalent effort awards are unlawful and any question must be disclosed before award.",
+    "expected_facts": [
+      "Cover Sheet",
+      "before award",
+      "essentially equivalent",
+      "FFRDC"
+    ],
+    "source_pages": [
+      8,
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Prior Support + Sub-contractors",
+    "facts_required": [
+      "Cover Sheet",
+      "before award",
+      "essentially equivalent",
+      "FFRDC"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "MH010",
+    "category": "multi_hop",
+    "difficulty": "expert",
+    "question": "List the five required OT milestone fields and state whether proprietary data should appear in the OT package.",
+    "expected_answer": "Required fields: milestone description; completion/exit criteria; due date; payment/funding schedule; Government data rights for each data deliverable. Proprietary data should not be included.",
+    "expected_facts": [
+      "Milestone description",
+      "Completion/Exit criteria",
+      "Due date",
+      "Payment",
+      "data rights",
+      "proprietary data"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Other Transaction",
+    "facts_required": [
+      "Milestone description",
+      "Completion/Exit criteria",
+      "Due date",
+      "Payment",
+      "data rights",
+      "proprietary data"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "MH011",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Who may provide Letters of Intent/Commitment, and how do they differ from Advocacy Letters?",
+    "expected_answer": "Letters of Intent/Commitment show relationships/support from commercial customers, DoW PM/PEO, defense primes, or relevant vendors. Advocacy Letters provide end-user/customer interest feedback on capability gaps. Both are optional and should only substantiate commercialization claims.",
+    "expected_facts": [
+      "Letters of Intent/Commitment",
+      "Advocacy Letters",
+      "Commercial customer",
+      "DoW PM/PEO",
+      "optional"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Commercialization",
+    "facts_required": [
+      "Letters of Intent/Commitment",
+      "Advocacy Letters",
+      "Commercial customer",
+      "DoW PM/PEO",
+      "optional"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "MH012",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Under SBIR, may I subcontract to an FFRDC, and who must be the award recipient of program funding?",
+    "expected_answer": "Yes, FFRDC subcontracts are allowed without a waiver if certified on the Cover Sheet. The award and funding must go to the Small Business Concern (SBC); the Agency cannot fund the lab/FFRDC directly.",
+    "expected_facts": [
+      "FFRDC",
+      "Cover Sheet",
+      "Small Business Concern",
+      "cannot send"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Sub-contractors",
+    "facts_required": [
+      "FFRDC",
+      "Cover Sheet",
+      "Small Business Concern",
+      "cannot send"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "MH013",
+    "category": "multi_hop",
+    "difficulty": "expert",
+    "question": "A company wants OT, uses optional Advocacy Letters, and also has a pending similar proposal at another agency. What mandatory OT content is required and what disclosure rule applies to the similar proposal?",
+    "expected_answer": "Mandatory OT content includes the Milestone Plan (with the five fields) and the Transition/Commercialization Strategy in Volume 2 (≤5 pages, not counting toward page limit). Advocacy Letters are optional. The similar proposal situation requires disclosure before award if there is any question of essentially equivalent effort.",
+    "expected_facts": [
+      "Milestone Plan",
+      "Volume 2",
+      "5 pages",
+      "Advocacy Letters",
+      "before award"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 3,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Cross-section compliance",
+    "facts_required": [
+      "Milestone Plan",
+      "Volume 2",
+      "5 pages",
+      "Advocacy Letters",
+      "before award"
+    ],
+    "facts_optional": [
+      "optional",
+      "Letters of Intent",
+      "NOT count"
+    ],
+    "facts_forbidden": [
+      "Volume 5",
+      "CCR",
+      "1,800,000"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "CCR",
+      "1,800,000"
+    ]
+  },
+  {
+    "id": "MH014",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Is the Transition and Commercialization Support Program (TCSP) the same requirement as including a Transition and Commercialization Strategy in Volume 2?",
+    "expected_answer": "No. TCSP is an agency support program for Phase II awardees. The Transition and Commercialization Strategy is a proposal document that must be included at the end of Volume 2, max 5 pages, and does not count against the proposal page limit.",
+    "expected_facts": [
+      "TCSP",
+      "Volume 2",
+      "5 pages",
+      "NOT count"
+    ],
+    "source_pages": [
+      5,
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "TCSP vs proposal strategy",
+    "notes": "Regression for semantic near-miss TCSP vs Volume-2 strategy.",
+    "facts_required": [
+      "TCSP",
+      "Volume 2",
+      "5 pages",
+      "NOT count"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "MH015",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Estoy preparando una propuesta DARPA Fase II y quiero asegurarme de cumplir con todos los requisitos. Si mi proyecto incluye una universidad, un FFRDC y otros subcontratistas, ¿qué restricciones debo considerar según sea SBIR o STTR? Además, si también estoy presentando una propuesta muy similar a otra agencia federal, ¿qué debo revelar y en qué momento? Por último, si decido solicitar un Other Transaction (OT), ¿qué elementos obligatorios debe contener el plan de hitos, cómo debe presentarse la estrategia de transición y comercialización y qué documentación opcional podría fortalecer esa estrategia?",
+    "expected_answer": "SBIR: al menos 50%/one-half por el proposer; STTR: 40% proposer y 30% RI; FFRDC sin waiver con certificación en Cover Sheet; fondos no directos al lab. Propuestas similares: permisible enviarlas, ilegal aceptar effort equivalente, divulgar before award. OT: Milestone Plan con description, exit criteria, due date, payment, data rights; Strategy al final de Volume 2, máx 5 páginas sin contar al límite; opcionales Advocacy Letters y Letters of Intent/Commitment.",
+    "expected_facts": [
+      "50%",
+      "40%",
+      "30%",
+      "Cover Sheet",
+      "before award",
+      "Milestone description",
+      "5 pages",
+      "Volume 2",
+      "Advocacy Letters",
+      "Letters of Intent/Commitment"
+    ],
+    "source_pages": [
+      8,
+      9
+    ],
+    "expected_chunks": 3,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Spanish multi-part",
+    "notes": "Canonical Spanish multi-part UI question. Grade facts_required/optional/forbidden; do not require exact prose match. Penalize Volume 5/CCR digressions via facts_forbidden.",
+    "facts_required": [
+      "50%",
+      "40%",
+      "30%",
+      "Cover Sheet",
+      "before award",
+      "Milestone description",
+      "5 pages",
+      "Volume 2",
+      "Advocacy Letters",
+      "Letters of Intent/Commitment"
+    ],
+    "facts_optional": [
+      "one-half",
+      "Completion/Exit criteria",
+      "Due date",
+      "Payment",
+      "data rights",
+      "NOT count",
+      "no waiver",
+      "Development Guide"
+    ],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template",
+      "Volume 4"
+    ],
+    "required_recall_threshold": 0.7,
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template",
+      "Volume 4"
+    ]
+  },
+  {
+    "id": "MH016",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "question": "Where can proposers find the SBIR OT for Prototypes agreement template, and what is the minimum relationship of payable milestones to program goals?",
+    "expected_answer": "The template is available on the DARPA small-business OT overview site. Payable milestones should relate directly to accomplishment of programmatic and/or technical goals defined in the BAA and/or the proposal.",
+    "expected_facts": [
+      "OT",
+      "milestones",
+      "programmatic",
+      "technical goals"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Other Transaction",
+    "facts_required": [
+      "OT",
+      "milestones",
+      "programmatic",
+      "technical goals"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "MH017",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Is cost sharing mandatory, and are Advocacy Letters mandatory for the commercialization strategy?",
+    "expected_answer": "Cost sharing is not required and is not an evaluation factor. Advocacy Letters and Letters of Intent/Commitment are optional and should only substantiate commercialization claims.",
+    "expected_facts": [
+      "cost sharing",
+      "not required",
+      "optional",
+      "Advocacy Letters"
+    ],
+    "source_pages": [
+      9,
+      11
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Cost + Commercialization",
+    "facts_required": [
+      "cost sharing",
+      "not required",
+      "optional",
+      "Advocacy Letters"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR"
+    ]
+  },
+  {
+    "id": "MH018",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Are classified proposals accepted, and are subcontracts with other federal organizations permitted?",
+    "expected_answer": "Classified proposals are not accepted. Subcontracts with other federal organizations are not permitted.",
+    "expected_facts": [
+      "classified proposals",
+      "not accepted",
+      "other federal organizations",
+      "not permitted"
+    ],
+    "source_pages": [
+      8,
+      11
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Submission + Sub-contractors",
+    "facts_required": [
+      "classified proposals",
+      "not accepted",
+      "other federal organizations",
+      "not permitted"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "MH019",
+    "category": "multi_hop",
+    "difficulty": "expert",
+    "question": "Build a checklist for an OT Phase II package covering Milestone Plan fields, Commercialization Strategy placement/limits, and optional supporting letters.",
+    "expected_answer": "Checklist: (1) Milestone Plan with description, exit criteria, due date, payment schedule, Government data rights; (2) Transition and Commercialization Strategy at end of Volume 2, ≤5 pages, not counting against page limit; (3) optional Advocacy Letters and Letters of Intent/Commitment that do not count against page limits and only substantiate claims.",
+    "expected_facts": [
+      "Milestone description",
+      "Completion/Exit criteria",
+      "Due date",
+      "Payment",
+      "data rights",
+      "Volume 2",
+      "5 pages",
+      "Advocacy Letters",
+      "Letters of Intent/Commitment"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Full OT package",
+    "facts_required": [
+      "Milestone description",
+      "Completion/Exit criteria",
+      "Due date",
+      "Payment",
+      "data rights",
+      "Volume 2",
+      "5 pages",
+      "Advocacy Letters",
+      "Letters of Intent/Commitment"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "MH020",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "A company proposes SBIR Phase II with 30% in-house work and 70% to a university plus FFRDC support. Is this compliant, and what FFRDC paperwork is required if they restructure to be compliant?",
+    "expected_answer": "Not compliant under SBIR because the proposer must perform at least one-half/50% of the work. If restructured to be compliant and FFRDC is used, certify FFRDC use on the Cover Sheet (no waiver); funding still cannot go directly from the Agency to the FFRDC.",
+    "expected_facts": [
+      "SBIR",
+      "50%",
+      "one-half",
+      "not compliant",
+      "Cover Sheet",
+      "cannot send"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 2,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "multi_chunk",
+    "section": "Work-share compliance scenario",
+    "facts_required": [
+      "SBIR",
+      "50%",
+      "one-half",
+      "not compliant",
+      "Cover Sheet",
+      "cannot send"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  }
+]

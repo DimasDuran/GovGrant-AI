@@ -1,0 +1,58 @@
+[
+  {
+    "id": "doc-foreign-ownership",
+    "query": "What foreign ownership disclosures are required for SBIR applicants?",
+    "intent": "doc_qa",
+    "expect_any_keywords": ["foreign", "disclosure", "ownership", "country of concern"],
+    "expect_doc_id_contains": "SBA"
+  },
+  {
+    "id": "doc-sf424-research-strategy",
+    "query": "Research Strategy page limits SF-424",
+    "intent": "doc_qa",
+    "expect_any_keywords": ["research strategy", "page limit", "specific aims"],
+    "expect_doc_id_contains": "SF424"
+  },
+  {
+    "id": "table-indirect-cost",
+    "query": "indirect cost table budget",
+    "intent": "table",
+    "expect_any_keywords": ["indirect", "cost"],
+    "expect_modality": "table"
+  },
+  {
+    "id": "sbir-thermal-batteries",
+    "query": "open topics thermal batteries missile defense",
+    "intent": "topic_search",
+    "expect_any_keywords": ["thermal", "battery", "12799", "missile"],
+    "expect_topic_id": "12799"
+  },
+  {
+    "id": "sbir-exact-topic-id",
+    "query": "topic 12836 quantum imaging photon",
+    "intent": "topic_search",
+    "expect_any_keywords": ["12836", "photon", "quanta"],
+    "expect_topic_id": "12836"
+  },
+  {
+    "id": "figure-page1",
+    "query": "embedded image figure on page 1",
+    "intent": "figure",
+    "expect_any_keywords": ["figure", "image", "page=1", "page 1"],
+    "expect_modality": "figure"
+  },
+  {
+    "id": "cross-mda-thermal",
+    "query": "Does my proposal align with open MDA thermal battery topics?",
+    "intent": "cross_check",
+    "expect_any_keywords": ["12799", "thermal", "topic"],
+    "expect_sources": ["user_docs", "sbir_topics"]
+  },
+  {
+    "id": "darpa-cost-volume",
+    "query": "DARPA Phase II cost volume maximum amount",
+    "intent": "doc_qa",
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "expect_any_keywords": ["1800000", "1,800,000", "cost volume", "36 months"]
+  }
+]

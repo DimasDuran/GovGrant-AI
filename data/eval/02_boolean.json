@@ -1,0 +1,556 @@
+[
+  {
+    "id": "B001",
+    "category": "boolean",
+    "difficulty": "easy",
+    "question": "Are subcontracts with other federal organizations permitted under the DARPA Phase II SBIR program?",
+    "expected_answer": "No. Subcontracts with other federal organizations are not permitted.",
+    "expected_facts": [
+      "subcontracts",
+      "other federal organizations",
+      "not permitted"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Sub-contractors",
+    "expected_boolean": false,
+    "facts_required": [
+      "subcontracts",
+      "other federal organizations",
+      "not permitted"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "B002",
+    "category": "boolean",
+    "difficulty": "easy",
+    "question": "Is a waiver required before using a Federal Laboratory or an FFRDC in an SBIR or STTR proposal?",
+    "expected_answer": "No. A waiver is not required, but proposers must certify the use of the facility on the Cover Sheet.",
+    "expected_facts": [
+      "no waiver",
+      "Cover Sheet"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Sub-contractors",
+    "expected_boolean": false,
+    "facts_required": [
+      "no waiver",
+      "Cover Sheet"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "B003",
+    "category": "boolean",
+    "difficulty": "easy",
+    "question": "Is it permissible to submit substantially equivalent proposals to multiple federal agencies?",
+    "expected_answer": "Yes. It is permissible to submit substantially equivalent proposals, provided any concerns about essentially equivalent effort are disclosed before award.",
+    "expected_facts": [
+      "permissible",
+      "before award"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Prior Support",
+    "expected_boolean": true,
+    "facts_required": [
+      "permissible",
+      "before award"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "B004",
+    "category": "boolean",
+    "difficulty": "easy",
+    "question": "Is it lawful to receive multiple awards that require essentially equivalent effort?",
+    "expected_answer": "No. Entering into contracts or grants requiring essentially equivalent effort is unlawful.",
+    "expected_facts": [
+      "unlawful",
+      "essentially equivalent effort"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Prior Support",
+    "expected_boolean": false,
+    "facts_required": [
+      "unlawful",
+      "essentially equivalent effort"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "B005",
+    "category": "boolean",
+    "difficulty": "easy",
+    "question": "Must every Other Transaction proposal include a Milestone Plan?",
+    "expected_answer": "Yes. Every proposer requesting an Other Transaction must include a detailed Milestone Plan.",
+    "expected_facts": [
+      "Milestone Plan"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Other Transaction",
+    "expected_boolean": true,
+    "facts_required": [
+      "Milestone Plan"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "B006",
+    "category": "boolean",
+    "difficulty": "easy",
+    "question": "Should proprietary data be included in an OT proposal?",
+    "expected_answer": "No. Proprietary data should not be included.",
+    "expected_facts": [
+      "Do not include proprietary data"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Other Transaction",
+    "expected_boolean": false,
+    "facts_required": [
+      "Do not include proprietary data"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "B007",
+    "category": "boolean",
+    "difficulty": "easy",
+    "question": "Does the Transition and Commercialization Strategy count toward the proposal page limit?",
+    "expected_answer": "No. It does not count toward the proposal page limit.",
+    "expected_facts": [
+      "does not count"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Commercialization",
+    "expected_boolean": false,
+    "facts_required": [
+      "does not count"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "B008",
+    "category": "boolean",
+    "difficulty": "easy",
+    "question": "Must the Transition and Commercialization Strategy be included in Volume 2?",
+    "expected_answer": "Yes. It must be included at the end of the Technical Volume (Volume 2).",
+    "expected_facts": [
+      "Volume 2"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Commercialization",
+    "expected_boolean": true,
+    "facts_required": [
+      "Volume 2"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "B009",
+    "category": "boolean",
+    "difficulty": "medium",
+    "question": "Are Advocacy Letters mandatory for a DARPA Phase II proposal?",
+    "expected_answer": "No. Advocacy Letters are optional.",
+    "expected_facts": [
+      "optional",
+      "Advocacy Letters"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Commercialization",
+    "expected_boolean": false,
+    "facts_required": [
+      "optional",
+      "Advocacy Letters"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "B010",
+    "category": "boolean",
+    "difficulty": "medium",
+    "question": "Can optional commercialization letters be submitted without affecting the proposal page limit?",
+    "expected_answer": "Yes. Advocacy Letters and Letters of Intent/Commitment do not count toward any page limit.",
+    "expected_facts": [
+      "no page limit"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Commercialization",
+    "expected_boolean": true,
+    "facts_required": [
+      "no page limit"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "B011",
+    "category": "boolean",
+    "difficulty": "medium",
+    "question": "Can SBIR/STTR program funding be awarded directly to an FFRDC?",
+    "expected_answer": "No. The award must be made to the Small Business Concern.",
+    "expected_facts": [
+      "SBC",
+      "cannot fund FFRDC directly"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Sub-contractors",
+    "expected_boolean": false,
+    "facts_required": [
+      "SBC",
+      "cannot fund FFRDC directly"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "B012",
+    "category": "boolean",
+    "difficulty": "medium",
+    "question": "Must the Small Business Concern remain the official award recipient even when using an FFRDC?",
+    "expected_answer": "Yes. The award and funding must be made to the qualifying Small Business Concern.",
+    "expected_facts": [
+      "SBC",
+      "award recipient"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Sub-contractors",
+    "expected_boolean": true,
+    "facts_required": [
+      "SBC",
+      "award recipient"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "B013",
+    "category": "boolean",
+    "difficulty": "medium",
+    "question": "Must university participation be identified in the cost proposal?",
+    "expected_answer": "Yes. University involvement should be described in detail and identified in the cost proposal.",
+    "expected_facts": [
+      "cost proposal"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Sub-contractors",
+    "expected_boolean": true,
+    "facts_required": [
+      "cost proposal"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "B014",
+    "category": "boolean",
+    "difficulty": "medium",
+    "question": "Does STTR require a Research Institution to perform part of the Phase II work?",
+    "expected_answer": "Yes. At least 30% of the work must be performed by the Research Institution.",
+    "expected_facts": [
+      "30%",
+      "Research Institution"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Sub-contractors",
+    "expected_boolean": true,
+    "facts_required": [
+      "30%",
+      "Research Institution"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "B015",
+    "category": "boolean",
+    "difficulty": "medium",
+    "question": "Does SBIR require a Research Institution to perform at least 30% of the work?",
+    "expected_answer": "No. That requirement applies to STTR, not SBIR.",
+    "expected_facts": [
+      "SBIR",
+      "one-half"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Sub-contractors",
+    "expected_boolean": false,
+    "facts_required": [
+      "SBIR",
+      "one-half"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "B016",
+    "category": "boolean",
+    "difficulty": "hard",
+    "question": "Must potential issues involving essentially equivalent work be disclosed after award?",
+    "expected_answer": "No. They must be disclosed before award.",
+    "expected_facts": [
+      "before award"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Prior Support",
+    "expected_boolean": false,
+    "facts_required": [
+      "before award"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "B017",
+    "category": "boolean",
+    "difficulty": "hard",
+    "question": "Is the maximum length of the Transition and Commercialization Strategy five pages?",
+    "expected_answer": "Yes. The strategy must not exceed five pages.",
+    "expected_facts": [
+      "5 pages"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Commercialization",
+    "expected_boolean": true,
+    "facts_required": [
+      "5 pages"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "B018",
+    "category": "boolean",
+    "difficulty": "hard",
+    "question": "Must Government data rights be identified for every data deliverable in an OT Milestone Plan?",
+    "expected_answer": "Yes. Proposed Government data rights must be identified for every data deliverable.",
+    "expected_facts": [
+      "Government data rights"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Other Transaction",
+    "expected_boolean": true,
+    "facts_required": [
+      "Government data rights"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  },
+  {
+    "id": "B019",
+    "category": "boolean",
+    "difficulty": "hard",
+    "question": "Does DARPA state that the Transition and Commercialization Strategy should be placed before the Technical Volume?",
+    "expected_answer": "No. It must be included at the end of the Technical Volume.",
+    "expected_facts": [
+      "end of Technical Volume"
+    ],
+    "source_pages": [
+      9
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Commercialization",
+    "expected_boolean": false,
+    "facts_required": [
+      "end of Technical Volume"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ],
+    "must_not_include": [
+      "Volume 5",
+      "Company Commercialization Report",
+      "CCR",
+      "Cost Volume template"
+    ]
+  },
+  {
+    "id": "B020",
+    "category": "boolean",
+    "difficulty": "hard",
+    "question": "Can an SBIR Phase II proposer perform less than 50% of the research work without written approval from the Contracting Officer?",
+    "expected_answer": "No. The proposer must perform at least 50% of the work unless otherwise approved in writing by the Contracting Officer.",
+    "expected_facts": [
+      "50%",
+      "written approval",
+      "Contracting Officer"
+    ],
+    "source_pages": [
+      8
+    ],
+    "expected_chunks": 1,
+    "doc_id": "darpa-sbir-sttr-phase-II-instructions",
+    "retrieval": "single_chunk",
+    "section": "Sub-contractors",
+    "expected_boolean": false,
+    "facts_required": [
+      "50%",
+      "written approval",
+      "Contracting Officer"
+    ],
+    "facts_optional": [],
+    "facts_forbidden": [],
+    "must_not_include": []
+  }
+]
