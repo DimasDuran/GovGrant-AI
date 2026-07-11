@@ -18,6 +18,7 @@ import gradio as gr
 from govgrant.agent.graph import run_agent
 from govgrant.agent.llm import ChatLLM
 from govgrant.compliance.checklist import run_checklist
+from govgrant.compliance.proposal import extract_proposal_text, proposal_doc_id
 from govgrant.rag.config import get_settings
 from govgrant.rag.index.hybrid import HybridRAGService
 from govgrant.rag.router.query_router import QueryRouter, RouteIntent
@@ -226,6 +227,8 @@ def run_compliance_checklist(
     pkg_sba: bool,
     pkg_sf424: bool,
     draft_text: str,
+    draft_pdf,  # gradio File path or None
+    index_proposal: bool,
 ) -> tuple[str, str]:
     """Return (markdown report, json summary)."""
     docs, _, _ = _services()
@@ -238,22 +241,58 @@ def run_compliance_checklist(
         packages.append("sf424")
     if not packages:
         packages = ["darpa", "sba", "sf424"]
+
+    draft = (draft_text or "").strip() or None
+    extract_note = ""
+    proposal_id = None
     t0 = time.time()
+
+    pdf_path = None
+    if draft_pdf is not None:
+        # Gradio may pass str path or tempfile object
+        pdf_path = getattr(draft_pdf, "name", None) or draft_pdf
+        if pdf_path:
+            try:
+                extracted = extract_proposal_text(pdf_path)
+                draft = extracted.text
+                extract_note = extracted.summary_markdown()
+                proposal_id = proposal_doc_id(extracted.file_name)
+                if index_proposal:
+                    info = docs.ingest_pdf(
+                        pdf_path,
+                        doc_id=proposal_id,
+                        use_llamaparse=False,
+                        extract_tables=True,
+                        extract_figures=False,
+                        use_vision=False,
+                    )
+                    extract_note += (
+                        f"\n\n**Indexed for chat:** `doc_id={proposal_id}` · "
+                        f"leaves={info.get('leaf_nodes', '?')} — "
+                        f"select this doc_id in Chat options to ask about your proposal."
+                    )
+            except Exception as exc:  # noqa: BLE001
+                extract_note = f"**PDF extract error:** `{type(exc).__name__}: {exc}`"
+
     run = run_checklist(
         program=(program or "SBIR").lower(),
         use_ot=bool(use_ot),
         packages=packages,
-        draft_text=(draft_text or "").strip() or None,
+        draft_text=draft,
         docs=docs,
     )
     dt = time.time() - t0
-    md = run.to_markdown()
+    md = ""
+    if extract_note:
+        md += extract_note + "\n\n"
+    md += run.to_markdown()
     md += f"\n\n---\n*checklist finished in {dt:.1f}s*"
     payload = {
         "corpus": run.summary,
         "draft": run.draft_summary,
         "packages": run.packages,
         "items": len(run.items),
+        "proposal_doc_id": proposal_id,
     }
     summary = json.dumps(payload, indent=2)
     return md, summary
@@ -400,9 +439,18 @@ Draft scoring is keyword/signal based — **not** a legal determination.
                     c_darpa = gr.Checkbox(value=True, label="DARPA Phase II")
                     c_sba = gr.Checkbox(value=True, label="SBA Policy Directive")
                     c_sf424 = gr.Checkbox(value=True, label="SF424 Application Guide")
+                c_pdf = gr.File(
+                    label="Optional: upload proposal PDF",
+                    file_types=[".pdf"],
+                    type="filepath",
+                )
+                c_index = gr.Checkbox(
+                    value=False,
+                    label="Also index PDF into hybrid RAG (chat with your proposal)",
+                )
                 c_draft = gr.Textbox(
-                    label="Optional: paste proposal draft (work plan / SOW / strategy)",
-                    lines=8,
+                    label="Optional: paste proposal draft (used if no PDF)",
+                    lines=6,
                     placeholder=(
                         "Paste excerpt of your proposal to check draft signals "
                         "(work-share %, FFRDC, commercialization, Specific Aims…)"
@@ -413,7 +461,16 @@ Draft scoring is keyword/signal based — **not** a legal determination.
                 c_out = gr.Markdown(label="Report")
                 c_btn.click(
                     run_compliance_checklist,
-                    inputs=[c_prog, c_ot, c_darpa, c_sba, c_sf424, c_draft],
+                    inputs=[
+                        c_prog,
+                        c_ot,
+                        c_darpa,
+                        c_sba,
+                        c_sf424,
+                        c_draft,
+                        c_pdf,
+                        c_index,
+                    ],
                     outputs=[c_out, c_sum],
                 )
 

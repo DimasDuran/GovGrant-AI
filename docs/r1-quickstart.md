@@ -220,12 +220,15 @@ python -m govgrant.rag.cli checklist --package darpa --ot
 python -m govgrant.rag.cli checklist --package sba
 python -m govgrant.rag.cli checklist --package sf424
 
-# Draft scoring
+# Draft scoring (text or PDF)
 python -m govgrant.rag.cli checklist --package darpa --ot --draft-file ./my_sow.md
+python -m govgrant.rag.cli checklist --package darpa --ot --draft-pdf ./my_proposal.pdf
+# Extract + index proposal for chat Q&A
+python -m govgrant.rag.cli checklist --draft-pdf ./my_proposal.pdf --index-proposal --package darpa --ot
 python -m govgrant.rag.cli checklist --program sttr --ot --json
 ```
 
-Also available in the Gradio UI tab **Compliance checklist** (checkboxes per package + draft box).
+Also available in the Gradio UI tab **Compliance checklist** (packages + PDF upload + optional index).
 
 Golden extras: `data/eval/09_sba_policy.json`, `data/eval/10_sf424_guide.json` (included in `--golden`).
 

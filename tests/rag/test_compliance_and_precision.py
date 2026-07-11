@@ -90,3 +90,18 @@ def test_draft_gap_when_empty():
     item = next(i for i in sba_items() if i.id == "SBA-FOREIGN")
     status, hits = _score_draft(item, "We propose a novel sensor architecture.")
     assert status == "draft_gap"
+
+
+def test_extract_proposal_text_from_fixture_pdf():
+    from pathlib import Path
+
+    from govgrant.compliance.proposal import extract_proposal_text, proposal_doc_id
+
+    pdf = Path("data/fixtures/pdfs/darpa-sbir-sttr-phase-II-instructions.pdf")
+    if not pdf.exists():
+        return  # fixtures may be gitignored locally
+    ex = extract_proposal_text(pdf, max_chars=50_000)
+    assert ex.pages >= 1
+    assert ex.chars > 100
+    assert "SBIR" in ex.text or "Phase II" in ex.text
+    assert proposal_doc_id(pdf.name).startswith("user-proposal-")

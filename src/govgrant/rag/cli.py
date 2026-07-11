@@ -470,11 +470,52 @@ def checklist_main(argv: list[str] | None = None) -> None:
         default=None,
         help="Path to proposal draft text/markdown to score against controls",
     )
+    parser.add_argument(
+        "--draft-pdf",
+        default=None,
+        help="Path to proposal PDF (extracted locally for draft scoring)",
+    )
+    parser.add_argument(
+        "--index-proposal",
+        action="store_true",
+        help="Also ingest the proposal PDF into hybrid RAG for chat Q&A",
+    )
     parser.add_argument("--json", action="store_true", help="Full JSON report")
     args = parser.parse_args(argv)
 
     draft_text = None
-    if args.draft_file:
+    extract_meta = None
+    if args.draft_pdf:
+        from govgrant.compliance.proposal import (
+            extract_proposal_text,
+            proposal_doc_id,
+        )
+
+        extract_meta = extract_proposal_text(args.draft_pdf)
+        draft_text = extract_meta.text
+        if args.index_proposal:
+            settings = get_settings()
+            rag = HybridRAGService(settings)
+            pid = proposal_doc_id(Path(args.draft_pdf).name)
+            info = rag.ingest_pdf(
+                Path(args.draft_pdf),
+                tenant_id=settings.default_tenant_id,
+                doc_id=pid,
+                use_llamaparse=False,
+                extract_tables=True,
+                extract_figures=False,
+                use_vision=False,
+            )
+            print(
+                f"# indexed proposal doc_id={info.get('doc_id') or pid} "
+                f"leaves={info.get('leaf_nodes')}",
+                file=sys.stderr,
+            )
+            print(
+                f"# chat filter: --doc-id {pid}",
+                file=sys.stderr,
+            )
+    elif args.draft_file:
         draft_text = Path(args.draft_file).read_text(encoding="utf-8")
 
     run = run_checklist(
@@ -484,8 +525,19 @@ def checklist_main(argv: list[str] | None = None) -> None:
         draft_text=draft_text,
     )
     if args.json:
-        print(json.dumps(run.to_dict(), indent=2, ensure_ascii=False))
+        payload = run.to_dict()
+        if extract_meta is not None:
+            payload["proposal_extract"] = {
+                "file_name": extract_meta.file_name,
+                "pages": extract_meta.pages,
+                "chars": extract_meta.chars,
+                "parser": extract_meta.parser,
+            }
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
     else:
+        if extract_meta is not None:
+            print(extract_meta.summary_markdown())
+            print()
         print(run.to_markdown())
     critical_fail = any(
         i.status == "fail" and i.severity == "critical" for i in run.items
