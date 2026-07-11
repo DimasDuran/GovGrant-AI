@@ -3,7 +3,14 @@
 from __future__ import annotations
 
 from govgrant.agent.llm import strip_unsolicited_digressions
-from govgrant.compliance.checklist import darpa_phase2_items, _score_item
+from govgrant.compliance.checklist import (
+    _score_corpus,
+    _score_draft,
+    all_items,
+    darpa_items,
+    sba_items,
+    sf424_items,
+)
 
 
 def test_strip_volume5_when_not_asked():
@@ -39,27 +46,47 @@ Include subcontract pricing and data rights assertions.
     assert "subcontract" in out.lower()
 
 
-def test_checklist_items_cover_core_controls():
-    ids = {i.id for i in darpa_phase2_items()}
+def test_checklist_items_cover_multi_agency():
+    ids = {i.id for i in all_items()}
     for need in (
-        "WS-SBIR",
-        "WS-STTR",
-        "FFRDC",
-        "SIMILAR",
-        "OT-MILESTONES",
-        "COMM-STRAT",
-        "COST-MAX",
+        "DARPA-WS-SBIR",
+        "DARPA-OT",
+        "SBA-WS-SBIR-II",
+        "SBA-FOREIGN",
+        "SF424-RS-REQUIRED",
+        "SF424-UEI",
     ):
         assert need in ids
+    assert len(darpa_items()) >= 8
+    assert len(sba_items()) >= 5
+    assert len(sf424_items()) >= 5
 
 
-def test_score_item_pass_on_evidence():
-    item = next(i for i in darpa_phase2_items() if i.id == "WS-SBIR")
+def test_score_corpus_pass_on_evidence():
+    item = next(i for i in darpa_items() if i.id == "DARPA-WS-SBIR")
     evidence = (
         "[1] score=0.9 | page=8\n"
         "THE FOLLOWING PERTAINS TO SBIR ONLY: A minimum of one-half of the "
         "research work in Phase II must be carried out by the proposer."
     )
-    r = _score_item(item, evidence, program="sbir")
-    assert r.status == "pass"
-    assert "one-half" in r.facts_found
+    status, found, missing, _ = _score_corpus(item, evidence)
+    assert status == "pass"
+    assert "one-half" in found
+    assert not missing or "SBIR" in found or "SBIR" in missing
+
+
+def test_draft_signals_detect_workshare():
+    item = next(i for i in darpa_items() if i.id == "DARPA-WS-SBIR")
+    draft = (
+        "Our SBIR Phase II team will perform at least 50% of the research "
+        "in-house. University subcontractors will perform the remainder."
+    )
+    status, hits = _score_draft(item, draft)
+    assert status == "draft_ok"
+    assert hits
+
+
+def test_draft_gap_when_empty():
+    item = next(i for i in sba_items() if i.id == "SBA-FOREIGN")
+    status, hits = _score_draft(item, "We propose a novel sensor architecture.")
+    assert status == "draft_gap"

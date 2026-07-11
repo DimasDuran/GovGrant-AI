@@ -58,7 +58,13 @@
     "05_scenario.json",
     "06_multi_hop.json",
     "07_not_found.json",
-    "08_edge_case.json"
+    "08_edge_case.json",
+    "09_sba_policy.json",
+    "10_sf424_guide.json"
   ],
+  "extra_corpora": {
+    "09_sba_policy.json": "SBA SBIR_STTR_POLICY_DIRECTIVE_May2023",
+    "10_sf424_guide.json": "SF424 SBIR_STTR Application Guide"
+  },
   "legacy": "regression_min.json (router multi-source smoke tests)"
 }

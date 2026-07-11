@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from govgrant.rag.config import get_settings
 from govgrant.rag.index.hybrid import HybridRAGService
@@ -439,10 +440,12 @@ def sbir_main(argv: list[str] | None = None) -> None:
 
 
 def checklist_main(argv: list[str] | None = None) -> None:
-    """DARPA Phase II compliance checklist against indexed instructions."""
-    from govgrant.compliance.checklist import run_darpa_phase2_checklist
+    """Multi-agency compliance checklist (+ optional draft scoring)."""
+    from govgrant.compliance.checklist import run_checklist
 
-    parser = argparse.ArgumentParser(description="DARPA Phase II compliance checklist")
+    parser = argparse.ArgumentParser(
+        description="Compliance checklist (DARPA / SBA / SF424) + optional draft"
+    )
     parser.add_argument(
         "--program",
         choices=["sbir", "sttr"],
@@ -452,26 +455,38 @@ def checklist_main(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--ot",
         action="store_true",
-        help="Include Other Transaction milestone controls",
+        help="Include Other Transaction milestone controls (DARPA)",
     )
     parser.add_argument(
-        "--doc-id",
-        default="darpa-sbir-sttr-phase-II-instructions",
-        help="Instruction document id",
+        "--package",
+        action="append",
+        dest="packages",
+        choices=["darpa", "sba", "sf424"],
+        default=None,
+        help="Agency package (repeatable). Default: all three.",
+    )
+    parser.add_argument(
+        "--draft-file",
+        default=None,
+        help="Path to proposal draft text/markdown to score against controls",
     )
     parser.add_argument("--json", action="store_true", help="Full JSON report")
     args = parser.parse_args(argv)
 
-    run = run_darpa_phase2_checklist(
+    draft_text = None
+    if args.draft_file:
+        draft_text = Path(args.draft_file).read_text(encoding="utf-8")
+
+    run = run_checklist(
         program=args.program,
         use_ot=args.ot,
-        doc_id=args.doc_id,
+        packages=args.packages,
+        draft_text=draft_text,
     )
     if args.json:
         print(json.dumps(run.to_dict(), indent=2, ensure_ascii=False))
     else:
         print(run.to_markdown())
-    # Non-zero if any critical control failed retrieve coverage
     critical_fail = any(
         i.status == "fail" and i.severity == "critical" for i in run.items
     )

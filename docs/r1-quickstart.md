@@ -206,17 +206,28 @@ python -m govgrant.rag.cli eval --golden --backend agent --llm \
 
 Haiku answers are scoped for **precision** (no unsolicited Volume 5/CCR digressions).
 
-### Compliance checklist (DARPA Phase II)
+### Compliance checklist (DARPA · SBA · SF424 + draft)
 
-Maps control points (work-share, FFRDC, similar proposals, OT milestones, commercialization,
-cost caps, …) to retrieved instruction facts — same fact model as the golden set.
+Maps control points to retrieved instruction facts (corpus mode) and optionally scores a
+**pasted proposal draft** for keyword signals (draft mode).
 
 ```bash
+# All packages
 python -m govgrant.rag.cli checklist --program sbir --ot
+
+# One agency
+python -m govgrant.rag.cli checklist --package darpa --ot
+python -m govgrant.rag.cli checklist --package sba
+python -m govgrant.rag.cli checklist --package sf424
+
+# Draft scoring
+python -m govgrant.rag.cli checklist --package darpa --ot --draft-file ./my_sow.md
 python -m govgrant.rag.cli checklist --program sttr --ot --json
 ```
 
-Also available in the Gradio UI tab **Compliance checklist**.
+Also available in the Gradio UI tab **Compliance checklist** (checkboxes per package + draft box).
+
+Golden extras: `data/eval/09_sba_policy.json`, `data/eval/10_sf424_guide.json` (included in `--golden`).
 
 Re-rank: lexical overlap boost on hybrid hits (no external re-ranker API required).
 

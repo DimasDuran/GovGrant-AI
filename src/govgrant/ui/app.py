@@ -17,7 +17,7 @@ import gradio as gr
 
 from govgrant.agent.graph import run_agent
 from govgrant.agent.llm import ChatLLM
-from govgrant.compliance.checklist import run_darpa_phase2_checklist
+from govgrant.compliance.checklist import run_checklist
 from govgrant.rag.config import get_settings
 from govgrant.rag.index.hybrid import HybridRAGService
 from govgrant.rag.router.query_router import QueryRouter, RouteIntent
@@ -222,22 +222,40 @@ def sbir_search(query: str, agency: str, top_k: float | int) -> str:
 def run_compliance_checklist(
     program: str,
     use_ot: bool,
-    doc_id: str,
+    pkg_darpa: bool,
+    pkg_sba: bool,
+    pkg_sf424: bool,
+    draft_text: str,
 ) -> tuple[str, str]:
     """Return (markdown report, json summary)."""
     docs, _, _ = _services()
+    packages = []
+    if pkg_darpa:
+        packages.append("darpa")
+    if pkg_sba:
+        packages.append("sba")
+    if pkg_sf424:
+        packages.append("sf424")
+    if not packages:
+        packages = ["darpa", "sba", "sf424"]
     t0 = time.time()
-    run = run_darpa_phase2_checklist(
+    run = run_checklist(
         program=(program or "SBIR").lower(),
         use_ot=bool(use_ot),
-        doc_id=_norm_choice(doc_id, {"(auto)"})
-        or "darpa-sbir-sttr-phase-II-instructions",
+        packages=packages,
+        draft_text=(draft_text or "").strip() or None,
         docs=docs,
     )
     dt = time.time() - t0
     md = run.to_markdown()
     md += f"\n\n---\n*checklist finished in {dt:.1f}s*"
-    summary = json.dumps(run.to_dict()["summary"], indent=2)
+    payload = {
+        "corpus": run.summary,
+        "draft": run.draft_summary,
+        "packages": run.packages,
+        "items": len(run.items),
+    }
+    summary = json.dumps(payload, indent=2)
     return md, summary
 
 
@@ -363,13 +381,12 @@ Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
             with gr.Tab("Compliance checklist"):
                 gr.Markdown(
                     """
-### DARPA Phase II control points
-Retrieves instruction corpus for each control (work-share, FFRDC, similar proposals,
-OT milestones, commercialization, cost caps, etc.) and marks whether the **rule is
-grounded in the indexed document**.
+### Multi-agency control points (DARPA · SBA · SF424)
+1. **Corpus mode** — retrieves each rule from indexed instructions (is the rule grounded?).
+2. **Draft mode** — optional: paste proposal text; we flag controls your draft appears
+   to address (`draft_ok`) vs missing signals (`draft_gap`).
 
-This does **not** auto-grade your draft proposal PDF — use Chat to ask about your
-specific team structure. Use this tab as a pre-flight map of what you must satisfy.
+Draft scoring is keyword/signal based — **not** a legal determination.
                     """
                 )
                 with gr.Row():
@@ -379,20 +396,24 @@ specific team structure. Use this tab as a pre-flight map of what you must satis
                     c_ot = gr.Checkbox(
                         value=True, label="Include Other Transaction (OT) items"
                     )
-                    c_doc = gr.Dropdown(
-                        [
-                            "darpa-sbir-sttr-phase-II-instructions",
-                            "(auto)",
-                        ],
-                        value="darpa-sbir-sttr-phase-II-instructions",
-                        label="Document",
-                    )
+                with gr.Row():
+                    c_darpa = gr.Checkbox(value=True, label="DARPA Phase II")
+                    c_sba = gr.Checkbox(value=True, label="SBA Policy Directive")
+                    c_sf424 = gr.Checkbox(value=True, label="SF424 Application Guide")
+                c_draft = gr.Textbox(
+                    label="Optional: paste proposal draft (work plan / SOW / strategy)",
+                    lines=8,
+                    placeholder=(
+                        "Paste excerpt of your proposal to check draft signals "
+                        "(work-share %, FFRDC, commercialization, Specific Aims…)"
+                    ),
+                )
                 c_btn = gr.Button("Run checklist", variant="primary")
-                c_sum = gr.Code(label="Summary counts", language="json", lines=6)
+                c_sum = gr.Code(label="Summary counts", language="json", lines=8)
                 c_out = gr.Markdown(label="Report")
                 c_btn.click(
                     run_compliance_checklist,
-                    inputs=[c_prog, c_ot, c_doc],
+                    inputs=[c_prog, c_ot, c_darpa, c_sba, c_sf424, c_draft],
                     outputs=[c_out, c_sum],
                 )
 
