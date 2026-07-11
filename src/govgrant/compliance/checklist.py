@@ -65,6 +65,8 @@ class ChecklistResult:
     source_pages: list[int] = field(default_factory=list)
     draft_status: str | None = None
     draft_signals_found: list[str] = field(default_factory=list)
+    draft_rationale: str | None = None
+    draft_method: str | None = None  # keyword | llm
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -146,7 +148,10 @@ class ChecklistRun:
             )
             lines.append(f"- **Corpus status:** {it.status}")
             if it.draft_status:
-                lines.append(f"- **Draft status:** {it.draft_status}")
+                method = f" · {it.draft_method}" if it.draft_method else ""
+                lines.append(f"- **Draft status:** {it.draft_status}{method}")
+                if it.draft_rationale:
+                    lines.append(f"- **Draft note:** {it.draft_rationale}")
                 if it.draft_signals_found:
                     lines.append(
                         f"- **Draft signals:** {', '.join(it.draft_signals_found)}"
@@ -559,12 +564,15 @@ def run_checklist(
     docs: HybridRAGService | None = None,
     settings: Settings | None = None,
     top_k: int = 6,
+    use_llm_draft: bool = False,
 ) -> ChecklistRun:
     """
     Run multi-package compliance checklist.
 
     packages: subset of darpa|sba|sf424 (default all three)
     draft_text: optional proposal draft for draft_ok / draft_gap scoring
+    use_llm_draft: if True and ChatLLM is available, batch-judge draft with Haiku
+                   (falls back to keyword signals per control)
     """
     program = (program or "sbir").strip().lower()
     if program not in {"sbir", "sttr"}:
@@ -579,7 +587,7 @@ def run_checklist(
     draft = draft_text or ""
     draft_provided = bool(draft.strip())
 
-    results: list[ChecklistResult] = []
+    selected: list[ChecklistItem] = []
     for item in all_items():
         if item.package not in packages:
             continue
@@ -587,7 +595,29 @@ def run_checklist(
             continue
         if item.needs_ot and not use_ot:
             continue
+        selected.append(item)
 
+    # Optional batched LLM draft judgments (one call)
+    llm_map: dict[str, Any] = {}
+    if draft_provided and use_llm_draft:
+        try:
+            from govgrant.agent.llm import ChatLLM
+            from govgrant.compliance.draft_llm import (
+                merge_draft_scores,
+                score_drafts_with_llm,
+            )
+
+            llm = ChatLLM(settings)
+            keyword_scores = {
+                it.id: _score_draft(it, draft) for it in selected
+            }
+            llm_raw = score_drafts_with_llm(selected, draft, llm)
+            llm_map = merge_draft_scores(selected, keyword_scores, llm_raw)
+        except Exception:  # noqa: BLE001
+            llm_map = {}
+
+    results: list[ChecklistResult] = []
+    for item in selected:
         hits = docs.retrieve(
             item.question,
             tenant_id=tenant_id,
@@ -599,12 +629,33 @@ def run_checklist(
 
         draft_status = None
         draft_signals_found: list[str] = []
+        draft_rationale = None
+        draft_method = None
         if draft_provided:
-            draft_status, draft_signals_found = _score_draft(item, draft)
+            if item.id in llm_map:
+                judgment = llm_map[item.id]
+                draft_status = judgment.status
+                draft_rationale = judgment.rationale
+                draft_method = judgment.method
+                draft_signals_found = (
+                    [s for s in (item.draft_signals or []) if _fact_present(draft, s)]
+                    if judgment.method == "keyword"
+                    else []
+                )
+            else:
+                draft_status, draft_signals_found = _score_draft(item, draft)
+                draft_method = "keyword"
+                draft_rationale = (
+                    f"Keyword signals: {', '.join(draft_signals_found[:6])}"
+                    if draft_signals_found
+                    else "No clear keyword signals in draft."
+                )
             if draft_status == "draft_gap":
                 detail += " Draft does not clearly address this control."
             elif draft_status == "draft_ok":
-                detail += " Draft appears to address this control (signal match)."
+                detail += " Draft appears to address this control."
+            if draft_rationale:
+                detail += f" ({draft_method}: {draft_rationale})"
 
         results.append(
             ChecklistResult(
@@ -623,6 +674,8 @@ def run_checklist(
                 source_pages=list(item.source_pages),
                 draft_status=draft_status,
                 draft_signals_found=draft_signals_found,
+                draft_rationale=draft_rationale,
+                draft_method=draft_method,
             )
         )
 

@@ -480,6 +480,11 @@ def checklist_main(argv: list[str] | None = None) -> None:
         action="store_true",
         help="Also ingest the proposal PDF into hybrid RAG for chat Q&A",
     )
+    parser.add_argument(
+        "--llm-draft",
+        action="store_true",
+        help="Use Haiku to judge draft vs controls (falls back to keywords)",
+    )
     parser.add_argument("--json", action="store_true", help="Full JSON report")
     args = parser.parse_args(argv)
 
@@ -523,6 +528,7 @@ def checklist_main(argv: list[str] | None = None) -> None:
         use_ot=args.ot,
         packages=args.packages,
         draft_text=draft_text,
+        use_llm_draft=bool(args.llm_draft),
     )
     if args.json:
         payload = run.to_dict()

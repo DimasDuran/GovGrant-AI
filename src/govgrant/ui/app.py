@@ -229,6 +229,7 @@ def run_compliance_checklist(
     draft_text: str,
     draft_pdf,  # gradio File path or None
     index_proposal: bool,
+    use_llm_draft: bool,
 ) -> tuple[str, str]:
     """Return (markdown report, json summary)."""
     docs, _, _ = _services()
@@ -247,7 +248,6 @@ def run_compliance_checklist(
     proposal_id = None
     t0 = time.time()
 
-    pdf_path = None
     if draft_pdf is not None:
         # Gradio may pass str path or tempfile object
         pdf_path = getattr(draft_pdf, "name", None) or draft_pdf
@@ -280,6 +280,7 @@ def run_compliance_checklist(
         packages=packages,
         draft_text=draft,
         docs=docs,
+        use_llm_draft=bool(use_llm_draft),
     )
     dt = time.time() - t0
     md = ""
@@ -448,6 +449,10 @@ Draft scoring is keyword/signal based — **not** a legal determination.
                     value=False,
                     label="Also index PDF into hybrid RAG (chat with your proposal)",
                 )
+                c_llm = gr.Checkbox(
+                    value=False,
+                    label="LLM draft judge (Haiku; falls back to keywords)",
+                )
                 c_draft = gr.Textbox(
                     label="Optional: paste proposal draft (used if no PDF)",
                     lines=6,
@@ -470,6 +475,7 @@ Draft scoring is keyword/signal based — **not** a legal determination.
                         c_draft,
                         c_pdf,
                         c_index,
+                        c_llm,
                     ],
                     outputs=[c_out, c_sum],
                 )

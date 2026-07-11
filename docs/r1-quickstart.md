@@ -220,15 +220,20 @@ python -m govgrant.rag.cli checklist --package darpa --ot
 python -m govgrant.rag.cli checklist --package sba
 python -m govgrant.rag.cli checklist --package sf424
 
-# Draft scoring (text or PDF)
+# Draft scoring (text or PDF) — keyword signals by default
 python -m govgrant.rag.cli checklist --package darpa --ot --draft-file ./my_sow.md
 python -m govgrant.rag.cli checklist --package darpa --ot --draft-pdf ./my_proposal.pdf
+
+# Optional: Haiku judges draft vs each control (1 batched call; keyword fallback)
+python -m govgrant.rag.cli checklist --package darpa --ot \
+  --draft-pdf ./my_proposal.pdf --llm-draft
+
 # Extract + index proposal for chat Q&A
 python -m govgrant.rag.cli checklist --draft-pdf ./my_proposal.pdf --index-proposal --package darpa --ot
 python -m govgrant.rag.cli checklist --program sttr --ot --json
 ```
 
-Also available in the Gradio UI tab **Compliance checklist** (packages + PDF upload + optional index).
+Also available in the Gradio UI tab **Compliance checklist** (packages + PDF upload + optional index + LLM draft judge).
 
 Golden extras: `data/eval/09_sba_policy.json`, `data/eval/10_sf424_guide.json` (included in `--golden`).
 
