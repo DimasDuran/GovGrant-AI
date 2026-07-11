@@ -216,3 +216,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+.Infra.md
+
+# Local RAG runtime
+data/indexes/
+data/fixtures/pdfs/*.pdf
+.venv/
+
+# golden eval run artifacts
+data/eval/reports/
+
+.DS_Store
+**/.DS_Store

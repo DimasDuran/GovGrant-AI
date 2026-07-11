@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "govgrant-ai"
+version = "0.1.0"
+description = "GovGrant AI — multimodal hybrid RAG for federal grant compliance (SBIR/STTR)"
+readme = "About.md"
+requires-python = ">=3.11"
+dependencies = [
+  "llama-index-core>=0.12.0",
+  "llama-index-embeddings-ollama>=0.5.0",
+  "llama-index-vector-stores-qdrant>=0.4.0",
+  "llama-index-retrievers-bm25>=0.5.0",
+  "llama-parse>=0.5.0",
+  "qdrant-client>=1.12.0",
+  "python-dotenv>=1.0.0",
+  "pydantic>=2.0",
+  "pypdf>=5.0",
+  "httpx>=0.27.0",
+  "pymupdf>=1.24.0",
+  "Pillow>=10.0.0",
+  "langgraph>=0.2.0",
+  "langchain-core>=0.3.0",
+  "anthropic>=0.40.0",
+  "gradio>=4.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+govgrant-ingest = "govgrant.rag.cli:ingest_main"
+govgrant-query = "govgrant.rag.cli:query_main"
+govgrant-ui = "govgrant.ui.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
