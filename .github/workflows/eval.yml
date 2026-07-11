@@ -1,0 +1,30 @@
+name: golden-eval
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package (test extras if present)
+        run: |
+          python -m pip install -U pip
+          pip install -e ".[dev]" 2>/dev/null || pip install -e .
+          pip install pytest
+      - name: Unit tests (no Qdrant required)
+        run: pytest -q tests/rag -k "not integration" --tb=short
+        env:
+          CHAT_ENABLED: "false"
+
+  # Full golden eval needs Qdrant + Ollama + ingested corpus.
+  # Run locally / on a self-hosted runner with the stack up:
+  #   python -m govgrant.rag.cli eval --golden
+  #   python -m govgrant.rag.cli checklist --program sbir --ot
