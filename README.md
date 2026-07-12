@@ -102,7 +102,11 @@ python -m govgrant.rag.cli proposals list
 python -m govgrant.rag.cli proposals upload ./proposal.pdf
 python -m govgrant.rag.cli proposals get user-proposal-my-file
 python -m govgrant.rag.cli proposals delete user-proposal-my-file
+python -m govgrant.rag.cli proposals audit --limit 20
 ```
+
+- **Capabilities** (session banner / `whoami`): `upload_proposals`, `delete_proposals` (admin when `AUTH_ENABLED`), `run_checklist`.
+- **Audit log**: upload / delete / delete_denied events per tenant (`proposals audit`).
 
 Deleting a proposal removes registry + file **and** index vectors (Qdrant filter on `tenant_id`+`gg_doc_id`, BM25 leaves, tabular rows).
 

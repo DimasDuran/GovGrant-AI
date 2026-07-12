@@ -729,6 +729,14 @@ def proposals_main(argv: list[str] | None = None) -> None:
 
     sub.add_parser("whoami", parents=[common], help="Show resolved auth context")
 
+    p_audit = sub.add_parser(
+        "audit",
+        parents=[common],
+        help="List recent proposal audit events for this tenant",
+    )
+    p_audit.add_argument("--limit", type=int, default=20, help="Max events (default 20)")
+    p_audit.add_argument("--doc-id", default=None, help="Filter by doc_id")
+
     args = parser.parse_args(argv)
     auth = _resolve_cli_auth(args)
     svc = ProposalService()
@@ -738,10 +746,31 @@ def proposals_main(argv: list[str] | None = None) -> None:
         if args.json:
             print(json.dumps(payload, indent=2, ensure_ascii=False))
         else:
+            caps = auth.capabilities()
+            cap_s = ",".join(k for k, v in caps.items() if v)
             print(
                 f"tenant={auth.tenant_id} roles={list(auth.roles)} "
-                f"auth_enabled={auth.auth_enabled} source={auth.source}"
+                f"auth_enabled={auth.auth_enabled} source={auth.source} "
+                f"capabilities=[{cap_s}]"
             )
+        return
+
+    if args.action == "audit":
+        events = svc.list_events(
+            auth, limit=max(1, int(args.limit)), doc_id=args.doc_id or None
+        )
+        rows = [e.to_dict() for e in events]
+        if args.json:
+            print(json.dumps(rows, indent=2, ensure_ascii=False))
+        else:
+            if not rows:
+                print(f"(no audit events for tenant {auth.tenant_id})")
+                return
+            for e in rows:
+                print(
+                    f"{e['created_at']}\t{e['action']}\t{e['doc_id']}\t"
+                    f"roles={e['actor_roles']}"
+                )
         return
 
     if args.action == "list":

@@ -81,6 +81,61 @@ def test_has_role_helpers():
         ctx.require_role("superadmin")
 
 
+def test_capabilities_admin_vs_user():
+    from govgrant.auth.context import AuthContext
+
+    admin = AuthContext(
+        tenant_id="t",
+        roles=("admin",),
+        api_key_present=True,
+        auth_enabled=True,
+        allowed_doc_ids=None,
+        public_doc_ids=frozenset(),
+        source="api_key",
+    )
+    user = AuthContext(
+        tenant_id="t",
+        roles=("user",),
+        api_key_present=True,
+        auth_enabled=True,
+        allowed_doc_ids=None,
+        public_doc_ids=frozenset(),
+        source="api_key",
+    )
+    open_local = AuthContext(
+        tenant_id="local-dev",
+        roles=("user",),
+        api_key_present=False,
+        auth_enabled=False,
+        allowed_doc_ids=None,
+        public_doc_ids=frozenset(),
+        source="env_default",
+    )
+    restricted = AuthContext(
+        tenant_id="beta",
+        roles=("user",),
+        api_key_present=True,
+        auth_enabled=True,
+        allowed_doc_ids=frozenset(),  # public only
+        public_doc_ids=frozenset({"darpa-x"}),
+        source="api_key",
+    )
+
+    assert admin.can_delete_proposals() is True
+    assert admin.can_upload_proposals() is True
+    assert admin.capabilities()["admin"] is True
+
+    assert user.can_delete_proposals() is False
+    assert user.can_upload_proposals() is True
+    assert user.capabilities()["delete_proposals"] is False
+
+    # Open local mode: delete allowed even without admin role
+    assert open_local.can_delete_proposals() is True
+
+    assert restricted.can_upload_proposals() is False
+    assert "capabilities" in admin.to_dict()
+
+
 def test_doc_allow_list():
     reg = AuthRegistry(
         tenants={

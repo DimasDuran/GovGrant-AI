@@ -38,8 +38,44 @@ def test_upload_list_delete(svc: ProposalService, tmp_path: Path):
     text = svc.read_draft_text(auth, result.record.doc_id)
     assert len(text) > 100
 
+    events = svc.list_events(auth)
+    assert any(e.action == "upload" and e.doc_id == result.record.doc_id for e in events)
+
     assert svc.delete(auth, result.record.doc_id)
     assert svc.get(auth, result.record.doc_id) is None
+
+    events2 = svc.list_events(auth)
+    assert any(e.action == "delete" and e.doc_id == result.record.doc_id for e in events2)
+
+
+def test_delete_denied_logs_event(svc: ProposalService, tmp_path: Path):
+    """When AUTH_ENABLED and non-admin, delete raises and is audited."""
+    from govgrant.auth.context import AuthContext, AuthError
+
+    pdf = Path("data/fixtures/pdfs/darpa-sbir-sttr-phase-II-instructions.pdf")
+    if not pdf.exists():
+        pytest.skip("fixture PDF missing")
+
+    open_auth = resolve_request_auth(require_auth=False)
+    result = svc.upload(open_auth, pdf, index=False)
+    doc_id = result.record.doc_id
+
+    user = AuthContext(
+        tenant_id=open_auth.tenant_id,
+        roles=("user",),
+        api_key_present=True,
+        auth_enabled=True,
+        allowed_doc_ids=None,
+        public_doc_ids=frozenset(),
+        source="api_key",
+    )
+    with pytest.raises(AuthError, match="Requires role"):
+        svc.delete(user, doc_id)
+
+    events = svc.list_events(user, doc_id=doc_id)
+    assert any(e.action == "delete_denied" for e in events)
+    # proposal still present
+    assert svc.get(open_auth, doc_id) is not None
 
 
 def test_delete_document_purges_bm25(tmp_path: Path):

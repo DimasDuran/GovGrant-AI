@@ -9,9 +9,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from govgrant.auth.context import AuthContext
+from govgrant.auth.context import AuthContext, AuthError
 from govgrant.compliance.proposal import extract_proposal_text, proposal_doc_id
-from govgrant.proposals.store import ProposalRecord, ProposalStore
+from govgrant.proposals.store import ProposalEvent, ProposalRecord, ProposalStore
 from govgrant.rag.config import REPO_ROOT, Settings, get_settings
 from govgrant.rag.index.hybrid import HybridRAGService
 
@@ -87,17 +87,15 @@ class ProposalService:
         doc_id = proposal_doc_id(source.name)
         # Allow-list: only unrestricted tenants (allowed_doc_ids is None) may add
         # private proposal docs. Explicit lists are public-only or fixed IDs.
-        if auth.allowed_doc_ids is not None:
-            if (
-                doc_id not in auth.allowed_doc_ids
-                and doc_id not in auth.public_doc_ids
-            ):
-                from govgrant.auth import AuthError
-
-                raise AuthError(
-                    f"Tenant {auth.tenant_id!r} cannot register private proposal "
-                    f"{doc_id!r} (not in allowed_doc_ids)"
-                )
+        if not auth.can_upload_proposals() or (
+            auth.allowed_doc_ids is not None
+            and doc_id not in auth.allowed_doc_ids
+            and doc_id not in auth.public_doc_ids
+        ):
+            raise AuthError(
+                f"Tenant {auth.tenant_id!r} cannot register private proposal "
+                f"{doc_id!r} (not in allowed_doc_ids)"
+            )
 
         tenant_dir = self.proposals_dir / auth.tenant_id
         tenant_dir.mkdir(parents=True, exist_ok=True)
@@ -132,6 +130,19 @@ class ProposalService:
             notes=notes,
         )
         self.store.upsert(rec)
+        self.store.log_event(
+            tenant_id=auth.tenant_id,
+            doc_id=doc_id,
+            action="upload",
+            actor_roles=auth.roles,
+            detail={
+                "file_name": source.name,
+                "pages": extracted.pages,
+                "chars": extracted.chars,
+                "indexed": indexed,
+                "parser": extracted.parser,
+            },
+        )
         return ProposalUploadResult(
             record=rec,
             extract_parser=extracted.parser,
@@ -156,7 +167,17 @@ class ProposalService:
             return False
 
         # AUTH on → only admin may delete (users can still upload/list)
-        auth.require_admin_for_destructive()
+        try:
+            auth.require_admin_for_destructive()
+        except AuthError as exc:
+            self.store.log_event(
+                tenant_id=auth.tenant_id,
+                doc_id=doc_id,
+                action="delete_denied",
+                actor_roles=auth.roles,
+                detail={"reason": str(exc)},
+            )
+            raise
 
         index_info: dict[str, Any] | None = None
         if purge_index:
@@ -177,9 +198,34 @@ class ProposalService:
                     path.unlink()
             except OSError:
                 pass
+        if ok:
+            self.store.log_event(
+                tenant_id=auth.tenant_id,
+                doc_id=doc_id,
+                action="delete",
+                actor_roles=auth.roles,
+                detail={
+                    "file_name": rec.file_name,
+                    "remove_file": remove_file,
+                    "purge_index": purge_index,
+                    "index_purge": index_info or {},
+                },
+            )
         # stash last purge stats for callers/UI (non-persistent)
         self._last_delete_index = index_info  # type: ignore[attr-defined]
         return ok
+
+    def list_events(
+        self,
+        auth: AuthContext,
+        *,
+        limit: int = 50,
+        doc_id: str | None = None,
+    ) -> list[ProposalEvent]:
+        """Tenant-scoped audit events (newest first)."""
+        return self.store.list_events(
+            auth.tenant_id, limit=limit, doc_id=doc_id
+        )
 
     def read_draft_text(self, auth: AuthContext, doc_id: str) -> str:
         rec = self.get(auth, doc_id)

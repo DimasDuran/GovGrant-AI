@@ -127,13 +127,19 @@ def _proposals_table_md(api_key: str) -> str:
     except AuthError as exc:
         return f"**Auth error:** {exc}"
     rows = _proposal_service().list_proposals(auth)
+    caps = auth.capabilities()
+    cap_bits = ", ".join(k for k, v in caps.items() if v) or "(none)"
+    header = (
+        f"**Tenant:** `{auth.tenant_id}` · **roles:** `{', '.join(auth.roles)}` · "
+        f"**capabilities:** {cap_bits}"
+    )
     if not rows:
         return (
-            f"_No proposals for tenant `{auth.tenant_id}` yet. "
+            f"{header}\n\n_No proposals for tenant `{auth.tenant_id}` yet. "
             "Upload a PDF below._"
         )
     lines = [
-        f"**Tenant:** `{auth.tenant_id}` · **count:** {len(rows)}",
+        f"{header} · **count:** {len(rows)}",
         "",
         "| doc_id | file | pages | indexed | created |",
         "|--------|------|------:|:-------:|---------|",
@@ -146,14 +152,55 @@ def _proposals_table_md(api_key: str) -> str:
     return "\n".join(lines)
 
 
+def _audit_table_md(api_key: str, *, limit: int = 15) -> str:
+    try:
+        auth = resolve_request_auth(api_key=(api_key or "").strip() or None)
+    except AuthError as exc:
+        return f"**Auth error:** {exc}"
+    events = _proposal_service().list_events(auth, limit=limit)
+    if not events:
+        return f"_No audit events for tenant `{auth.tenant_id}` yet._"
+    lines = [
+        f"**Recent activity** (tenant `{auth.tenant_id}`)",
+        "",
+        "| when | action | doc_id | roles |",
+        "|------|--------|--------|-------|",
+    ]
+    for e in events:
+        lines.append(
+            f"| {e.created_at} | `{e.action}` | `{e.doc_id}` | {e.actor_roles or '—'} |"
+        )
+    return "\n".join(lines)
+
+
+def _delete_btn_update(api_key: str) -> gr.Button:
+    """Enable delete only when session may delete proposals."""
+    try:
+        auth = resolve_request_auth(api_key=(api_key or "").strip() or None)
+        can = auth.can_delete_proposals()
+        label = (
+            "Delete proposal"
+            if can
+            else "Delete (admin required when AUTH_ENABLED)"
+        )
+        return gr.update(interactive=can, value=label)
+    except AuthError:
+        return gr.update(interactive=False, value="Delete (auth error)")
+
+
 def upload_proposal_ui(
     pdf_file,
     index: bool,
     api_key: str,
-) -> tuple[str, str, gr.Dropdown]:
-    """Upload → registry (+ optional index). Returns status, table md, refreshed doc dropdown."""
+) -> tuple[str, str, str, gr.Dropdown]:
+    """Upload → registry (+ optional index). Returns status, table, audit, doc dropdown."""
     if pdf_file is None:
-        return "Upload a PDF first.", _proposals_table_md(api_key), gr.update()
+        return (
+            "Upload a PDF first.",
+            _proposals_table_md(api_key),
+            _audit_table_md(api_key),
+            gr.update(),
+        )
     path = getattr(pdf_file, "name", None) or pdf_file
     try:
         auth = resolve_request_auth(api_key=(api_key or "").strip() or None)
@@ -165,26 +212,48 @@ def upload_proposal_ui(
             f"indexed={'yes' if rec.indexed else 'no'} · parser=`{result.extract_parser}`"
         )
         choices = _doc_choices_for_key(api_key)
-        return msg, _proposals_table_md(api_key), gr.update(choices=choices)
+        return (
+            msg,
+            _proposals_table_md(api_key),
+            _audit_table_md(api_key),
+            gr.update(choices=choices),
+        )
     except AuthError as exc:
-        return f"**Auth error:** {exc}", _proposals_table_md(api_key), gr.update()
+        return (
+            f"**Auth error:** {exc}",
+            _proposals_table_md(api_key),
+            _audit_table_md(api_key),
+            gr.update(),
+        )
     except Exception as exc:  # noqa: BLE001
         return (
             f"**Error:** `{type(exc).__name__}: {exc}`",
             _proposals_table_md(api_key),
+            _audit_table_md(api_key),
             gr.update(),
         )
 
 
-def refresh_proposals_ui(api_key: str) -> tuple[str, gr.Dropdown]:
+def refresh_proposals_ui(api_key: str) -> tuple[str, str, gr.Dropdown]:
     choices = _doc_choices_for_key(api_key)
-    return _proposals_table_md(api_key), gr.update(choices=choices)
+    return (
+        _proposals_table_md(api_key),
+        _audit_table_md(api_key),
+        gr.update(choices=choices),
+    )
 
 
-def delete_proposal_ui(doc_id: str, api_key: str) -> tuple[str, str, gr.Dropdown]:
+def delete_proposal_ui(
+    doc_id: str, api_key: str
+) -> tuple[str, str, str, gr.Dropdown]:
     doc_id = (doc_id or "").strip()
     if not doc_id or doc_id in DOC_CHOICES:
-        return "Select a user-proposal doc_id to delete.", _proposals_table_md(api_key), gr.update()
+        return (
+            "Select a user-proposal doc_id to delete.",
+            _proposals_table_md(api_key),
+            _audit_table_md(api_key),
+            gr.update(),
+        )
     try:
         auth = resolve_request_auth(api_key=(api_key or "").strip() or None)
         svc = _proposal_service()
@@ -200,9 +269,19 @@ def delete_proposal_ui(doc_id: str, api_key: str) -> tuple[str, str, gr.Dropdown
         else:
             msg = f"Not found: `{doc_id}`."
         choices = _doc_choices_for_key(api_key)
-        return msg, _proposals_table_md(api_key), gr.update(choices=choices)
+        return (
+            msg,
+            _proposals_table_md(api_key),
+            _audit_table_md(api_key),
+            gr.update(choices=choices),
+        )
     except AuthError as exc:
-        return f"**Auth error:** {exc}", _proposals_table_md(api_key), gr.update()
+        return (
+            f"**Auth error:** {exc}",
+            _proposals_table_md(api_key),
+            _audit_table_md(api_key),
+            gr.update(),
+        )
 
 
 def _norm_choice(value: str | None, empty_labels: set[str]) -> str | None:
@@ -455,11 +534,14 @@ def _apply_session(api_key: str) -> tuple[str, str]:
     key = (api_key or "").strip()
     try:
         auth = resolve_request_auth(api_key=key or None)
+        caps = auth.capabilities()
+        cap_s = ", ".join(k for k, v in caps.items() if v) or "(none)"
         banner = (
             f"**Session:** tenant=`{auth.tenant_id}` · "
             f"roles=`{', '.join(auth.roles)}` · "
             f"auth_enabled=`{auth.auth_enabled}` · "
-            f"source=`{auth.source}`"
+            f"source=`{auth.source}` · "
+            f"capabilities=`{cap_s}`"
         )
     except AuthError as exc:
         banner = f"**Session auth error:** {exc}"
@@ -619,7 +701,8 @@ Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
                     """
 ### Tenant-scoped proposals
 Uses the **Session** API key above. Indexed docs get `doc_id=user-proposal-…`
-for Chat filtering. Admin required to delete when `AUTH_ENABLED=true`.
+for Chat filtering. **Admin** required to delete when `AUTH_ENABLED=true`.
+Upload / delete actions are recorded in the tenant audit log.
                     """
                 )
                 p_table = gr.Markdown(_proposals_table_md(""))
@@ -639,29 +722,43 @@ for Chat filtering. Admin required to delete when `AUTH_ENABLED=true`.
                     placeholder="user-proposal-my-file",
                 )
                 p_del = gr.Button(
-                    "Delete (admin if AUTH_ENABLED)",
+                    "Delete proposal",
                     size="sm",
                 )
+                p_audit = gr.Markdown(_audit_table_md(""))
                 p_up.click(
                     upload_proposal_ui,
                     inputs=[p_file, p_index, session_key],
-                    outputs=[p_status, p_table, doc_id],
+                    outputs=[p_status, p_table, p_audit, doc_id],
                 )
                 p_ref.click(
                     refresh_proposals_ui,
                     inputs=[session_key],
-                    outputs=[p_table, doc_id],
+                    outputs=[p_table, p_audit, doc_id],
                 )
                 p_del.click(
                     delete_proposal_ui,
                     inputs=[p_del_id, session_key],
-                    outputs=[p_status, p_table, doc_id],
+                    outputs=[p_status, p_table, p_audit, doc_id],
                 )
-                # Refresh table when session is applied
+                # Refresh table + delete affordance when session is applied
                 apply_session.click(
-                    lambda k: _proposals_table_md(k),
+                    lambda k: (
+                        _proposals_table_md(k),
+                        _audit_table_md(k),
+                        _delete_btn_update(k),
+                    ),
                     inputs=[session_key],
-                    outputs=[p_table],
+                    outputs=[p_table, p_audit, p_del],
+                )
+                session_key.submit(
+                    lambda k: (
+                        _proposals_table_md(k),
+                        _audit_table_md(k),
+                        _delete_btn_update(k),
+                    ),
+                    inputs=[session_key],
+                    outputs=[p_table, p_audit, p_del],
                 )
 
             with gr.Tab("Compliance checklist"):

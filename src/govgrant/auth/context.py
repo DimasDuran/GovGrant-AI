@@ -72,6 +72,37 @@ class AuthContext:
             return
         self.require_role("admin")
 
+    def can_delete_proposals(self) -> bool:
+        """True if this context may delete tenant proposals."""
+        if not self.auth_enabled:
+            return True
+        return self.has_role("admin")
+
+    def can_upload_proposals(self) -> bool:
+        """
+        True if tenant may register private proposal docs.
+
+        Restricted allow-lists (explicit set, including empty) cannot invent
+        new user-proposal-* ids unless already listed.
+        """
+        if self.allowed_doc_ids is None:
+            return True
+        # Explicit list: only if any user-proposal-* is pre-allowed
+        return any(d.startswith("user-proposal-") for d in self.allowed_doc_ids)
+
+    def can_run_checklist(self) -> bool:
+        """Checklist is available to any authenticated/open session."""
+        return True
+
+    def capabilities(self) -> dict[str, bool]:
+        """Stable capability flags for UI / CLI / future API."""
+        return {
+            "upload_proposals": self.can_upload_proposals(),
+            "delete_proposals": self.can_delete_proposals(),
+            "run_checklist": self.can_run_checklist(),
+            "admin": self.has_role("admin"),
+        }
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "tenant_id": self.tenant_id,
@@ -82,6 +113,7 @@ class AuthContext:
                 None if self.allowed_doc_ids is None else sorted(self.allowed_doc_ids)
             ),
             "source": self.source,
+            "capabilities": self.capabilities(),
         }
 
 
