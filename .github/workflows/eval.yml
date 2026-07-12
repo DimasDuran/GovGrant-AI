@@ -23,8 +23,13 @@ jobs:
         run: pytest -q tests/rag -k "not integration" --tb=short
         env:
           CHAT_ENABLED: "false"
+          AUTH_ENABLED: "false"
 
-  # Full golden eval needs Qdrant + Ollama + ingested corpus.
-  # Run locally / on a self-hosted runner with the stack up:
-  #   python -m govgrant.rag.cli eval --golden
-  #   python -m govgrant.rag.cli checklist --program sbir --ot
+      - name: Thresholds file present
+        run: test -f data/eval/THRESHOLDS.json && python -c "from govgrant.rag.eval.gates import load_thresholds; assert 'router' in load_thresholds()['gates']"
+
+  # Full golden gates need Qdrant + Ollama + ingested corpus (self-hosted / local):
+  #   ./scripts/run_gates.sh unit
+  #   ./scripts/run_gates.sh router
+  #   ./scripts/run_gates.sh hard_llm
+  #   ./scripts/run_gates.sh checklist_corpus

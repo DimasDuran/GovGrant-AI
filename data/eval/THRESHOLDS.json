@@ -1,0 +1,38 @@
+{
+  "description": "Quality gates for runtime golden evaluation (post-ingest). Versioned; reports stay local.",
+  "version": 1,
+  "gates": {
+    "unit": {
+      "description": "pytest unit suite (no Qdrant required)",
+      "command": "pytest -q tests/rag -k 'not integration'"
+    },
+    "router": {
+      "description": "Full golden via QueryRouter (retrieval coverage)",
+      "backend": "router",
+      "use_llm": false,
+      "golden": true,
+      "min_pass_rate": 98.0,
+      "min_avg_recall": 0.95,
+      "min_avg_precision": 0.95,
+      "min_total_cases": 100
+    },
+    "hard_llm": {
+      "description": "Agent + Haiku on multi_hop and not_found (pre-release)",
+      "backend": "agent",
+      "use_llm": true,
+      "golden": true,
+      "categories": ["multi_hop", "not_found"],
+      "min_pass_rate": 90.0,
+      "min_avg_recall": 0.95,
+      "min_avg_precision": 0.9,
+      "min_total_cases": 20
+    },
+    "checklist_corpus": {
+      "description": "DARPA corpus checklist must have zero critical corpus failures",
+      "packages": ["darpa"],
+      "program": "sbir",
+      "use_ot": true,
+      "max_critical_fail": 0
+    }
+  }
+}
