@@ -548,6 +548,117 @@ def _apply_session(api_key: str) -> tuple[str, str]:
     return _status_md(key), banner
 
 
+# Black & white console theme (high contrast, no brand color)
+_BW_THEME = gr.themes.Monochrome(
+    primary_hue="neutral",
+    secondary_hue="neutral",
+    neutral_hue="neutral",
+    font=gr.themes.GoogleFont("Inter"),
+    font_mono=gr.themes.GoogleFont("JetBrains Mono"),
+).set(
+    body_background_fill="#ffffff",
+    body_background_fill_dark="#0a0a0a",
+    body_text_color="#0a0a0a",
+    body_text_color_dark="#f5f5f5",
+    background_fill_primary="#ffffff",
+    background_fill_primary_dark="#0a0a0a",
+    background_fill_secondary="#f5f5f5",
+    background_fill_secondary_dark="#141414",
+    border_color_primary="#0a0a0a",
+    border_color_primary_dark="#e5e5e5",
+    block_background_fill="#ffffff",
+    block_background_fill_dark="#111111",
+    block_border_color="#0a0a0a",
+    block_border_color_dark="#e5e5e5",
+    block_label_text_color="#0a0a0a",
+    block_label_text_color_dark="#f5f5f5",
+    block_title_text_color="#0a0a0a",
+    block_title_text_color_dark="#f5f5f5",
+    button_primary_background_fill="#0a0a0a",
+    button_primary_background_fill_dark="#f5f5f5",
+    button_primary_background_fill_hover="#262626",
+    button_primary_background_fill_hover_dark="#e5e5e5",
+    button_primary_text_color="#ffffff",
+    button_primary_text_color_dark="#0a0a0a",
+    button_secondary_background_fill="#ffffff",
+    button_secondary_background_fill_dark="#0a0a0a",
+    button_secondary_background_fill_hover="#f5f5f5",
+    button_secondary_background_fill_hover_dark="#1a1a1a",
+    button_secondary_text_color="#0a0a0a",
+    button_secondary_text_color_dark="#f5f5f5",
+    button_secondary_border_color="#0a0a0a",
+    button_secondary_border_color_dark="#e5e5e5",
+    input_background_fill="#ffffff",
+    input_background_fill_dark="#0a0a0a",
+    input_border_color="#0a0a0a",
+    input_border_color_dark="#e5e5e5",
+    input_placeholder_color="#737373",
+    input_placeholder_color_dark="#a3a3a3",
+    checkbox_background_color="#ffffff",
+    checkbox_background_color_dark="#0a0a0a",
+    checkbox_border_color="#0a0a0a",
+    checkbox_border_color_dark="#e5e5e5",
+    checkbox_label_background_fill="#ffffff",
+    checkbox_label_background_fill_dark="#0a0a0a",
+    checkbox_label_text_color="#0a0a0a",
+    checkbox_label_text_color_dark="#f5f5f5",
+    color_accent="#0a0a0a",
+    color_accent_soft="#f5f5f5",
+    link_text_color="#0a0a0a",
+    link_text_color_dark="#f5f5f5",
+    link_text_color_hover="#404040",
+    link_text_color_hover_dark="#d4d4d4",
+    shadow_drop="none",
+    shadow_drop_lg="none",
+)
+
+_BW_CSS = """
+.gradio-container {
+  max-width: 1100px !important;
+  font-family: Inter, system-ui, sans-serif !important;
+}
+/* Force monochrome chrome */
+.gradio-container,
+.gradio-container .main,
+.gradio-container .contain {
+  background: #ffffff !important;
+  color: #0a0a0a !important;
+}
+footer { display: none !important; }
+/* Tabs: black underline, no blue */
+button.selected,
+.tab-nav button.selected {
+  border-color: #0a0a0a !important;
+  color: #0a0a0a !important;
+  font-weight: 600 !important;
+}
+/* Tables in markdown */
+.prose table th {
+  background: #0a0a0a !important;
+  color: #ffffff !important;
+  border-color: #0a0a0a !important;
+}
+.prose table td {
+  border-color: #d4d4d4 !important;
+}
+.prose table tr:nth-child(even) td {
+  background: #f5f5f5 !important;
+}
+/* Chat bubbles */
+.bubble-wrap .message-row .message.bot,
+.bubble-wrap .message-row .message.user {
+  border: 1px solid #0a0a0a !important;
+  box-shadow: none !important;
+}
+/* Code / JSON blocks */
+.prose code, .prose pre {
+  background: #f5f5f5 !important;
+  color: #0a0a0a !important;
+  border: 1px solid #d4d4d4 !important;
+}
+"""
+
+
 def build_ui() -> gr.Blocks:
     settings = get_settings()
     with gr.Blocks(title="GovGrant AI") as demo:
@@ -889,8 +1000,8 @@ def main() -> None:
         server_port=7860,
         share=False,
         show_error=True,
-        theme=gr.themes.Soft(primary_hue="blue", secondary_hue="slate"),
-        css=".gradio-container { max-width: 1100px !important; }",
+        theme=_BW_THEME,
+        css=_BW_CSS,
     )
 
 
