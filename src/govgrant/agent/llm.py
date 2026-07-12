@@ -51,30 +51,6 @@ class ChatLLM:
                 parts.append(text)
         return "\n".join(parts).strip()
 
-    def vertical_assistant_reply(self, query: str) -> str:
-        """
-        Conversational turn (greetings, who-are-you, thanks) — no retrieval pack.
-
-        Same product personality as Claude/GPT, limited to the SBIR/STTR vertical.
-        """
-        system = (
-            "You are GovGrant AI, a specialized AI assistant for U.S. SBIR/STTR "
-            "grant compliance (agency instructions like DARPA Phase II, SBA Policy "
-            "Directive, NIH SF-424, open SBIR topics, and the user's proposals).\n"
-            "Tone: natural and helpful — like Claude or ChatGPT. Short replies for "
-            "greetings; no corporate brochure or long topic menus.\n"
-            "Scope: ONLY this vertical. If the user asks about unrelated topics "
-            "(coding, recipes, general news, etc.), politely say you only cover "
-            "SBIR/STTR compliance and invite a question in that domain.\n"
-            "Write in the same language as the user.\n"
-        )
-        return self.complete(
-            system=system,
-            user=(query or "").strip() or "Hola",
-            temperature=0.4,
-            max_tokens=400,
-        )
-
     def answer_from_evidence(
         self,
         *,

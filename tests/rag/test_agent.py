@@ -22,17 +22,21 @@ def test_run_agent_doc_query():
 
 
 def test_greeting_is_friendly_vertical_assistant():
+    from govgrant.agent.graph import conversational_reply
+
     assert is_conversational_turn("Hola")
+    assert is_conversational_turn("¡Hola! 👋")
     assert is_conversational_turn("hello!")
     assert is_conversational_turn("quién eres")
     assert not is_conversational_turn(
         "What is the maximum DARPA Phase II cost volume?"
     )
-    out = run_agent("Hola", use_llm=False)
+    out = run_agent("Hola", use_llm=True)  # even with LLM flag, no brochure
     ans = out.get("answer") or ""
-    # Offline fallback: natural vertical greeting (no "not a chatbot" lecture)
     assert "GovGrant" in ans
-    assert "chatbot conversacional" not in ans.lower()
-    assert "no es un chatbot" not in ans.lower()
+    assert "Puedo ayudarte con" not in ans
+    assert "Requisitos de propuestas" not in ans
+    assert ans.count("\n") < 4  # short, not a capability menu
     assert out.get("meta", {}).get("mode") == "conversation"
     assert out.get("intent") == "chat"
+    assert "lista" not in conversational_reply("Hola").lower()
