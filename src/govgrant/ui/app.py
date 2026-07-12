@@ -901,45 +901,31 @@ input[type="range"] {
 
 
 def build_ui() -> gr.Blocks:
-    settings = get_settings()
     with gr.Blocks(title="GovGrant AI") as demo:
         gr.Markdown(
             """
-# GovGrant AI — test console
-Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
+# GovGrant AI — Asistente SBIR/STTR
+Respuestas basadas en corpus indexado (DARPA · SBA · SF-424 · topics)
             """
         )
-        # Shared session (one API key for all tabs)
-        with gr.Group():
-            gr.Markdown("### Session")
-            with gr.Row():
-                session_key = gr.Textbox(
-                    label="API key (shared across tabs)",
-                    type="password",
-                    placeholder="empty if AUTH_ENABLED=false · e.g. dev-local-key",
-                    scale=4,
-                )
-                apply_session = gr.Button("Apply session", variant="secondary", scale=1)
-            session_banner = gr.Markdown(_apply_session("")[1])
-        status = gr.Markdown(_status_md())
-        apply_session.click(
-            _apply_session, inputs=[session_key], outputs=[status, session_banner]
+        status = gr.Markdown(
+            f"LLM: `{get_settings().chat_model}` · corpus indexado · "
+            f"consulta sobre cumplimiento de propuestas SBIR/STTR"
         )
-        session_key.submit(
-            _apply_session, inputs=[session_key], outputs=[status, session_banner]
-        )
+
+        session_key = gr.State("")
+        doc_id = gr.State(None)
+        agency = gr.State(None)
+        intent = gr.State(None)
+        use_llm = gr.State(True)
+        show_debug = gr.State(False)
 
         with gr.Tabs():
             with gr.Tab("Assistant"):
-                gr.Markdown(
-                    "**GovGrant AI** — asistente vertical SBIR/STTR "
-                    "(DARPA · SBA · SF-424 · topics · tus proposals). "
-                    "Responde con naturalidad; las preguntas de cumplimiento se apoyan en el corpus indexado."
-                )
                 chatbot = gr.Chatbot(
                     height=480,
                     label="Conversation",
-                    buttons=["copy", "copy_all"],
+                    buttons=["copy"],
                     layout="bubble",
                 )
                 with gr.Row():
@@ -954,177 +940,26 @@ Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
                     )
                     send = gr.Button("Send", variant="primary", scale=1)
 
-                with gr.Accordion("Options", open=False):
-                    with gr.Row():
-                        doc_id = gr.Dropdown(
-                            DOC_CHOICES,
-                            value="(auto)",
-                            label="Document filter",
-                            allow_custom_value=True,
-                        )
-                        agency = gr.Dropdown(
-                            AGENCY_CHOICES, value="(any)", label="SBIR agency"
-                        )
-                        intent = gr.Dropdown(
-                            INTENT_CHOICES, value="(auto)", label="Force intent"
-                        )
-                    with gr.Row():
-                        use_llm = gr.Checkbox(
-                            value=True,
-                            label="Use Claude Haiku for answer",
-                        )
-                        show_debug = gr.Checkbox(
-                            value=False,
-                            label="Show debug (evidence meta)",
-                        )
-                    refresh_docs = gr.Button("Refresh docs (my proposals)", size="sm")
-                    refresh_docs.click(
-                        lambda k: gr.update(choices=_doc_choices_for_key(k)),
-                        inputs=[session_key],
-                        outputs=[doc_id],
-                    )
-
-                gr.Examples(examples=EXAMPLES, inputs=msg, label="Examples")
+                gr.Examples(examples=EXAMPLES, inputs=msg, label="Ejemplos")
                 clear = gr.Button("Clear chat", size="sm")
-
-                def _clear(key: str):
-                    return [], _status_md(key)
 
                 send.click(
                     chat_ask,
-                    inputs=[
-                        msg,
-                        chatbot,
-                        doc_id,
-                        agency,
-                        intent,
-                        use_llm,
-                        show_debug,
-                        session_key,
-                    ],
+                    inputs=[msg, chatbot, doc_id, agency, intent, use_llm, show_debug, session_key],
                     outputs=[chatbot, status, msg],
                 )
                 msg.submit(
                     chat_ask,
-                    inputs=[
-                        msg,
-                        chatbot,
-                        doc_id,
-                        agency,
-                        intent,
-                        use_llm,
-                        show_debug,
-                        session_key,
-                    ],
+                    inputs=[msg, chatbot, doc_id, agency, intent, use_llm, show_debug, session_key],
                     outputs=[chatbot, status, msg],
                 )
-                clear.click(_clear, inputs=[session_key], outputs=[chatbot, status])
-
-            with gr.Tab("Retrieve only"):
-                gr.Markdown(
-                    "Raw hybrid hits (vector + BM25 + RRF + re-rank), no chat LLM."
-                )
-                rq = gr.Textbox(label="Query", lines=2)
-                with gr.Row():
-                    rdoc = gr.Dropdown(DOC_CHOICES, value="(auto)", label="doc_id")
-                    rmod = gr.Dropdown(
-                        ["(any)", "prose", "table", "figure", "chart"],
-                        value="(any)",
-                        label="modality",
-                    )
-                    rtop = gr.Slider(1, 12, value=5, step=1, label="top_k")
-                rbtn = gr.Button("Retrieve", variant="primary")
-                rout = gr.Textbox(label="Hits", lines=20)
-                rbtn.click(
-                    retrieve_only, inputs=[rq, rdoc, rmod, rtop], outputs=rout
-                )
-
-            with gr.Tab("SBIR topics"):
-                gr.Markdown(
-                    "Search open SBIR topics (fixture cache if API is down). "
-                    "Includes mandatory disclaimer."
-                )
-                sq = gr.Textbox(label="Query", lines=2)
-                with gr.Row():
-                    sag = gr.Dropdown(
-                        AGENCY_CHOICES, value="(any)", label="agency"
-                    )
-                    stop = gr.Slider(1, 10, value=5, step=1, label="top_k")
-                sbtn = gr.Button("Search topics", variant="primary")
-                sout = gr.Textbox(label="Results", lines=20)
-                sbtn.click(sbir_search, inputs=[sq, sag, stop], outputs=sout)
-
-            with gr.Tab("My proposals"):
-                gr.Markdown(
-                    """
-### Tenant-scoped proposals
-Uses the **Session** API key above. Indexed docs get `doc_id=user-proposal-…`
-for Chat filtering. **Admin** required to delete when `AUTH_ENABLED=true`.
-Upload / delete actions are recorded in the tenant audit log.
-                    """
-                )
-                p_table = gr.Markdown(_proposals_table_md(""))
-                with gr.Row():
-                    p_file = gr.File(
-                        label="Upload proposal PDF",
-                        file_types=[".pdf"],
-                        type="filepath",
-                    )
-                    p_index = gr.Checkbox(value=True, label="Index into hybrid RAG")
-                with gr.Row():
-                    p_up = gr.Button("Register / upload", variant="primary")
-                    p_ref = gr.Button("Refresh list")
-                p_status = gr.Markdown()
-                p_del_id = gr.Textbox(
-                    label="Delete doc_id",
-                    placeholder="user-proposal-my-file",
-                )
-                p_del = gr.Button(
-                    "Delete proposal",
-                    size="sm",
-                )
-                p_audit = gr.Markdown(_audit_table_md(""))
-                p_up.click(
-                    upload_proposal_ui,
-                    inputs=[p_file, p_index, session_key],
-                    outputs=[p_status, p_table, p_audit, doc_id],
-                )
-                p_ref.click(
-                    refresh_proposals_ui,
-                    inputs=[session_key],
-                    outputs=[p_table, p_audit, doc_id],
-                )
-                p_del.click(
-                    delete_proposal_ui,
-                    inputs=[p_del_id, session_key],
-                    outputs=[p_status, p_table, p_audit, doc_id],
-                )
-                # Refresh table + delete affordance when session is applied
-                apply_session.click(
-                    lambda k: (
-                        _proposals_table_md(k),
-                        _audit_table_md(k),
-                        _delete_btn_update(k),
-                    ),
-                    inputs=[session_key],
-                    outputs=[p_table, p_audit, p_del],
-                )
-                session_key.submit(
-                    lambda k: (
-                        _proposals_table_md(k),
-                        _audit_table_md(k),
-                        _delete_btn_update(k),
-                    ),
-                    inputs=[session_key],
-                    outputs=[p_table, p_audit, p_del],
-                )
+                clear.click(lambda: ([], _status_md("")), outputs=[chatbot, status])
 
             with gr.Tab("Compliance checklist"):
                 gr.Markdown(
                     """
-### Multi-agency control points (DARPA · SBA · SF424)
-1. **Corpus mode** — rule grounded in indexed instructions?
-2. **Draft mode** — paste text, upload PDF, or pick a registered proposal.
+### Control points multi-agencia (DARPA · SBA · SF424)
+Evalúa tu propuesta contra los requisitos de cumplimiento.
                     """
                 )
                 with gr.Row():
@@ -1138,97 +973,28 @@ Upload / delete actions are recorded in the tenant audit log.
                     c_darpa = gr.Checkbox(value=True, label="DARPA Phase II")
                     c_sba = gr.Checkbox(value=True, label="SBA Policy Directive")
                     c_sf424 = gr.Checkbox(value=True, label="SF424 Application Guide")
-                c_sel = gr.Dropdown(
-                    choices=["(none)"],
-                    value="(none)",
-                    label="Registered proposal (optional)",
-                    allow_custom_value=True,
-                )
-                c_pdf = gr.File(
-                    label="Or upload proposal PDF",
-                    file_types=[".pdf"],
-                    type="filepath",
-                )
-                c_index = gr.Checkbox(
-                    value=True,
-                    label="Register + index uploaded PDF under my tenant",
-                )
-                c_llm = gr.Checkbox(
-                    value=False,
-                    label="LLM draft judge (Haiku; falls back to keywords)",
-                )
-                c_export = gr.Checkbox(
-                    value=True,
-                    label="Export report to data/eval/reports/ (md + json)",
-                )
                 c_draft = gr.Textbox(
-                    label="Or paste draft text",
+                    label="Draft text (opcional — pega un extracto de tu propuesta)",
                     lines=5,
                     placeholder="Paste SOW / strategy excerpt…",
                 )
                 c_btn = gr.Button("Run checklist", variant="primary")
-                c_sum = gr.Code(label="Summary counts", language="json", lines=8)
                 c_out = gr.Markdown(label="Report")
-                c_hist = gr.Markdown(export_history_markdown())
-                c_hist_btn = gr.Button("Refresh export history", size="sm")
+                c_sum = gr.Code(label="Summary", language="json", lines=6)
 
-                def _refresh_c_sel(key: str):
-                    try:
-                        auth = resolve_request_auth(
-                            api_key=(key or "").strip() or None
-                        )
-                        ids = ["(none)"] + [
-                            r.doc_id for r in _proposal_service().list_proposals(auth)
-                        ]
-                        return gr.update(choices=ids)
-                    except AuthError:
-                        return gr.update(choices=["(none)"])
-
-                apply_session.click(
-                    _refresh_c_sel, inputs=[session_key], outputs=[c_sel]
-                )
-                c_hist_btn.click(
-                    lambda: export_history_markdown(), outputs=[c_hist]
-                )
                 c_btn.click(
                     run_compliance_checklist,
                     inputs=[
-                        c_prog,
-                        c_ot,
-                        c_darpa,
-                        c_sba,
-                        c_sf424,
+                        c_prog, c_ot, c_darpa, c_sba, c_sf424,
                         c_draft,
-                        c_pdf,
-                        c_index,
-                        c_llm,
-                        session_key,
-                        c_sel,
-                        c_export,
+                        gr.State(None),  # c_pdf
+                        gr.State(False),  # c_index
+                        gr.State(False),  # c_llm
+                        gr.State(""),     # session_key
+                        gr.State("(none)"),  # c_sel
+                        gr.State(False),  # c_export
                     ],
                     outputs=[c_out, c_sum],
-                ).then(
-                    lambda: export_history_markdown(),
-                    outputs=[c_hist],
-                )
-
-            with gr.Tab("About"):
-                gr.Markdown(
-                    f"""
-### Stack
-- **Embeddings:** Ollama `{settings.embedding_model}` (local)
-- **Vector store:** Qdrant `{settings.qdrant_collection}` + `sbir_topics`
-- **Chat:** Anthropic `{settings.chat_model}`
-- **Orchestration:** LangGraph (`classify → retrieve → guardrail → answer`)
-
-### Tips
-1. Keep Qdrant + Ollama running.
-2. If answers look empty, re-ingest: `python -m govgrant.rag.cli ingest`
-3. Force document with the dropdown for DARPA / SF424 / SBA.
-4. Uncheck Haiku to inspect raw retrieve packs.
-5. Use **Compliance checklist** for DARPA Phase II control points (work-share, OT, etc.).
-6. Eval: `python -m govgrant.rag.cli eval --golden`
-                    """
                 )
 
         return demo
