@@ -21,6 +21,11 @@ def ingest_main(argv: list[str] | None = None) -> None:
     )
     parser.add_argument("--tenant", default=None, help="tenant_id")
     parser.add_argument(
+        "--api-key",
+        default=None,
+        help="API key when AUTH_ENABLED=true (binds tenant)",
+    )
+    parser.add_argument(
         "--no-llamaparse",
         action="store_true",
         help="Use local pypdf only (no LlamaParse)",
@@ -41,6 +46,7 @@ def ingest_main(argv: list[str] | None = None) -> None:
         help="Skip Ollama vision captions even if OLLAMA_VISION_MODEL is set",
     )
     args = parser.parse_args(argv)
+    auth = _resolve_cli_auth(args)
 
     settings = get_settings()
     svc = HybridRAGService(settings)
@@ -50,13 +56,11 @@ def ingest_main(argv: list[str] | None = None) -> None:
     extract_figures = not args.no_figures
     use_vision = not args.no_vision
 
-    from pathlib import Path
-
     p = Path(target)
     if p.is_file():
         result = svc.ingest_pdf(
             p,
-            tenant_id=args.tenant,
+            tenant_id=auth.tenant_id,
             use_llamaparse=use_lp,
             extract_tables=extract_tables,
             extract_figures=extract_figures,
@@ -66,7 +70,7 @@ def ingest_main(argv: list[str] | None = None) -> None:
     else:
         results = svc.ingest_directory(
             p,
-            tenant_id=args.tenant,
+            tenant_id=auth.tenant_id,
             use_llamaparse=use_lp,
             extract_tables=extract_tables,
             extract_figures=extract_figures,
@@ -79,6 +83,7 @@ def query_main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Hybrid query against indexed docs")
     parser.add_argument("query", help="Natural language query")
     parser.add_argument("--tenant", default=None, help="tenant_id filter")
+    parser.add_argument("--api-key", default=None, help="API key when AUTH_ENABLED")
     parser.add_argument("--doc-id", default=None, help="gg_doc_id filter")
     parser.add_argument(
         "--modality",
@@ -88,12 +93,14 @@ def query_main(argv: list[str] | None = None) -> None:
     )
     parser.add_argument("--top-k", type=int, default=None)
     args = parser.parse_args(argv)
+    auth = _resolve_cli_auth(args)
+    doc_id = _cli_doc_id(auth, args.doc_id)
 
     svc = HybridRAGService()
     hits = svc.retrieve(
         args.query,
-        tenant_id=args.tenant,
-        doc_id=args.doc_id,
+        tenant_id=auth.tenant_id,
+        doc_id=doc_id,
         modality=args.modality,
         top_k=args.top_k,
     )
@@ -149,6 +156,7 @@ def agent_main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="LangGraph agent (R7 + Haiku)")
     parser.add_argument("query")
     parser.add_argument("--tenant", default=None)
+    parser.add_argument("--api-key", default=None, help="API key when AUTH_ENABLED")
     parser.add_argument("--doc-id", default=None)
     parser.add_argument("--agency", default=None)
     parser.add_argument(
@@ -158,6 +166,8 @@ def agent_main(argv: list[str] | None = None) -> None:
     )
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
+    auth = _resolve_cli_auth(args)
+    doc_id = _cli_doc_id(auth, args.doc_id)
 
     llm = ChatLLM()
     if not args.no_llm and not llm.available:
@@ -169,8 +179,8 @@ def agent_main(argv: list[str] | None = None) -> None:
 
     result = run_agent(
         args.query,
-        tenant_id=args.tenant,
-        doc_id=args.doc_id,
+        tenant_id=auth.tenant_id,
+        doc_id=doc_id,
         agency=args.agency,
         use_llm=not args.no_llm,
     )
@@ -313,6 +323,7 @@ def ask_main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Multi-source routed ask (R5)")
     parser.add_argument("query", help="User question")
     parser.add_argument("--tenant", default=None)
+    parser.add_argument("--api-key", default=None, help="API key when AUTH_ENABLED")
     parser.add_argument("--doc-id", default=None)
     parser.add_argument("--agency", default=None, help="SBIR agency filter e.g. DOD")
     parser.add_argument("--top-k", type=int, default=5)
@@ -328,13 +339,15 @@ def ask_main(argv: list[str] | None = None) -> None:
         help="Print full JSON (intent + meta + text)",
     )
     args = parser.parse_args(argv)
+    auth = _resolve_cli_auth(args)
+    doc_id = _cli_doc_id(auth, args.doc_id)
 
     router = QueryRouter()
     intent = RouteIntent(args.intent) if args.intent else None
     result = router.ask(
         args.query,
-        tenant_id=args.tenant,
-        doc_id=args.doc_id,
+        tenant_id=auth.tenant_id,
+        doc_id=doc_id,
         agency=args.agency,
         top_k=args.top_k,
         intent=intent,
@@ -485,8 +498,11 @@ def checklist_main(argv: list[str] | None = None) -> None:
         action="store_true",
         help="Use Haiku to judge draft vs controls (falls back to keywords)",
     )
+    parser.add_argument("--tenant", default=None, help="tenant_id for proposal index")
+    parser.add_argument("--api-key", default=None, help="API key when AUTH_ENABLED")
     parser.add_argument("--json", action="store_true", help="Full JSON report")
     args = parser.parse_args(argv)
+    auth = _resolve_cli_auth(args)
 
     draft_text = None
     extract_meta = None
@@ -504,7 +520,7 @@ def checklist_main(argv: list[str] | None = None) -> None:
             pid = proposal_doc_id(Path(args.draft_pdf).name)
             info = rag.ingest_pdf(
                 Path(args.draft_pdf),
-                tenant_id=settings.default_tenant_id,
+                tenant_id=auth.tenant_id,
                 doc_id=pid,
                 use_llamaparse=False,
                 extract_tables=True,
@@ -529,6 +545,7 @@ def checklist_main(argv: list[str] | None = None) -> None:
         packages=args.packages,
         draft_text=draft_text,
         use_llm_draft=bool(args.llm_draft),
+        tenant_id=auth.tenant_id,
     )
     if args.json:
         payload = run.to_dict()
@@ -552,6 +569,83 @@ def checklist_main(argv: list[str] | None = None) -> None:
         raise SystemExit(1)
 
 
+def gate_main(argv: list[str] | None = None) -> None:
+    """Run a named quality gate from data/eval/THRESHOLDS.json."""
+    from govgrant.rag.eval.gates import load_thresholds, run_configured_gate
+
+    parser = argparse.ArgumentParser(
+        description="Quality gate runner (thresholds + golden/checklist)"
+    )
+    parser.add_argument(
+        "gate",
+        nargs="?",
+        default="router",
+        help="Gate id: router | hard_llm | checklist_corpus (default router)",
+    )
+    parser.add_argument(
+        "--list",
+        action="store_true",
+        help="List configured gates and exit",
+    )
+    parser.add_argument(
+        "--thresholds",
+        default=None,
+        help="Path to THRESHOLDS.json (default data/eval/THRESHOLDS.json)",
+    )
+    parser.add_argument(
+        "--out",
+        default=None,
+        help="Write gate + report JSON under data/eval/reports/",
+    )
+    args = parser.parse_args(argv)
+    thr_path = Path(args.thresholds) if args.thresholds else None
+
+    if args.list:
+        cfg = load_thresholds(thr_path)
+        print(json.dumps(cfg.get("gates", {}), indent=2, ensure_ascii=False))
+        return
+
+    out = Path(args.out) if args.out else None
+    if out is None and args.gate in {"router", "hard_llm", "checklist_corpus"}:
+        out = (
+            Path("data/eval/reports")
+            / f"gate_{args.gate}_latest.json"
+        )
+
+    result = run_configured_gate(args.gate, thresholds_path=thr_path, out_path=out)
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    if not result.passed:
+        print("\n# GATE FAILED", file=sys.stderr)
+        for c in result.checks:
+            if not c.ok:
+                print(f"  - {c.message}", file=sys.stderr)
+        raise SystemExit(1)
+    print("\n# GATE PASSED", file=sys.stderr)
+
+
+def _resolve_cli_auth(args: argparse.Namespace):
+    """Shared --api-key / --tenant resolution for mutating/read paths."""
+    from govgrant.auth import AuthError, resolve_request_auth
+
+    api_key = getattr(args, "api_key", None)
+    tenant = getattr(args, "tenant", None)
+    try:
+        return resolve_request_auth(api_key=api_key, tenant_id=tenant)
+    except AuthError as exc:
+        print(f"auth error: {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc
+
+
+def _cli_doc_id(auth, doc_id: str | None) -> str | None:
+    from govgrant.auth import AuthError
+
+    try:
+        return auth.filter_doc_id(doc_id)
+    except AuthError as exc:
+        print(f"auth error: {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2 or sys.argv[1] not in {
         "ingest",
@@ -562,10 +656,11 @@ if __name__ == "__main__":
         "eval",
         "agent",
         "checklist",
+        "gate",
     }:
         print(
             "Usage: python -m govgrant.rag.cli "
-            "ingest|query|tables|sbir|ask|eval|agent|checklist ...",
+            "ingest|query|tables|sbir|ask|eval|agent|checklist|gate ...",
             file=sys.stderr,
         )
         sys.exit(2)
@@ -585,5 +680,7 @@ if __name__ == "__main__":
         eval_main(rest)
     elif cmd == "checklist":
         checklist_main(rest)
+    elif cmd == "gate":
+        gate_main(rest)
     else:
         agent_main(rest)

@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "public_doc_ids": [
+    "darpa-sbir-sttr-phase-II-instructions",
+    "SBA SBIR_STTR_POLICY_DIRECTIVE_May2023",
+    "SF424 SBIR_STTR Application Guide"
+  ],
+  "tenants": [
+    {
+      "tenant_id": "local-dev",
+      "name": "Local development",
+      "api_keys": ["dev-local-key"],
+      "roles": ["admin"],
+      "allowed_doc_ids": null
+    },
+    {
+      "tenant_id": "demo-acme",
+      "name": "Demo tenant Acme",
+      "api_keys": ["demo-acme-key"],
+      "roles": ["user"],
+      "allowed_doc_ids": null
+    },
+    {
+      "tenant_id": "demo-beta",
+      "name": "Demo tenant Beta (restricted)",
+      "api_keys": ["demo-beta-key"],
+      "roles": ["user"],
+      "allowed_doc_ids": []
+    }
+  ]
+}

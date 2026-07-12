@@ -1,0 +1,85 @@
+"""Unit tests for dev auth / multi-tenant resolution (no Qdrant)."""
+
+from __future__ import annotations
+
+import pytest
+
+from govgrant.auth.context import AuthError, clear_auth_cache, resolve_request_auth
+from govgrant.auth.registry import AuthRegistry, TenantRecord, load_auth_registry
+
+
+@pytest.fixture(autouse=True)
+def _clear_cache():
+    clear_auth_cache()
+    yield
+    clear_auth_cache()
+
+
+def test_load_example_registry():
+    reg = load_auth_registry()
+    assert "local-dev" in reg.tenants
+    assert reg.tenant_for_key("dev-local-key") is not None
+    assert "darpa-sbir-sttr-phase-II-instructions" in reg.public_doc_ids
+
+
+def test_auth_disabled_uses_default_tenant(monkeypatch):
+    monkeypatch.setenv("AUTH_ENABLED", "false")
+    monkeypatch.setenv("DEFAULT_TENANT_ID", "local-dev")
+    ctx = resolve_request_auth()
+    assert ctx.tenant_id == "local-dev"
+    assert ctx.auth_enabled is False
+    assert ctx.source == "env_default"
+
+
+def test_auth_enabled_requires_key(monkeypatch):
+    monkeypatch.setenv("AUTH_ENABLED", "true")
+    with pytest.raises(AuthError, match="missing API key"):
+        resolve_request_auth(require_auth=True)
+
+
+def test_auth_enabled_valid_key(monkeypatch):
+    monkeypatch.setenv("AUTH_ENABLED", "true")
+    ctx = resolve_request_auth(api_key="dev-local-key", require_auth=True)
+    assert ctx.tenant_id == "local-dev"
+    assert ctx.api_key_present
+    assert ctx.source == "api_key"
+
+
+def test_auth_enabled_invalid_key(monkeypatch):
+    monkeypatch.setenv("AUTH_ENABLED", "true")
+    with pytest.raises(AuthError, match="invalid API key"):
+        resolve_request_auth(api_key="nope", require_auth=True)
+
+
+def test_tenant_mismatch_rejected(monkeypatch):
+    monkeypatch.setenv("AUTH_ENABLED", "true")
+    with pytest.raises(AuthError, match="does not match"):
+        resolve_request_auth(
+            api_key="dev-local-key",
+            tenant_id="demo-acme",
+            require_auth=True,
+        )
+
+
+def test_doc_allow_list():
+    reg = AuthRegistry(
+        tenants={
+            "t1": TenantRecord(
+                tenant_id="t1",
+                api_keys=("k1",),
+                allowed_doc_ids=frozenset({"user-proposal-a"}),
+            )
+        },
+        key_to_tenant={"k1": "t1"},
+        public_doc_ids=frozenset({"darpa-sbir-sttr-phase-II-instructions"}),
+    )
+    ctx = resolve_request_auth(
+        api_key="k1",
+        require_auth=True,
+        registry=reg,
+    )
+    assert ctx.may_access_doc("darpa-sbir-sttr-phase-II-instructions")
+    assert ctx.may_access_doc("user-proposal-a")
+    assert not ctx.may_access_doc("user-proposal-secret")
+    with pytest.raises(AuthError):
+        ctx.filter_doc_id("user-proposal-secret")

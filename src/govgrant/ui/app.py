@@ -17,6 +17,7 @@ import gradio as gr
 
 from govgrant.agent.graph import run_agent
 from govgrant.agent.llm import ChatLLM
+from govgrant.auth import AuthError, resolve_request_auth
 from govgrant.compliance.checklist import run_checklist
 from govgrant.compliance.proposal import extract_proposal_text, proposal_doc_id
 from govgrant.rag.config import get_settings
@@ -103,6 +104,7 @@ def chat_ask(
     intent: str,
     use_llm: bool,
     show_debug: bool,
+    api_key: str,
 ) -> tuple[list[dict[str, str]], str]:
     history = list(history or [])
     message = (message or "").strip()
@@ -112,9 +114,12 @@ def chat_ask(
     history.append({"role": "user", "content": message})
     t0 = time.time()
     try:
+        auth = resolve_request_auth(api_key=(api_key or "").strip() or None)
+        doc = auth.filter_doc_id(_norm_choice(doc_id, {"(auto)"}))
         result = run_agent(
             message,
-            doc_id=_norm_choice(doc_id, {"(auto)"}),
+            tenant_id=auth.tenant_id,
+            doc_id=doc,
             agency=_norm_choice(agency, {"(any)"}),
             use_llm=use_llm,
         )
@@ -123,7 +128,8 @@ def chat_ask(
             _, _, router = _services()
             routed = router.ask(
                 message,
-                doc_id=_norm_choice(doc_id, {"(auto)"}),
+                tenant_id=auth.tenant_id,
+                doc_id=doc,
                 agency=_norm_choice(agency, {"(any)"}),
                 intent=RouteIntent(forced),
             )
@@ -177,6 +183,13 @@ def chat_ask(
             meta_line += json.dumps(debug, indent=2, ensure_ascii=False)[:4000]
             meta_line += "\n```"
         history.append({"role": "assistant", "content": answer + meta_line})
+    except AuthError as exc:
+        history.append(
+            {
+                "role": "assistant",
+                "content": f"**Auth error:** {exc}",
+            }
+        )
     except Exception as exc:  # noqa: BLE001
         history.append(
             {
@@ -349,6 +362,11 @@ Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
                             value=False,
                             label="Show debug (evidence meta)",
                         )
+                    api_key = gr.Textbox(
+                        label="API key (when AUTH_ENABLED=true)",
+                        type="password",
+                        placeholder="dev-local-key",
+                    )
 
                 gr.Examples(examples=EXAMPLES, inputs=msg, label="Examples")
                 clear = gr.Button("Clear chat", size="sm")
@@ -366,6 +384,7 @@ Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
                         intent,
                         use_llm,
                         show_debug,
+                        api_key,
                     ],
                     outputs=[chatbot, status],
                 ).then(lambda: "", outputs=msg)
@@ -379,6 +398,7 @@ Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
                         intent,
                         use_llm,
                         show_debug,
+                        api_key,
                     ],
                     outputs=[chatbot, status],
                 ).then(lambda: "", outputs=msg)
