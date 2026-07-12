@@ -920,29 +920,29 @@ Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
         )
 
         with gr.Tabs():
-            with gr.Tab("Q&A (corpus)"):
+            with gr.Tab("Assistant"):
                 gr.Markdown(
-                    "Consulta **documentos indexados** (no es un chatbot general). "
-                    "Escribe una pregunta concreta de cumplimiento; la respuesta se genera "
-                    "solo con evidencia recuperada (RAG + Haiku)."
+                    "**GovGrant AI** — asistente vertical SBIR/STTR "
+                    "(DARPA · SBA · SF-424 · topics · tus proposals). "
+                    "Responde con naturalidad; las preguntas de cumplimiento se apoyan en el corpus indexado."
                 )
                 chatbot = gr.Chatbot(
                     height=480,
-                    label="Answers (grounded)",
+                    label="Conversation",
                     buttons=["copy", "copy_all"],
                     layout="bubble",
                 )
                 with gr.Row():
                     msg = gr.Textbox(
                         placeholder=(
-                            "Ej: máximo Cost Volume DARPA Phase II · work-share SBIR · "
-                            "indirect costs SF-424"
+                            "Pregunta lo que necesites sobre SBIR/STTR… "
+                            "(p. ej. Cost Volume DARPA Phase II, work-share, SF-424)"
                         ),
                         scale=5,
                         show_label=False,
                         lines=2,
                     )
-                    send = gr.Button("Ask", variant="primary", scale=1)
+                    send = gr.Button("Send", variant="primary", scale=1)
 
                 with gr.Accordion("Options", open=False):
                     with gr.Row():

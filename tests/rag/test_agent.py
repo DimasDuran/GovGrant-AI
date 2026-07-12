@@ -1,6 +1,6 @@
 from govgrant.agent.graph import (
     build_agent_graph,
-    is_non_substantive_query,
+    is_conversational_turn,
     run_agent,
 )
 
@@ -21,15 +21,18 @@ def test_run_agent_doc_query():
     assert "user_docs" in (out.get("sources_used") or [])
 
 
-def test_greeting_is_not_chatbot_intro():
-    assert is_non_substantive_query("Hola")
-    assert is_non_substantive_query("hello!")
-    assert is_non_substantive_query("quién eres")
-    assert not is_non_substantive_query(
+def test_greeting_is_friendly_vertical_assistant():
+    assert is_conversational_turn("Hola")
+    assert is_conversational_turn("hello!")
+    assert is_conversational_turn("quién eres")
+    assert not is_conversational_turn(
         "What is the maximum DARPA Phase II cost volume?"
     )
     out = run_agent("Hola", use_llm=False)
     ans = out.get("answer") or ""
-    assert "chatbot" in ans.lower() or "corpus" in ans.lower()
-    assert "Soy GovGrant AI" not in ans
-    assert out.get("meta", {}).get("skip_reason") == "non_substantive_query"
+    # Offline fallback: natural vertical greeting (no "not a chatbot" lecture)
+    assert "GovGrant" in ans
+    assert "chatbot conversacional" not in ans.lower()
+    assert "no es un chatbot" not in ans.lower()
+    assert out.get("meta", {}).get("mode") == "conversation"
+    assert out.get("intent") == "chat"

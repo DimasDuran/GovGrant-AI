@@ -1,12 +1,12 @@
 """
-LangGraph orchestration (R7 + Haiku chat).
+LangGraph orchestration (R7 + Haiku).
 
 Pipeline:
-  classify (heuristic) → retrieve (QueryRouter) → validate_evidence → format_answer (Haiku)
+  classify → retrieve (QueryRouter, when needed) → validate_evidence → format_answer (Haiku)
 
-Routing stays heuristic (more reliable for SBIR domain).
-Haiku is used only to write the final grounded answer from retrieved evidence.
-This is a document Q&A engine — not a conversational chatbot.
+Behaves like a normal AI assistant (Claude/GPT style), specialized on SBIR/STTR
+compliance. Grounded answers use retrieved evidence; greetings/meta use a short
+conversational turn without forcing a docs-only lecture.
 """
 
 from __future__ import annotations
@@ -26,8 +26,8 @@ _DOC_HINTS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"\bpolicy directive\b|\bSBA\b", re.I), "SBA SBIR_STTR_POLICY_DIRECTIVE_May2023"),
 ]
 
-# Greetings / meta-chat — do not retrieve or invent a chatbot intro
-_NON_QUESTION_RE = re.compile(
+# Greetings / small-talk → conversational path (no RAG required)
+_CONVERSATIONAL_RE = re.compile(
     r"""^
     (
         hola|hello|hi|hey|buenas(?:\s+(tardes|noches|días|dias))?|
@@ -42,33 +42,25 @@ _NON_QUESTION_RE = re.compile(
     re.I | re.X,
 )
 
-_NON_QUESTION_REPLY = (
-    "Este panel **consulta el corpus indexado** (DARPA / SBA / SF-424 / tus proposals) "
-    "— no es un chatbot conversacional.\n\n"
-    "Escribe una **pregunta concreta**, por ejemplo:\n"
-    "• ¿Cuál es el máximo del Cost Volume en DARPA Phase II?\n"
-    "• ¿Qué work-share aplica en SBIR Phase II?\n"
-    "• ¿Qué dice el SF-424 sobre indirect costs?"
+_FALLBACK_GREETING = (
+    "Hola — soy **GovGrant AI**, tu asistente de cumplimiento SBIR/STTR "
+    "(DARPA, SBA, SF-424 y tus proposals). ¿En qué te ayudo?"
 )
 
 
-def is_non_substantive_query(query: str) -> bool:
-    """True for greetings / empty / pure meta chat (no compliance question)."""
+def is_conversational_turn(query: str) -> bool:
+    """True for greetings / empty / pure small-talk (no retrieval needed)."""
     q = (query or "").strip()
     if not q:
         return True
-    if _NON_QUESTION_RE.match(q):
-        return True
-    # Very short with no domain token
-    low = q.lower()
-    domain = re.search(
-        r"sbir|sttr|darpa|sba|sf-?424|phase|cost|budget|work[- ]?share|"
-        r"eligib|proposal|volume|ot\b|milestone|topic|foa|nih|dod",
-        low,
-    )
-    if len(q) < 12 and not domain:
+    if _CONVERSATIONAL_RE.match(q):
         return True
     return False
+
+
+# Back-compat alias for older imports/tests
+def is_non_substantive_query(query: str) -> bool:
+    return is_conversational_turn(query)
 
 
 class AgentState(TypedDict, total=False):
@@ -111,24 +103,31 @@ def build_agent_graph(
     def classify(state: AgentState) -> AgentState:
         # Domain heuristics are more reliable than LLM routing for this stack
         q = state.get("query") or ""
-        if is_non_substantive_query(q):
+        if is_conversational_turn(q):
             return {
                 **state,
-                "intent": "doc_qa",
+                "intent": "chat",
                 "doc_id": state.get("doc_id"),
                 "used_llm": False,
-                "insufficient": True,
+                "insufficient": False,
                 "evidence": "",
                 "sources_used": [],
-                "answer": _NON_QUESTION_REPLY,
-                "meta": {"skip_reason": "non_substantive_query"},
+                "meta": {"mode": "conversation"},
             }
         intent = tools.classify(q)
         doc_id = infer_doc_id(q, state.get("doc_id"))
-        return {**state, "intent": intent, "doc_id": doc_id, "used_llm": False}
+        return {
+            **state,
+            "intent": intent,
+            "doc_id": doc_id,
+            "used_llm": False,
+            "meta": {"mode": "grounded"},
+        }
 
     def retrieve(state: AgentState) -> AgentState:
-        # Already answered (greeting / empty)
+        # Conversational turns (greetings) skip retrieval
+        if (state.get("meta") or {}).get("mode") == "conversation":
+            return state
         if state.get("answer"):
             return state
         # Multi-part compliance questions need broader evidence packs
@@ -167,8 +166,10 @@ def build_agent_graph(
         }
 
     def validate_evidence(state: AgentState) -> AgentState:
-        # Keep pre-filled answers (e.g. greeting short-circuit)
         if state.get("answer"):
+            return state
+        # Conversational path does not need evidence
+        if (state.get("meta") or {}).get("mode") == "conversation":
             return state
         if state.get("insufficient") or not (state.get("evidence") or "").strip():
             return {
@@ -184,6 +185,17 @@ def build_agent_graph(
     def format_answer(state: AgentState) -> AgentState:
         if state.get("answer"):
             return state
+
+        # Normal assistant turn (greeting / meta) — no RAG lecture
+        if (state.get("meta") or {}).get("mode") == "conversation":
+            if llm_on:
+                try:
+                    answer = llm.vertical_assistant_reply(state.get("query") or "")
+                    return {**state, "answer": answer, "used_llm": True}
+                except Exception:  # noqa: BLE001
+                    pass
+            return {**state, "answer": _FALLBACK_GREETING, "used_llm": False}
+
         if llm_on and not state.get("insufficient"):
             try:
                 answer = llm.answer_from_evidence(
