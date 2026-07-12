@@ -548,121 +548,228 @@ def _apply_session(api_key: str) -> tuple[str, str]:
     return _status_md(key), banner
 
 
-# Clean light UI: soft grays everywhere; solid black only on primary buttons.
+# Light gray UI. Solid black only on primary buttons.
+# Soft() defaults to indigo — force pure gray hues (not slate, which is blue-gray).
 _BW_THEME = gr.themes.Soft(
-    primary_hue="neutral",
-    secondary_hue="neutral",
-    neutral_hue="slate",
+    primary_hue="gray",
+    secondary_hue="gray",
+    neutral_hue="gray",
     font=gr.themes.GoogleFont("Inter"),
     font_mono=gr.themes.GoogleFont("JetBrains Mono"),
 ).set(
     body_background_fill="#fafafa",
     body_text_color="#1f2937",
     background_fill_primary="#ffffff",
-    background_fill_secondary="#f8fafc",
-    border_color_primary="#e5e7eb",
+    background_fill_secondary="#f5f5f5",
+    border_color_primary="#e5e5e5",
     block_background_fill="#ffffff",
-    block_border_color="#e5e7eb",
+    block_border_color="#e5e5e5",
     block_border_width="1px",
-    block_label_text_color="#4b5563",
-    block_title_text_color="#111827",
-    block_shadow="0 1px 2px rgba(15, 23, 42, 0.04)",
+    block_label_text_color="#525252",
+    block_title_text_color="#171717",
+    block_shadow="0 1px 2px rgba(0, 0, 0, 0.04)",
     # Primary actions = black fill only
-    button_primary_background_fill="#111827",
+    button_primary_background_fill="#171717",
     button_primary_background_fill_hover="#000000",
     button_primary_text_color="#ffffff",
-    button_primary_border_color="#111827",
-    # Secondary = light, not black
+    button_primary_border_color="#171717",
+    # Secondary = light
     button_secondary_background_fill="#ffffff",
-    button_secondary_background_fill_hover="#f3f4f6",
-    button_secondary_text_color="#374151",
-    button_secondary_border_color="#d1d5db",
+    button_secondary_background_fill_hover="#f5f5f5",
+    button_secondary_text_color="#404040",
+    button_secondary_border_color="#d4d4d4",
     input_background_fill="#ffffff",
-    input_border_color="#e5e7eb",
-    input_border_color_focus="#9ca3af",
-    input_placeholder_color="#9ca3af",
+    input_border_color="#e5e5e5",
+    input_border_color_focus="#a3a3a3",
+    input_placeholder_color="#a3a3a3",
     checkbox_background_color="#ffffff",
-    checkbox_border_color="#d1d5db",
+    checkbox_background_color_selected="#171717",
+    checkbox_background_color_focus="#ffffff",
+    checkbox_border_color="#d4d4d4",
+    checkbox_border_color_focus="#525252",
+    checkbox_border_color_selected="#171717",
     checkbox_label_background_fill="#ffffff",
-    checkbox_label_text_color="#374151",
-    color_accent="#6b7280",
-    color_accent_soft="#f3f4f6",
-    link_text_color="#374151",
-    link_text_color_hover="#111827",
-    shadow_drop="0 1px 2px rgba(15, 23, 42, 0.05)",
-    shadow_drop_lg="0 4px 12px rgba(15, 23, 42, 0.06)",
+    checkbox_label_background_fill_selected="#f5f5f5",
+    checkbox_label_text_color="#404040",
+    checkbox_label_text_color_selected="#171717",
+    slider_color="#525252",
+    color_accent="#525252",
+    color_accent_soft="#f5f5f5",
+    link_text_color="#404040",
+    link_text_color_hover="#171717",
+    shadow_drop="0 1px 2px rgba(0, 0, 0, 0.05)",
+    shadow_drop_lg="0 4px 12px rgba(0, 0, 0, 0.06)",
 )
 
 _BW_CSS = """
+/* Kill Gradio's hardcoded blue palette + Soft indigo leftovers */
 .gradio-container {
   max-width: 1100px !important;
   font-family: Inter, system-ui, sans-serif !important;
   background: #fafafa !important;
   color: #1f2937 !important;
+
+  /* Tailwind-style blue tokens remapped to gray */
+  --color-blue-50: #fafafa !important;
+  --color-blue-100: #f5f5f5 !important;
+  --color-blue-200: #e5e5e5 !important;
+  --color-blue-300: #d4d4d4 !important;
+  --color-blue-400: #a3a3a3 !important;
+  --color-blue-500: #737373 !important;
+  --color-blue-600: #525252 !important;
+  --color-blue-700: #404040 !important;
+  --color-blue-800: #262626 !important;
+  --color-blue-900: #171717 !important;
+  --color-blue-950: #0a0a0a !important;
+
+  --primary-50: #fafafa !important;
+  --primary-100: #f5f5f5 !important;
+  --primary-200: #e5e5e5 !important;
+  --primary-300: #d4d4d4 !important;
+  --primary-400: #a3a3a3 !important;
+  --primary-500: #737373 !important;
+  --primary-600: #525252 !important;
+  --primary-700: #404040 !important;
+  --primary-800: #262626 !important;
+  --primary-900: #171717 !important;
+  --primary-950: #0a0a0a !important;
+
+  --secondary-50: #fafafa !important;
+  --secondary-100: #f5f5f5 !important;
+  --secondary-200: #e5e5e5 !important;
+  --secondary-300: #d4d4d4 !important;
+  --secondary-400: #a3a3a3 !important;
+  --secondary-500: #737373 !important;
+  --secondary-600: #525252 !important;
+  --secondary-700: #404040 !important;
+  --secondary-800: #262626 !important;
+  --secondary-900: #171717 !important;
+
+  --color-accent: #525252 !important;
+  --color-accent-soft: #f5f5f5 !important;
+  --border-color-accent: #d4d4d4 !important;
+  --border-color-accent-subdued: #e5e5e5 !important;
+  --slider-color: #525252 !important;
+  --loader-color: #525252 !important;
+  --stat-background-fill: #e5e5e5 !important;
+
+  --checkbox-background-color-selected: #171717 !important;
+  --checkbox-border-color-selected: #171717 !important;
+  --checkbox-border-color-focus: #525252 !important;
+  --checkbox-label-background-fill-selected: #f5f5f5 !important;
+  --checkbox-label-border-color-selected: #e5e5e5 !important;
+  --checkbox-label-text-color-selected: #171717 !important;
 }
 footer { display: none !important; }
 
-/* Soft borders on blocks/inputs — never pure black chrome */
-.block, .form, .panel {
-  border-color: #e5e7eb !important;
+.block, .form, .panel, .group {
+  border-color: #e5e5e5 !important;
+  background: #ffffff !important;
 }
 
-/* Tabs: gray underline, black text only when selected */
+/* Tabs */
 .tab-nav button {
-  color: #6b7280 !important;
+  color: #737373 !important;
   border-color: transparent !important;
+  background: transparent !important;
 }
 .tab-nav button.selected {
-  color: #111827 !important;
-  border-bottom: 2px solid #111827 !important;
+  color: #171717 !important;
+  border-bottom: 2px solid #171717 !important;
   font-weight: 600 !important;
   background: transparent !important;
 }
 
-/* Tables: light header, not black slab */
+/* Checkboxes / radios: Gradio hardcodes color:#2563eb */
+input[type="checkbox"],
+input[type="radio"] {
+  color: #171717 !important;
+  accent-color: #171717 !important;
+}
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+  background-color: #171717 !important;
+  border-color: #171717 !important;
+  color: #171717 !important;
+}
+
+/* Selected checkbox/radio labels (often blue wash) */
+label:has(input:checked),
+.selected {
+  background-image: none !important;
+}
+
+/* Tables */
 .prose table th {
-  background: #f3f4f6 !important;
-  color: #374151 !important;
-  border-color: #e5e7eb !important;
+  background: #f5f5f5 !important;
+  color: #404040 !important;
+  border-color: #e5e5e5 !important;
   font-weight: 600 !important;
 }
 .prose table td {
-  border-color: #e5e7eb !important;
+  border-color: #e5e5e5 !important;
   color: #1f2937 !important;
 }
 .prose table tr:nth-child(even) td {
   background: #fafafa !important;
 }
 
-/* Chat: soft gray bubbles */
-.bubble-wrap .message-row .message {
-  border: 1px solid #e5e7eb !important;
+/* Chat bubbles */
+.bubble-wrap .message-row .message,
+.bubble-wrap .message {
+  border: 1px solid #e5e5e5 !important;
   box-shadow: none !important;
-}
-
-/* Code blocks: soft gray */
-.prose code, .prose pre, .code_wrap {
-  background: #f3f4f6 !important;
+  background: #ffffff !important;
   color: #1f2937 !important;
-  border: 1px solid #e5e7eb !important;
 }
 
-/* Primary buttons stay black; force secondary light */
+/* Code */
+.prose code, .prose pre, .code_wrap {
+  background: #f5f5f5 !important;
+  color: #1f2937 !important;
+  border: 1px solid #e5e5e5 !important;
+}
+
+/* Examples chips */
+.examples button, .examples .gallery-item {
+  background: #ffffff !important;
+  border: 1px solid #e5e5e5 !important;
+  color: #404040 !important;
+}
+
+/* File dropzone */
+.wrap.default, .file-preview, .upload-container {
+  border-color: #e5e5e5 !important;
+  background: #fafafa !important;
+}
+
+/* Focus rings: gray, never blue */
+*:focus, *:focus-visible {
+  outline-color: #a3a3a3 !important;
+  --tw-ring-color: #a3a3a3 !important;
+}
+
+/* Primary buttons = black only; secondary light */
 button.primary, .primary {
-  background: #111827 !important;
+  background: #171717 !important;
   color: #ffffff !important;
-  border-color: #111827 !important;
+  border-color: #171717 !important;
 }
 button.primary:hover, .primary:hover {
   background: #000000 !important;
 }
 button.secondary, .secondary {
   background: #ffffff !important;
-  color: #374151 !important;
-  border: 1px solid #d1d5db !important;
+  color: #404040 !important;
+  border: 1px solid #d4d4d4 !important;
 }
 button.secondary:hover, .secondary:hover {
-  background: #f3f4f6 !important;
+  background: #f5f5f5 !important;
+}
+
+/* Slider fill */
+input[type="range"] {
+  accent-color: #525252 !important;
 }
 """
 
