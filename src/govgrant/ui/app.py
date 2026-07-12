@@ -920,23 +920,29 @@ Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
         )
 
         with gr.Tabs():
-            with gr.Tab("Chat agent"):
+            with gr.Tab("Q&A (corpus)"):
+                gr.Markdown(
+                    "Consulta **documentos indexados** (no es un chatbot general). "
+                    "Escribe una pregunta concreta de cumplimiento; la respuesta se genera "
+                    "solo con evidencia recuperada (RAG + Haiku)."
+                )
                 chatbot = gr.Chatbot(
                     height=480,
-                    label="Conversation",
+                    label="Answers (grounded)",
                     buttons=["copy", "copy_all"],
                     layout="bubble",
                 )
                 with gr.Row():
                     msg = gr.Textbox(
                         placeholder=(
-                            "Ask about SBIR policy, SF-424, DARPA Phase II, open topics…"
+                            "Ej: máximo Cost Volume DARPA Phase II · work-share SBIR · "
+                            "indirect costs SF-424"
                         ),
                         scale=5,
                         show_label=False,
                         lines=2,
                     )
-                    send = gr.Button("Send", variant="primary", scale=1)
+                    send = gr.Button("Ask", variant="primary", scale=1)
 
                 with gr.Accordion("Options", open=False):
                     with gr.Row():

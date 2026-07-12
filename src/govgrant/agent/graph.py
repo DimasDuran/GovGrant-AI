@@ -5,7 +5,8 @@ Pipeline:
   classify (heuristic) → retrieve (QueryRouter) → validate_evidence → format_answer (Haiku)
 
 Routing stays heuristic (more reliable for SBIR domain).
-Haiku is used only to write the final grounded answer.
+Haiku is used only to write the final grounded answer from retrieved evidence.
+This is a document Q&A engine — not a conversational chatbot.
 """
 
 from __future__ import annotations
@@ -24,6 +25,50 @@ _DOC_HINTS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"\bSF-?424\b|\bapplication guide\b", re.I), "SF424 SBIR_STTR Application Guide"),
     (re.compile(r"\bpolicy directive\b|\bSBA\b", re.I), "SBA SBIR_STTR_POLICY_DIRECTIVE_May2023"),
 ]
+
+# Greetings / meta-chat — do not retrieve or invent a chatbot intro
+_NON_QUESTION_RE = re.compile(
+    r"""^
+    (
+        hola|hello|hi|hey|buenas(?:\s+(tardes|noches|días|dias))?|
+        buenos\s+días|buenos\s+dias|
+        good\s+(morning|afternoon|evening)|
+        (qué|que)\s+tal|(cómo|como)\s+estás|(cómo|como)\s+estas|
+        who\s+are\s+you|(quién|quien)\s+eres|
+        help|ayuda|start|comenzar|thanks|gracias|ok|okay
+    )
+    [\s.!?¿?]*$
+    """,
+    re.I | re.X,
+)
+
+_NON_QUESTION_REPLY = (
+    "Este panel **consulta el corpus indexado** (DARPA / SBA / SF-424 / tus proposals) "
+    "— no es un chatbot conversacional.\n\n"
+    "Escribe una **pregunta concreta**, por ejemplo:\n"
+    "• ¿Cuál es el máximo del Cost Volume en DARPA Phase II?\n"
+    "• ¿Qué work-share aplica en SBIR Phase II?\n"
+    "• ¿Qué dice el SF-424 sobre indirect costs?"
+)
+
+
+def is_non_substantive_query(query: str) -> bool:
+    """True for greetings / empty / pure meta chat (no compliance question)."""
+    q = (query or "").strip()
+    if not q:
+        return True
+    if _NON_QUESTION_RE.match(q):
+        return True
+    # Very short with no domain token
+    low = q.lower()
+    domain = re.search(
+        r"sbir|sttr|darpa|sba|sf-?424|phase|cost|budget|work[- ]?share|"
+        r"eligib|proposal|volume|ot\b|milestone|topic|foa|nih|dod",
+        low,
+    )
+    if len(q) < 12 and not domain:
+        return True
+    return False
 
 
 class AgentState(TypedDict, total=False):
@@ -65,11 +110,27 @@ def build_agent_graph(
 
     def classify(state: AgentState) -> AgentState:
         # Domain heuristics are more reliable than LLM routing for this stack
-        intent = tools.classify(state["query"])
-        doc_id = infer_doc_id(state["query"], state.get("doc_id"))
+        q = state.get("query") or ""
+        if is_non_substantive_query(q):
+            return {
+                **state,
+                "intent": "doc_qa",
+                "doc_id": state.get("doc_id"),
+                "used_llm": False,
+                "insufficient": True,
+                "evidence": "",
+                "sources_used": [],
+                "answer": _NON_QUESTION_REPLY,
+                "meta": {"skip_reason": "non_substantive_query"},
+            }
+        intent = tools.classify(q)
+        doc_id = infer_doc_id(q, state.get("doc_id"))
         return {**state, "intent": intent, "doc_id": doc_id, "used_llm": False}
 
     def retrieve(state: AgentState) -> AgentState:
+        # Already answered (greeting / empty)
+        if state.get("answer"):
+            return state
         # Multi-part compliance questions need broader evidence packs
         q = state["query"]
         multi = bool(
@@ -106,6 +167,9 @@ def build_agent_graph(
         }
 
     def validate_evidence(state: AgentState) -> AgentState:
+        # Keep pre-filled answers (e.g. greeting short-circuit)
+        if state.get("answer"):
+            return state
         if state.get("insufficient") or not (state.get("evidence") or "").strip():
             return {
                 **state,
