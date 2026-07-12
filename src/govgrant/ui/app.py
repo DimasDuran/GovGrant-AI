@@ -548,113 +548,121 @@ def _apply_session(api_key: str) -> tuple[str, str]:
     return _status_md(key), banner
 
 
-# Black & white console theme (high contrast, no brand color)
-_BW_THEME = gr.themes.Monochrome(
+# Clean light UI: soft grays everywhere; solid black only on primary buttons.
+_BW_THEME = gr.themes.Soft(
     primary_hue="neutral",
     secondary_hue="neutral",
-    neutral_hue="neutral",
+    neutral_hue="slate",
     font=gr.themes.GoogleFont("Inter"),
     font_mono=gr.themes.GoogleFont("JetBrains Mono"),
 ).set(
-    body_background_fill="#ffffff",
-    body_background_fill_dark="#0a0a0a",
-    body_text_color="#0a0a0a",
-    body_text_color_dark="#f5f5f5",
+    body_background_fill="#fafafa",
+    body_text_color="#1f2937",
     background_fill_primary="#ffffff",
-    background_fill_primary_dark="#0a0a0a",
-    background_fill_secondary="#f5f5f5",
-    background_fill_secondary_dark="#141414",
-    border_color_primary="#0a0a0a",
-    border_color_primary_dark="#e5e5e5",
+    background_fill_secondary="#f8fafc",
+    border_color_primary="#e5e7eb",
     block_background_fill="#ffffff",
-    block_background_fill_dark="#111111",
-    block_border_color="#0a0a0a",
-    block_border_color_dark="#e5e5e5",
-    block_label_text_color="#0a0a0a",
-    block_label_text_color_dark="#f5f5f5",
-    block_title_text_color="#0a0a0a",
-    block_title_text_color_dark="#f5f5f5",
-    button_primary_background_fill="#0a0a0a",
-    button_primary_background_fill_dark="#f5f5f5",
-    button_primary_background_fill_hover="#262626",
-    button_primary_background_fill_hover_dark="#e5e5e5",
+    block_border_color="#e5e7eb",
+    block_border_width="1px",
+    block_label_text_color="#4b5563",
+    block_title_text_color="#111827",
+    block_shadow="0 1px 2px rgba(15, 23, 42, 0.04)",
+    # Primary actions = black fill only
+    button_primary_background_fill="#111827",
+    button_primary_background_fill_hover="#000000",
     button_primary_text_color="#ffffff",
-    button_primary_text_color_dark="#0a0a0a",
+    button_primary_border_color="#111827",
+    # Secondary = light, not black
     button_secondary_background_fill="#ffffff",
-    button_secondary_background_fill_dark="#0a0a0a",
-    button_secondary_background_fill_hover="#f5f5f5",
-    button_secondary_background_fill_hover_dark="#1a1a1a",
-    button_secondary_text_color="#0a0a0a",
-    button_secondary_text_color_dark="#f5f5f5",
-    button_secondary_border_color="#0a0a0a",
-    button_secondary_border_color_dark="#e5e5e5",
+    button_secondary_background_fill_hover="#f3f4f6",
+    button_secondary_text_color="#374151",
+    button_secondary_border_color="#d1d5db",
     input_background_fill="#ffffff",
-    input_background_fill_dark="#0a0a0a",
-    input_border_color="#0a0a0a",
-    input_border_color_dark="#e5e5e5",
-    input_placeholder_color="#737373",
-    input_placeholder_color_dark="#a3a3a3",
+    input_border_color="#e5e7eb",
+    input_border_color_focus="#9ca3af",
+    input_placeholder_color="#9ca3af",
     checkbox_background_color="#ffffff",
-    checkbox_background_color_dark="#0a0a0a",
-    checkbox_border_color="#0a0a0a",
-    checkbox_border_color_dark="#e5e5e5",
+    checkbox_border_color="#d1d5db",
     checkbox_label_background_fill="#ffffff",
-    checkbox_label_background_fill_dark="#0a0a0a",
-    checkbox_label_text_color="#0a0a0a",
-    checkbox_label_text_color_dark="#f5f5f5",
-    color_accent="#0a0a0a",
-    color_accent_soft="#f5f5f5",
-    link_text_color="#0a0a0a",
-    link_text_color_dark="#f5f5f5",
-    link_text_color_hover="#404040",
-    link_text_color_hover_dark="#d4d4d4",
-    shadow_drop="none",
-    shadow_drop_lg="none",
+    checkbox_label_text_color="#374151",
+    color_accent="#6b7280",
+    color_accent_soft="#f3f4f6",
+    link_text_color="#374151",
+    link_text_color_hover="#111827",
+    shadow_drop="0 1px 2px rgba(15, 23, 42, 0.05)",
+    shadow_drop_lg="0 4px 12px rgba(15, 23, 42, 0.06)",
 )
 
 _BW_CSS = """
 .gradio-container {
   max-width: 1100px !important;
   font-family: Inter, system-ui, sans-serif !important;
-}
-/* Force monochrome chrome */
-.gradio-container,
-.gradio-container .main,
-.gradio-container .contain {
-  background: #ffffff !important;
-  color: #0a0a0a !important;
+  background: #fafafa !important;
+  color: #1f2937 !important;
 }
 footer { display: none !important; }
-/* Tabs: black underline, no blue */
-button.selected,
+
+/* Soft borders on blocks/inputs — never pure black chrome */
+.block, .form, .panel {
+  border-color: #e5e7eb !important;
+}
+
+/* Tabs: gray underline, black text only when selected */
+.tab-nav button {
+  color: #6b7280 !important;
+  border-color: transparent !important;
+}
 .tab-nav button.selected {
-  border-color: #0a0a0a !important;
-  color: #0a0a0a !important;
+  color: #111827 !important;
+  border-bottom: 2px solid #111827 !important;
+  font-weight: 600 !important;
+  background: transparent !important;
+}
+
+/* Tables: light header, not black slab */
+.prose table th {
+  background: #f3f4f6 !important;
+  color: #374151 !important;
+  border-color: #e5e7eb !important;
   font-weight: 600 !important;
 }
-/* Tables in markdown */
-.prose table th {
-  background: #0a0a0a !important;
-  color: #ffffff !important;
-  border-color: #0a0a0a !important;
-}
 .prose table td {
-  border-color: #d4d4d4 !important;
+  border-color: #e5e7eb !important;
+  color: #1f2937 !important;
 }
 .prose table tr:nth-child(even) td {
-  background: #f5f5f5 !important;
+  background: #fafafa !important;
 }
-/* Chat bubbles */
-.bubble-wrap .message-row .message.bot,
-.bubble-wrap .message-row .message.user {
-  border: 1px solid #0a0a0a !important;
+
+/* Chat: soft gray bubbles */
+.bubble-wrap .message-row .message {
+  border: 1px solid #e5e7eb !important;
   box-shadow: none !important;
 }
-/* Code / JSON blocks */
-.prose code, .prose pre {
-  background: #f5f5f5 !important;
-  color: #0a0a0a !important;
-  border: 1px solid #d4d4d4 !important;
+
+/* Code blocks: soft gray */
+.prose code, .prose pre, .code_wrap {
+  background: #f3f4f6 !important;
+  color: #1f2937 !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+/* Primary buttons stay black; force secondary light */
+button.primary, .primary {
+  background: #111827 !important;
+  color: #ffffff !important;
+  border-color: #111827 !important;
+}
+button.primary:hover, .primary:hover {
+  background: #000000 !important;
+}
+button.secondary, .secondary {
+  background: #ffffff !important;
+  color: #374151 !important;
+  border: 1px solid #d1d5db !important;
+}
+button.secondary:hover, .secondary:hover {
+  background: #f3f4f6 !important;
 }
 """
 
