@@ -299,11 +299,11 @@ def chat_ask(
     use_llm: bool,
     show_debug: bool,
     api_key: str,
-) -> tuple[list[dict[str, str]], str]:
+) -> tuple[list[dict[str, str]], str, str]:
     history = list(history or [])
     message = (message or "").strip()
     if not message:
-        return history, _status_md()
+        return history, _status_md(), ""
 
     history.append({"role": "user", "content": message})
     t0 = time.time()
@@ -391,7 +391,7 @@ def chat_ask(
                 "content": f"**Error:** `{type(exc).__name__}: {exc}`",
             }
         )
-    return history, _status_md()
+    return history, _status_md(), ""
 
 
 def retrieve_only(
@@ -887,6 +887,16 @@ button.secondary:hover, .secondary:hover {
 input[type="range"] {
   accent-color: #525252 !important;
 }
+
+[class*="Prose"] a, .prose a, .markdown a {
+  color: #404040 !important;
+}
+[class*="Prose"] a:hover, .prose a:hover, .markdown a:hover {
+  color: #171717 !important;
+}
+.tabs, [role="tablist"] {
+  border-color: #e5e5e5 !important;
+}
 """
 
 
@@ -992,8 +1002,8 @@ Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
                         show_debug,
                         session_key,
                     ],
-                    outputs=[chatbot, status],
-                ).then(lambda: "", outputs=msg)
+                    outputs=[chatbot, status, msg],
+                )
                 msg.submit(
                     chat_ask,
                     inputs=[
@@ -1006,8 +1016,8 @@ Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
                         show_debug,
                         session_key,
                     ],
-                    outputs=[chatbot, status],
-                ).then(lambda: "", outputs=msg)
+                    outputs=[chatbot, status, msg],
+                )
                 clear.click(_clear, inputs=[session_key], outputs=[chatbot, status])
 
             with gr.Tab("Retrieve only"):

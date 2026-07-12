@@ -5,8 +5,8 @@ Pipeline:
   classify → retrieve (QueryRouter, when needed) → validate_evidence → format_answer (Haiku)
 
 Behaves like a normal AI assistant (Claude/GPT style), specialized on SBIR/STTR
-compliance. Grounded answers use retrieved evidence; greetings/meta use a short
-conversational turn without forcing a docs-only lecture.
+compliance. Grounded answers use retrieved evidence; greetings/meta are handled
+by the LLM naturally without forcing a docs-only lecture.
 """
 
 from __future__ import annotations
@@ -62,71 +62,7 @@ def is_conversational_turn(query: str) -> bool:
     return False
 
 
-def conversational_reply(query: str) -> str:
-    """
-    Short, natural replies for greetings/meta — no capability brochure.
 
-    Fixed templates (no LLM): Haiku tends to dump topic menus on greetings.
-    """
-    q = (query or "").strip()
-    low = _normalize_chat_query(q)
-    spanish = bool(
-        re.search(
-            r"[áéíóúñ¿¡]|hola|buenas|quién|quien|gracias|ayuda|qué tal|como estas|cómo estás",
-            q,
-            re.I,
-        )
-    ) or low in {"hola", "buenas", ""}
-
-    if not q or low in {"hola", "hello", "hi", "hey", "buenas", "ok", "okay"}:
-        return (
-            "¡Hola! Soy GovGrant AI, especializado en cumplimiento SBIR/STTR. ¿En qué te ayudo?"
-            if spanish or low in {"hola", "buenas", ""}
-            else "Hi — I'm GovGrant AI, specialized in SBIR/STTR compliance. How can I help?"
-        )
-    if re.search(r"buenos?\s+d[ií]as|good morning", low):
-        return (
-            "¡Buenos días! Soy GovGrant AI (SBIR/STTR). ¿En qué te ayudo?"
-            if spanish
-            else "Good morning — GovGrant AI here (SBIR/STTR). How can I help?"
-        )
-    if re.search(r"buenas?\s+(tardes|noches)|good (afternoon|evening)", low):
-        return (
-            "¡Hola! Soy GovGrant AI (SBIR/STTR). ¿En qué te ayudo?"
-            if spanish
-            else "Hi — GovGrant AI (SBIR/STTR). How can I help?"
-        )
-    if re.search(r"quién eres|quien eres|who are you", low):
-        return (
-            "Soy **GovGrant AI**: un asistente de IA enfocado en cumplimiento de "
-            "propuestas y políticas SBIR/STTR (instrucciones de agencia, SBA, SF-424, "
-            "topics y tus proposals). Pregúntame lo que necesites en ese ámbito."
-            if spanish
-            else "I'm **GovGrant AI** — an AI assistant focused on SBIR/STTR compliance "
-            "(agency instructions, SBA, SF-424, open topics, and your proposals). "
-            "Ask me anything in that domain."
-        )
-    if re.search(r"gracias|thanks|thank you", low):
-        return "¡De nada! Si surge otra duda de SBIR/STTR, aquí estoy." if spanish else "You're welcome!"
-    if re.search(r"help|ayuda|start|comenzar", low):
-        return (
-            "Claro. Dime tu duda de cumplimiento SBIR/STTR "
-            "(p. ej. work-share, cost volume, elegibilidad, SF-424)."
-            if spanish
-            else "Sure — ask your SBIR/STTR compliance question "
-            "(e.g. work-share, cost volume, eligibility, SF-424)."
-        )
-    # Default short open
-    return (
-        "Hola — soy GovGrant AI (SBIR/STTR). ¿En qué te ayudo?"
-        if spanish
-        else "Hi — I'm GovGrant AI (SBIR/STTR). How can I help?"
-    )
-
-
-# Back-compat alias for older imports/tests
-def is_non_substantive_query(query: str) -> bool:
-    return is_conversational_turn(query)
 
 
 class AgentState(TypedDict, total=False):
@@ -252,14 +188,6 @@ def build_agent_graph(
         if state.get("answer"):
             return state
 
-        # Greetings / meta: fixed short reply (LLM tends to dump capability menus)
-        if (state.get("meta") or {}).get("mode") == "conversation":
-            return {
-                **state,
-                "answer": conversational_reply(state.get("query") or ""),
-                "used_llm": False,
-            }
-
         if llm_on and not state.get("insufficient"):
             try:
                 answer = llm.answer_from_evidence(
@@ -270,12 +198,17 @@ def build_agent_graph(
                 )
                 return {**state, "answer": answer, "used_llm": True}
             except Exception as exc:  # noqa: BLE001
+                if (state.get("meta") or {}).get("mode") == "conversation":
+                    return {**state, "answer": "(LLM unavailable)", "used_llm": False}
                 fallback = (
                     f"(LLM format failed: {exc})\n\n"
                     f"intent={state.get('intent')} | sources={state.get('sources_used')}\n\n"
                     f"{state.get('evidence', '')}"
                 )
                 return {**state, "answer": fallback, "used_llm": False}
+
+        if (state.get("meta") or {}).get("mode") == "conversation":
+            return {**state, "answer": "(LLM not configured)", "used_llm": False}
 
         header = (
             f"intent={state.get('intent')} | "

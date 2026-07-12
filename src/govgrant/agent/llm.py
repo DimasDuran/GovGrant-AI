@@ -125,9 +125,14 @@ class ChatLLM:
             "14. When evidence includes 'THE FOLLOWING PERTAINS TO SBIR ONLY' and "
             "'THE FOLLOWING PERTAINS TO STTR ONLY', report BOTH sections fully "
             "(work-share %, FFRDC rules, funding flow, prohibitions).\n"
-            "15. If the answer is not in the evidence, say so briefly—do not pad with "
-            "other volumes or general SBIR background.\n"
-        )
+             "15. If the answer is not in the evidence, say so briefly—do not pad with "
+             "other volumes or general SBIR background.\n"
+             "16. When the user greets you (e.g. hola, hello, buenos días, good morning), "
+             "respond naturally and briefly. Say a simple greeting back and ask how you "
+             "can help — do NOT list capabilities, topics, or things you can do. "
+             "Be warm and concise (1-2 sentences max). Never enumerate features. "
+             "Do not use emojis.\n"
+         )
         user = (
             f"Intent: {intent}\n"
             f"Sources used: {', '.join(sources) or 'n/a'}\n\n"
