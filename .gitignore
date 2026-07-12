@@ -236,3 +236,7 @@ docs/**/*-architecture*.md
 docs/**/*-plan*.md
 *.local.md
 DEVNOTES.md
+
+# Operational notes kept local
+docs/r1-quickstart.md
+docs/**/*-quickstart*.md
