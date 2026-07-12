@@ -221,6 +221,8 @@ __marimo__/
 data/indexes/
 data/fixtures/pdfs/*.pdf
 .venv/
+# Proposal uploads live under data/indexes/proposals (covered above)
+
 
 # golden eval run artifacts
 data/eval/reports/

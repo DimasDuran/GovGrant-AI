@@ -78,8 +78,20 @@ python -m govgrant.rag.cli query "cost volume" --api-key demo-beta-key --doc-id 
 ```
 
 - **Public agency docs** are listed in `public_doc_ids` and readable by all tenants.
-- **User proposals** are ingested under the caller's `tenant_id`.
+- **User proposals** are registered under the caller's `tenant_id` (UI tab **My proposals**).
 - `allowed_doc_ids: []` on a tenant restricts non-public docs (cross-tenant isolation).
+
+```bash
+# Programmatic upload (no Gradio)
+python - <<'PY'
+from govgrant.auth import resolve_request_auth
+from govgrant.proposals import ProposalService
+auth = resolve_request_auth(api_key="dev-local-key")  # or AUTH_ENABLED=false
+svc = ProposalService()
+print(svc.upload(auth, "path/to/proposal.pdf", index=True).to_dict())
+print([r.doc_id for r in svc.list_proposals(auth)])
+PY
+```
 
 ## Branching
 

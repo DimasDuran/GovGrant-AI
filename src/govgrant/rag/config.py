@@ -28,6 +28,19 @@ class Settings:
     default_tenant_id: str = os.getenv("DEFAULT_TENANT_ID", "local-dev")
     fixtures_pdf_dir: Path = REPO_ROOT / "data" / "fixtures" / "pdfs"
     bm25_persist_dir: Path = REPO_ROOT / "data" / "indexes" / "bm25"
+    # User proposals (tenant-scoped uploads)
+    proposals_dir: Path = Path(
+        os.getenv(
+            "PROPOSALS_DIR",
+            str(REPO_ROOT / "data" / "indexes" / "proposals"),
+        )
+    )
+    proposals_db_path: Path = Path(
+        os.getenv(
+            "PROPOSALS_DB_PATH",
+            str(REPO_ROOT / "data" / "indexes" / "proposals" / "proposals.sqlite"),
+        )
+    )
     tabular_db_path: Path = Path(
         os.getenv(
             "TABULAR_DB_PATH",
