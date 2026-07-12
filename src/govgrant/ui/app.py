@@ -602,14 +602,60 @@ _BW_THEME = gr.themes.Soft(
 )
 
 _BW_CSS = """
-/* Kill Gradio's hardcoded blue palette + Soft indigo leftovers */
-.gradio-container {
+/*
+  Force LIGHT mode always.
+  Gradio Soft ships dark-mode text (often white). If OS/browser is dark but we
+  paint white backgrounds, labels/inputs become white-on-white.
+*/
+html, body, .gradio-container, .gradio-container.dark, .dark {
+  color-scheme: light !important;
+}
+
+.gradio-container,
+.gradio-container.dark {
   max-width: 1100px !important;
   font-family: Inter, system-ui, sans-serif !important;
   background: #fafafa !important;
-  color: #1f2937 !important;
+  color: #171717 !important;
 
-  /* Tailwind-style blue tokens remapped to gray */
+  /* Surfaces */
+  --body-background-fill: #fafafa !important;
+  --background-fill-primary: #ffffff !important;
+  --background-fill-secondary: #f5f5f5 !important;
+  --block-background-fill: #ffffff !important;
+  --border-color-primary: #e5e5e5 !important;
+  --input-background-fill: #ffffff !important;
+  --input-border-color: #e5e5e5 !important;
+
+  /* Text: ALWAYS dark on light chrome (never white) */
+  --body-text-color: #171717 !important;
+  --body-text-color-subdued: #525252 !important;
+  --block-label-text-color: #404040 !important;
+  --block-title-text-color: #171717 !important;
+  --block-info-text-color: #525252 !important;
+  --checkbox-label-text-color: #404040 !important;
+  --checkbox-label-text-color-selected: #171717 !important;
+  --table-text-color: #171717 !important;
+  --link-text-color: #404040 !important;
+  --link-text-color-hover: #171717 !important;
+  --link-text-color-active: #171717 !important;
+  --link-text-color-visited: #525252 !important;
+  --error-text-color: #b91c1c !important;
+  --accordion-text-color: #171717 !important;
+
+  /* Buttons: secondary dark text; primary white text on black fill */
+  --button-secondary-text-color: #404040 !important;
+  --button-secondary-text-color-hover: #171717 !important;
+  --button-secondary-background-fill: #ffffff !important;
+  --button-secondary-background-fill-hover: #f5f5f5 !important;
+  --button-secondary-border-color: #d4d4d4 !important;
+  --button-primary-text-color: #ffffff !important;
+  --button-primary-text-color-hover: #ffffff !important;
+  --button-primary-background-fill: #171717 !important;
+  --button-primary-background-fill-hover: #000000 !important;
+  --button-primary-border-color: #171717 !important;
+
+  /* Kill blue palette → gray */
   --color-blue-50: #fafafa !important;
   --color-blue-100: #f5f5f5 !important;
   --color-blue-200: #e5e5e5 !important;
@@ -620,8 +666,6 @@ _BW_CSS = """
   --color-blue-700: #404040 !important;
   --color-blue-800: #262626 !important;
   --color-blue-900: #171717 !important;
-  --color-blue-950: #0a0a0a !important;
-
   --primary-50: #fafafa !important;
   --primary-100: #f5f5f5 !important;
   --primary-200: #e5e5e5 !important;
@@ -632,8 +676,6 @@ _BW_CSS = """
   --primary-700: #404040 !important;
   --primary-800: #262626 !important;
   --primary-900: #171717 !important;
-  --primary-950: #0a0a0a !important;
-
   --secondary-50: #fafafa !important;
   --secondary-100: #f5f5f5 !important;
   --secondary-200: #e5e5e5 !important;
@@ -644,32 +686,95 @@ _BW_CSS = """
   --secondary-700: #404040 !important;
   --secondary-800: #262626 !important;
   --secondary-900: #171717 !important;
+  --neutral-50: #fafafa !important;
+  --neutral-100: #f5f5f5 !important;
+  --neutral-200: #e5e5e5 !important;
+  --neutral-300: #d4d4d4 !important;
+  --neutral-400: #a3a3a3 !important;
+  --neutral-500: #737373 !important;
+  --neutral-600: #525252 !important;
+  --neutral-700: #404040 !important;
+  --neutral-800: #262626 !important;
+  --neutral-900: #171717 !important;
+  --neutral-950: #0a0a0a !important;
 
   --color-accent: #525252 !important;
   --color-accent-soft: #f5f5f5 !important;
   --border-color-accent: #d4d4d4 !important;
-  --border-color-accent-subdued: #e5e5e5 !important;
   --slider-color: #525252 !important;
   --loader-color: #525252 !important;
-  --stat-background-fill: #e5e5e5 !important;
-
   --checkbox-background-color-selected: #171717 !important;
   --checkbox-border-color-selected: #171717 !important;
   --checkbox-border-color-focus: #525252 !important;
   --checkbox-label-background-fill-selected: #f5f5f5 !important;
-  --checkbox-label-border-color-selected: #e5e5e5 !important;
-  --checkbox-label-text-color-selected: #171717 !important;
 }
+
 footer { display: none !important; }
 
-.block, .form, .panel, .group {
+/* Surfaces always white/light */
+.block, .form, .panel, .group, .wrap, .tabitem, .tabs {
   border-color: #e5e5e5 !important;
   background: #ffffff !important;
+  color: #171717 !important;
+}
+
+/* Explicit dark text on common chrome (fixes white-on-white labels) */
+.gradio-container label,
+.gradio-container .label-wrap,
+.gradio-container .block-label,
+.gradio-container .svelte-1gfkn6j,
+.gradio-container span,
+.gradio-container p,
+.gradio-container h1,
+.gradio-container h2,
+.gradio-container h3,
+.gradio-container h4,
+.gradio-container li,
+.gradio-container .prose,
+.gradio-container .markdown,
+.gradio-container .md,
+.gradio-container .info,
+.gradio-container legend {
+  color: #171717 !important;
+}
+.gradio-container .prose a {
+  color: #404040 !important;
+}
+
+/* Subdued helper text still readable */
+.gradio-container .block-info,
+.gradio-container .empty {
+  color: #525252 !important;
+}
+
+/* Inputs: dark text on white */
+.gradio-container input,
+.gradio-container textarea,
+.gradio-container select,
+.gradio-container .wrap input,
+.gradio-container .wrap textarea {
+  color: #171717 !important;
+  background: #ffffff !important;
+  border-color: #e5e5e5 !important;
+  -webkit-text-fill-color: #171717 !important;
+  caret-color: #171717 !important;
+}
+.gradio-container input::placeholder,
+.gradio-container textarea::placeholder {
+  color: #a3a3a3 !important;
+  -webkit-text-fill-color: #a3a3a3 !important;
+  opacity: 1 !important;
+}
+
+/* Dropdown selected value */
+.gradio-container .wrap .secondary-wrap,
+.gradio-container [data-testid="dropdown"] {
+  color: #171717 !important;
 }
 
 /* Tabs */
 .tab-nav button {
-  color: #737373 !important;
+  color: #525252 !important;
   border-color: transparent !important;
   background: transparent !important;
 }
@@ -680,7 +785,7 @@ footer { display: none !important; }
   background: transparent !important;
 }
 
-/* Checkboxes / radios: Gradio hardcodes color:#2563eb */
+/* Checkboxes / radios */
 input[type="checkbox"],
 input[type="radio"] {
   color: #171717 !important;
@@ -690,13 +795,10 @@ input[type="checkbox"]:checked,
 input[type="radio"]:checked {
   background-color: #171717 !important;
   border-color: #171717 !important;
-  color: #171717 !important;
 }
-
-/* Selected checkbox/radio labels (often blue wash) */
-label:has(input:checked),
-.selected {
+label:has(input:checked) {
   background-image: none !important;
+  color: #171717 !important;
 }
 
 /* Tables */
@@ -708,7 +810,8 @@ label:has(input:checked),
 }
 .prose table td {
   border-color: #e5e5e5 !important;
-  color: #1f2937 !important;
+  color: #171717 !important;
+  background: #ffffff !important;
 }
 .prose table tr:nth-child(even) td {
   background: #fafafa !important;
@@ -716,18 +819,20 @@ label:has(input:checked),
 
 /* Chat bubbles */
 .bubble-wrap .message-row .message,
-.bubble-wrap .message {
+.bubble-wrap .message,
+.bot, .user, .message-content {
   border: 1px solid #e5e5e5 !important;
   box-shadow: none !important;
   background: #ffffff !important;
-  color: #1f2937 !important;
+  color: #171717 !important;
 }
 
-/* Code */
-.prose code, .prose pre, .code_wrap {
+/* Code / JSON */
+.prose code, .prose pre, .code_wrap, .cm-editor, .cm-content {
   background: #f5f5f5 !important;
-  color: #1f2937 !important;
+  color: #171717 !important;
   border: 1px solid #e5e5e5 !important;
+  -webkit-text-fill-color: #171717 !important;
 }
 
 /* Examples chips */
@@ -741,33 +846,44 @@ label:has(input:checked),
 .wrap.default, .file-preview, .upload-container {
   border-color: #e5e5e5 !important;
   background: #fafafa !important;
+  color: #171717 !important;
 }
 
-/* Focus rings: gray, never blue */
+/* Focus: gray */
 *:focus, *:focus-visible {
   outline-color: #a3a3a3 !important;
   --tw-ring-color: #a3a3a3 !important;
 }
 
-/* Primary buttons = black only; secondary light */
-button.primary, .primary {
+/* Primary = black fill + white text ONLY here */
+button.primary, .primary,
+button.primary span, .primary span {
   background: #171717 !important;
   color: #ffffff !important;
   border-color: #171717 !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
 button.primary:hover, .primary:hover {
   background: #000000 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
-button.secondary, .secondary {
+
+/* Secondary = white fill + dark text */
+button.secondary, .secondary,
+button.secondary span, .secondary span,
+button.sm, .sm {
   background: #ffffff !important;
   color: #404040 !important;
   border: 1px solid #d4d4d4 !important;
+  -webkit-text-fill-color: #404040 !important;
 }
 button.secondary:hover, .secondary:hover {
   background: #f5f5f5 !important;
+  color: #171717 !important;
+  -webkit-text-fill-color: #171717 !important;
 }
 
-/* Slider fill */
 input[type="range"] {
   accent-color: #525252 !important;
 }
