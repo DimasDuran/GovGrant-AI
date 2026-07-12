@@ -74,3 +74,68 @@ def export_checklist_run(
         written["latest_json"] = str(latest_json.resolve())
 
     return written
+
+
+def list_export_history(
+    *,
+    out_dir: Path | str | None = None,
+    limit: int = 15,
+) -> list[dict[str, Any]]:
+    """
+    List recent checklist_*.md exports (newest first).
+
+    Skips checklist_latest.md pointer file.
+    """
+    directory = Path(out_dir) if out_dir else DEFAULT_REPORT_DIR
+    if not directory.is_dir():
+        return []
+    files = sorted(
+        (
+            p
+            for p in directory.glob("checklist_*.md")
+            if p.name != "checklist_latest.md"
+        ),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+    out: list[dict[str, Any]] = []
+    for p in files[:limit]:
+        st = p.stat()
+        json_sib = p.with_suffix(".json")
+        out.append(
+            {
+                "name": p.name,
+                "path": str(p.resolve()),
+                "json_path": str(json_sib.resolve()) if json_sib.is_file() else None,
+                "bytes": st.st_size,
+                "mtime": datetime.fromtimestamp(
+                    st.st_mtime, tz=timezone.utc
+                ).isoformat(),
+            }
+        )
+    return out
+
+
+def export_history_markdown(
+    *,
+    out_dir: Path | str | None = None,
+    limit: int = 15,
+) -> str:
+    rows = list_export_history(out_dir=out_dir, limit=limit)
+    if not rows:
+        return "_No checklist exports yet. Run a checklist with export enabled._"
+    lines = [
+        f"**Export history** (latest {len(rows)})",
+        "",
+        "| file | size | modified (UTC) |",
+        "|------|-----:|----------------|",
+    ]
+    for r in rows:
+        lines.append(
+            f"| `{r['name']}` | {r['bytes']} | {r['mtime']} |"
+        )
+    latest = (Path(out_dir) if out_dir else DEFAULT_REPORT_DIR) / "checklist_latest.md"
+    if latest.is_file():
+        lines.append("")
+        lines.append(f"Latest pointer: `{latest.resolve()}`")
+    return "\n".join(lines)

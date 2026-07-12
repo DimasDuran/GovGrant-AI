@@ -52,6 +52,19 @@ def test_export_writes_md_and_json(tmp_path: Path):
     assert Path(paths["latest_json"]).is_file()
 
 
+def test_list_export_history(tmp_path: Path):
+    from govgrant.compliance.report import list_export_history, export_history_markdown
+
+    run = _sample_run()
+    export_checklist_run(run, out_dir=tmp_path, basename="checklist_a")
+    export_checklist_run(run, out_dir=tmp_path, basename="checklist_b")
+    hist = list_export_history(out_dir=tmp_path, limit=10)
+    assert len(hist) >= 2
+    assert all("name" in h for h in hist)
+    md = export_history_markdown(out_dir=tmp_path)
+    assert "checklist_" in md
+
+
 def test_admin_required_when_auth_enabled():
     from govgrant.auth.context import AuthContext, AuthError
 

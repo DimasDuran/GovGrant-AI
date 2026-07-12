@@ -20,9 +20,10 @@ cp .env.example .env   # set ANTHROPIC_API_KEY, LLAMAPARSE_API_KEY, Ollama/Qdran
 # Ingest fixture PDFs (Qdrant + Ollama must be up)
 python -m govgrant.rag.cli ingest
 
-# Chat UI
+# Chat UI (session API key shared across tabs)
 python -m govgrant.ui.app
 # → http://127.0.0.1:7860
+# Set Session key once → Chat / My proposals / Checklist use the same tenant
 
 # Golden eval (post-ingest)
 python -m govgrant.rag.cli eval --golden

@@ -20,7 +20,7 @@ from govgrant.agent.llm import ChatLLM
 from govgrant.auth import AuthError, resolve_request_auth
 from govgrant.compliance.checklist import run_checklist
 from govgrant.compliance.proposal import extract_proposal_text, proposal_doc_id
-from govgrant.compliance.report import export_checklist_run
+from govgrant.compliance.report import export_checklist_run, export_history_markdown
 from govgrant.proposals import ProposalService
 from govgrant.rag.config import get_settings
 from govgrant.rag.index.hybrid import HybridRAGService
@@ -450,6 +450,22 @@ def run_compliance_checklist(
     return md, summary
 
 
+def _apply_session(api_key: str) -> tuple[str, str]:
+    """Update status line + session banner from shared API key."""
+    key = (api_key or "").strip()
+    try:
+        auth = resolve_request_auth(api_key=key or None)
+        banner = (
+            f"**Session:** tenant=`{auth.tenant_id}` · "
+            f"roles=`{', '.join(auth.roles)}` · "
+            f"auth_enabled=`{auth.auth_enabled}` · "
+            f"source=`{auth.source}`"
+        )
+    except AuthError as exc:
+        banner = f"**Session auth error:** {exc}"
+    return _status_md(key), banner
+
+
 def build_ui() -> gr.Blocks:
     settings = get_settings()
     with gr.Blocks(title="GovGrant AI") as demo:
@@ -459,7 +475,25 @@ def build_ui() -> gr.Blocks:
 Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
             """
         )
+        # Shared session (one API key for all tabs)
+        with gr.Group():
+            gr.Markdown("### Session")
+            with gr.Row():
+                session_key = gr.Textbox(
+                    label="API key (shared across tabs)",
+                    type="password",
+                    placeholder="empty if AUTH_ENABLED=false · e.g. dev-local-key",
+                    scale=4,
+                )
+                apply_session = gr.Button("Apply session", variant="secondary", scale=1)
+            session_banner = gr.Markdown(_apply_session("")[1])
         status = gr.Markdown(_status_md())
+        apply_session.click(
+            _apply_session, inputs=[session_key], outputs=[status, session_banner]
+        )
+        session_key.submit(
+            _apply_session, inputs=[session_key], outputs=[status, session_banner]
+        )
 
         with gr.Tabs():
             with gr.Tab("Chat agent"):
@@ -503,23 +537,18 @@ Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
                             value=False,
                             label="Show debug (evidence meta)",
                         )
-                    api_key = gr.Textbox(
-                        label="API key (when AUTH_ENABLED=true)",
-                        type="password",
-                        placeholder="dev-local-key",
-                    )
                     refresh_docs = gr.Button("Refresh docs (my proposals)", size="sm")
                     refresh_docs.click(
                         lambda k: gr.update(choices=_doc_choices_for_key(k)),
-                        inputs=[api_key],
+                        inputs=[session_key],
                         outputs=[doc_id],
                     )
 
                 gr.Examples(examples=EXAMPLES, inputs=msg, label="Examples")
                 clear = gr.Button("Clear chat", size="sm")
 
-                def _clear():
-                    return [], _status_md()
+                def _clear(key: str):
+                    return [], _status_md(key)
 
                 send.click(
                     chat_ask,
@@ -531,7 +560,7 @@ Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
                         intent,
                         use_llm,
                         show_debug,
-                        api_key,
+                        session_key,
                     ],
                     outputs=[chatbot, status],
                 ).then(lambda: "", outputs=msg)
@@ -545,11 +574,11 @@ Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
                         intent,
                         use_llm,
                         show_debug,
-                        api_key,
+                        session_key,
                     ],
                     outputs=[chatbot, status],
                 ).then(lambda: "", outputs=msg)
-                clear.click(_clear, outputs=[chatbot, status])
+                clear.click(_clear, inputs=[session_key], outputs=[chatbot, status])
 
             with gr.Tab("Retrieve only"):
                 gr.Markdown(
@@ -589,14 +618,9 @@ Hybrid RAG (Qdrant + nomic) · SBIR topics · LangGraph agent · Claude Haiku
                 gr.Markdown(
                     """
 ### Tenant-scoped proposals
-Upload PDFs under your tenant (`AUTH_ENABLED` + API key, or default `local-dev`).
-Indexed docs get `doc_id=user-proposal-…` for Chat filtering.
+Uses the **Session** API key above. Indexed docs get `doc_id=user-proposal-…`
+for Chat filtering. Admin required to delete when `AUTH_ENABLED=true`.
                     """
-                )
-                p_key = gr.Textbox(
-                    label="API key",
-                    type="password",
-                    placeholder="dev-local-key (or empty if AUTH_ENABLED=false)",
                 )
                 p_table = gr.Markdown(_proposals_table_md(""))
                 with gr.Row():
@@ -618,25 +642,26 @@ Indexed docs get `doc_id=user-proposal-…` for Chat filtering.
                     "Delete (admin if AUTH_ENABLED)",
                     size="sm",
                 )
-                gr.Markdown(
-                    "_When `AUTH_ENABLED=true`, only **admin** keys may delete "
-                    "(e.g. `dev-local-key`)._"
-                )
-                # Keep chat doc dropdown in sync when available
                 p_up.click(
                     upload_proposal_ui,
-                    inputs=[p_file, p_index, p_key],
+                    inputs=[p_file, p_index, session_key],
                     outputs=[p_status, p_table, doc_id],
                 )
                 p_ref.click(
                     refresh_proposals_ui,
-                    inputs=[p_key],
+                    inputs=[session_key],
                     outputs=[p_table, doc_id],
                 )
                 p_del.click(
                     delete_proposal_ui,
-                    inputs=[p_del_id, p_key],
+                    inputs=[p_del_id, session_key],
                     outputs=[p_status, p_table, doc_id],
+                )
+                # Refresh table when session is applied
+                apply_session.click(
+                    lambda k: _proposals_table_md(k),
+                    inputs=[session_key],
+                    outputs=[p_table],
                 )
 
             with gr.Tab("Compliance checklist"):
@@ -658,11 +683,6 @@ Indexed docs get `doc_id=user-proposal-…` for Chat filtering.
                     c_darpa = gr.Checkbox(value=True, label="DARPA Phase II")
                     c_sba = gr.Checkbox(value=True, label="SBA Policy Directive")
                     c_sf424 = gr.Checkbox(value=True, label="SF424 Application Guide")
-                c_key = gr.Textbox(
-                    label="API key (tenant for uploads)",
-                    type="password",
-                    placeholder="dev-local-key",
-                )
                 c_sel = gr.Dropdown(
                     choices=["(none)"],
                     value="(none)",
@@ -694,6 +714,8 @@ Indexed docs get `doc_id=user-proposal-…` for Chat filtering.
                 c_btn = gr.Button("Run checklist", variant="primary")
                 c_sum = gr.Code(label="Summary counts", language="json", lines=8)
                 c_out = gr.Markdown(label="Report")
+                c_hist = gr.Markdown(export_history_markdown())
+                c_hist_btn = gr.Button("Refresh export history", size="sm")
 
                 def _refresh_c_sel(key: str):
                     try:
@@ -707,7 +729,12 @@ Indexed docs get `doc_id=user-proposal-…` for Chat filtering.
                     except AuthError:
                         return gr.update(choices=["(none)"])
 
-                c_key.blur(_refresh_c_sel, inputs=[c_key], outputs=[c_sel])
+                apply_session.click(
+                    _refresh_c_sel, inputs=[session_key], outputs=[c_sel]
+                )
+                c_hist_btn.click(
+                    lambda: export_history_markdown(), outputs=[c_hist]
+                )
                 c_btn.click(
                     run_compliance_checklist,
                     inputs=[
@@ -720,11 +747,14 @@ Indexed docs get `doc_id=user-proposal-…` for Chat filtering.
                         c_pdf,
                         c_index,
                         c_llm,
-                        c_key,
+                        session_key,
                         c_sel,
                         c_export,
                     ],
                     outputs=[c_out, c_sum],
+                ).then(
+                    lambda: export_history_markdown(),
+                    outputs=[c_hist],
                 )
 
             with gr.Tab("About"):
