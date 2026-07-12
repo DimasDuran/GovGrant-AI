@@ -646,6 +646,156 @@ def _cli_doc_id(auth, doc_id: str | None) -> str | None:
         raise SystemExit(2) from exc
 
 
+def proposals_main(argv: list[str] | None = None) -> None:
+    """Tenant-scoped proposal registry CLI."""
+    from govgrant.auth import AuthError
+    from govgrant.proposals import ProposalService
+
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("--tenant", default=None)
+    common.add_argument("--api-key", default=None)
+    common.add_argument(
+        "--json",
+        action="store_true",
+        help="JSON output",
+    )
+
+    parser = argparse.ArgumentParser(description="Manage tenant proposals")
+    sub = parser.add_subparsers(dest="action", required=True)
+
+    sub.add_parser("list", parents=[common], help="List proposals for this tenant")
+
+    p_up = sub.add_parser(
+        "upload", parents=[common], help="Register PDF (+ optional index)"
+    )
+    p_up.add_argument("path", help="Path to proposal PDF")
+    p_up.add_argument(
+        "--no-index",
+        action="store_true",
+        help="Skip hybrid RAG indexing",
+    )
+    p_up.add_argument("--notes", default="", help="Optional note")
+
+    p_get = sub.add_parser(
+        "get", parents=[common], help="Show one proposal metadata"
+    )
+    p_get.add_argument("doc_id")
+
+    p_del = sub.add_parser(
+        "delete",
+        parents=[common],
+        help="Delete proposal (registry + file + Qdrant/BM25/tables)",
+    )
+    p_del.add_argument("doc_id")
+    p_del.add_argument(
+        "--keep-file",
+        action="store_true",
+        help="Keep PDF on disk",
+    )
+    p_del.add_argument(
+        "--keep-index",
+        action="store_true",
+        help="Do not purge Qdrant/BM25/tables",
+    )
+
+    sub.add_parser("whoami", parents=[common], help="Show resolved auth context")
+
+    args = parser.parse_args(argv)
+    auth = _resolve_cli_auth(args)
+    svc = ProposalService()
+
+    if args.action == "whoami":
+        payload = auth.to_dict()
+        if args.json:
+            print(json.dumps(payload, indent=2, ensure_ascii=False))
+        else:
+            print(
+                f"tenant={auth.tenant_id} roles={list(auth.roles)} "
+                f"auth_enabled={auth.auth_enabled} source={auth.source}"
+            )
+        return
+
+    if args.action == "list":
+        rows = [r.to_dict() for r in svc.list_proposals(auth)]
+        if args.json:
+            print(json.dumps(rows, indent=2, ensure_ascii=False))
+        else:
+            if not rows:
+                print(f"(no proposals for tenant {auth.tenant_id})")
+                return
+            for r in rows:
+                print(
+                    f"{r['doc_id']}\t{r['file_name']}\tpages={r['pages']}\t"
+                    f"indexed={r['indexed']}\t{r['created_at']}"
+                )
+        return
+
+    if args.action == "get":
+        rec = svc.get(auth, args.doc_id)
+        if rec is None:
+            print(f"not found: {args.doc_id}", file=sys.stderr)
+            raise SystemExit(1)
+        print(json.dumps(rec.to_dict(), indent=2, ensure_ascii=False))
+        return
+
+    if args.action == "upload":
+        try:
+            result = svc.upload(
+                auth,
+                args.path,
+                index=not args.no_index,
+                notes=args.notes or "",
+            )
+        except (AuthError, FileNotFoundError, ValueError) as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            raise SystemExit(1) from exc
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+        else:
+            r = result.record
+            print(
+                f"registered {r.doc_id} tenant={r.tenant_id} "
+                f"pages={r.pages} indexed={r.indexed} path={r.stored_path}"
+            )
+        return
+
+    if args.action == "delete":
+        # Destructive: require admin when AUTH_ENABLED, else allow owner tenant path
+        if auth.auth_enabled and not auth.has_role("admin", "user"):
+            # "user" can delete own tenant proposals; admin same for now
+            try:
+                auth.require_role("admin", "user")
+            except AuthError as exc:
+                print(f"auth error: {exc}", file=sys.stderr)
+                raise SystemExit(2) from exc
+        ok = svc.delete(
+            auth,
+            args.doc_id,
+            remove_file=not args.keep_file,
+            purge_index=not args.keep_index,
+        )
+        if not ok:
+            print(f"not found: {args.doc_id}", file=sys.stderr)
+            raise SystemExit(1)
+        purge = getattr(svc, "_last_delete_index", None) or {}
+        if args.json:
+            print(
+                json.dumps(
+                    {"deleted": args.doc_id, "index_purge": purge},
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
+        else:
+            print(
+                f"deleted {args.doc_id} "
+                f"bm25={purge.get('bm25_removed')} "
+                f"qdrant≈{purge.get('qdrant_deleted_estimate')} "
+                f"tables={purge.get('tabular_cleared')}"
+            )
+        return
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2 or sys.argv[1] not in {
         "ingest",
@@ -657,10 +807,11 @@ if __name__ == "__main__":
         "agent",
         "checklist",
         "gate",
+        "proposals",
     }:
         print(
             "Usage: python -m govgrant.rag.cli "
-            "ingest|query|tables|sbir|ask|eval|agent|checklist|gate ...",
+            "ingest|query|tables|sbir|ask|eval|agent|checklist|gate|proposals ...",
             file=sys.stderr,
         )
         sys.exit(2)
@@ -682,5 +833,7 @@ if __name__ == "__main__":
         checklist_main(rest)
     elif cmd == "gate":
         gate_main(rest)
+    elif cmd == "proposals":
+        proposals_main(rest)
     else:
         agent_main(rest)

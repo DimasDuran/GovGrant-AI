@@ -52,6 +52,16 @@ class AuthContext:
             )
         return doc_id
 
+    def has_role(self, *roles: str) -> bool:
+        want = {r.lower() for r in roles}
+        return bool(want & {r.lower() for r in self.roles})
+
+    def require_role(self, *roles: str) -> None:
+        if not self.has_role(*roles):
+            raise AuthError(
+                f"Requires role in {roles!r}; tenant {self.tenant_id!r} has {self.roles!r}"
+            )
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "tenant_id": self.tenant_id,

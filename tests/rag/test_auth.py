@@ -61,6 +61,26 @@ def test_tenant_mismatch_rejected(monkeypatch):
         )
 
 
+def test_has_role_helpers():
+    from govgrant.auth.context import AuthContext
+
+    ctx = AuthContext(
+        tenant_id="t",
+        roles=("admin", "user"),
+        api_key_present=True,
+        auth_enabled=True,
+        allowed_doc_ids=None,
+        public_doc_ids=frozenset(),
+        source="api_key",
+    )
+    assert ctx.has_role("admin")
+    assert ctx.has_role("ADMIN")  # case-insensitive
+    assert not ctx.has_role("viewer")
+    ctx.require_role("user")
+    with pytest.raises(AuthError):
+        ctx.require_role("superadmin")
+
+
 def test_doc_allow_list():
     reg = AuthRegistry(
         tenants={

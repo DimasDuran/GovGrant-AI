@@ -92,6 +92,13 @@ print(svc.upload(auth, "path/to/proposal.pdf", index=True).to_dict())
 print([r.doc_id for r in svc.list_proposals(auth)])
 svc.delete(auth, "user-proposal-…")  # also purges Qdrant + BM25 + tables
 PY
+
+# CLI
+python -m govgrant.rag.cli proposals whoami
+python -m govgrant.rag.cli proposals list
+python -m govgrant.rag.cli proposals upload ./proposal.pdf
+python -m govgrant.rag.cli proposals get user-proposal-my-file
+python -m govgrant.rag.cli proposals delete user-proposal-my-file
 ```
 
 Deleting a proposal removes registry + file **and** index vectors (Qdrant filter on `tenant_id`+`gg_doc_id`, BM25 leaves, tabular rows).
