@@ -30,6 +30,8 @@ python -m govgrant.rag.cli eval --golden
 # Compliance checklist (corpus + optional draft PDF)
 python -m govgrant.rag.cli checklist --package darpa --ot
 python -m govgrant.rag.cli checklist --draft-pdf ./proposal.pdf --llm-draft --package darpa --ot
+# Write md+json under data/eval/reports/ (gitignored)
+python -m govgrant.rag.cli checklist --package darpa --ot --export
 ```
 
 Local-only notes (not in git): `docs/r1-quickstart.md`, `About.md`, `Infra.md`, architecture plans — kept for development context.

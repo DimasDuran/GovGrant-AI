@@ -501,6 +501,16 @@ def checklist_main(argv: list[str] | None = None) -> None:
     parser.add_argument("--tenant", default=None, help="tenant_id for proposal index")
     parser.add_argument("--api-key", default=None, help="API key when AUTH_ENABLED")
     parser.add_argument("--json", action="store_true", help="Full JSON report")
+    parser.add_argument(
+        "--export",
+        action="store_true",
+        help="Write report under data/eval/reports/ (md + json, gitignored)",
+    )
+    parser.add_argument(
+        "--export-dir",
+        default=None,
+        help="Override export directory (default data/eval/reports)",
+    )
     args = parser.parse_args(argv)
     auth = _resolve_cli_auth(args)
 
@@ -547,6 +557,21 @@ def checklist_main(argv: list[str] | None = None) -> None:
         use_llm_draft=bool(args.llm_draft),
         tenant_id=auth.tenant_id,
     )
+    export_paths: dict[str, str] = {}
+    if args.export or args.export_dir:
+        from govgrant.compliance.report import export_checklist_run
+
+        export_paths = export_checklist_run(
+            run,
+            out_dir=args.export_dir,
+            extra={
+                "tenant_id": auth.tenant_id,
+                "packages": args.packages,
+                "llm_draft": bool(args.llm_draft),
+            },
+        )
+        print(f"# exported {export_paths}", file=sys.stderr)
+
     if args.json:
         payload = run.to_dict()
         if extract_meta is not None:
@@ -556,12 +581,16 @@ def checklist_main(argv: list[str] | None = None) -> None:
                 "chars": extract_meta.chars,
                 "parser": extract_meta.parser,
             }
+        if export_paths:
+            payload["export_paths"] = export_paths
         print(json.dumps(payload, indent=2, ensure_ascii=False))
     else:
         if extract_meta is not None:
             print(extract_meta.summary_markdown())
             print()
         print(run.to_markdown())
+        if export_paths:
+            print(f"\n# reports: {export_paths.get('md') or export_paths}")
     critical_fail = any(
         i.status == "fail" and i.severity == "critical" for i in run.items
     )
@@ -760,14 +789,12 @@ def proposals_main(argv: list[str] | None = None) -> None:
         return
 
     if args.action == "delete":
-        # Destructive: require admin when AUTH_ENABLED, else allow owner tenant path
-        if auth.auth_enabled and not auth.has_role("admin", "user"):
-            # "user" can delete own tenant proposals; admin same for now
-            try:
-                auth.require_role("admin", "user")
-            except AuthError as exc:
-                print(f"auth error: {exc}", file=sys.stderr)
-                raise SystemExit(2) from exc
+        try:
+            # AUTH on → admin only; open local mode unrestricted
+            auth.require_admin_for_destructive()
+        except AuthError as exc:
+            print(f"auth error: {exc}", file=sys.stderr)
+            raise SystemExit(2) from exc
         ok = svc.delete(
             auth,
             args.doc_id,

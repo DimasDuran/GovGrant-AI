@@ -20,6 +20,7 @@ from govgrant.agent.llm import ChatLLM
 from govgrant.auth import AuthError, resolve_request_auth
 from govgrant.compliance.checklist import run_checklist
 from govgrant.compliance.proposal import extract_proposal_text, proposal_doc_id
+from govgrant.compliance.report import export_checklist_run
 from govgrant.proposals import ProposalService
 from govgrant.rag.config import get_settings
 from govgrant.rag.index.hybrid import HybridRAGService
@@ -359,6 +360,7 @@ def run_compliance_checklist(
     use_llm_draft: bool,
     api_key: str,
     selected_proposal: str,
+    export_report: bool,
 ) -> tuple[str, str]:
     """Return (markdown report, json summary)."""
     docs, _, _ = _services()
@@ -417,11 +419,23 @@ def run_compliance_checklist(
         use_llm_draft=bool(use_llm_draft),
         tenant_id=auth.tenant_id,
     )
+    export_paths: dict = {}
+    if export_report:
+        export_paths = export_checklist_run(
+            run,
+            extra={
+                "tenant_id": auth.tenant_id,
+                "proposal_doc_id": proposal_id,
+                "packages": packages,
+            },
+        )
     dt = time.time() - t0
     md = ""
     if extract_note:
         md += extract_note + "\n\n"
     md += run.to_markdown()
+    if export_paths:
+        md += f"\n\n**Exported:** `{export_paths.get('md', '')}`"
     md += f"\n\n---\n*checklist finished in {dt:.1f}s · tenant=`{auth.tenant_id}`*"
     payload = {
         "corpus": run.summary,
@@ -430,6 +444,7 @@ def run_compliance_checklist(
         "items": len(run.items),
         "proposal_doc_id": proposal_id,
         "tenant_id": auth.tenant_id,
+        "export_paths": export_paths or None,
     }
     summary = json.dumps(payload, indent=2)
     return md, summary
@@ -599,7 +614,14 @@ Indexed docs get `doc_id=user-proposal-…` for Chat filtering.
                     label="Delete doc_id",
                     placeholder="user-proposal-my-file",
                 )
-                p_del = gr.Button("Delete from registry", size="sm")
+                p_del = gr.Button(
+                    "Delete (admin if AUTH_ENABLED)",
+                    size="sm",
+                )
+                gr.Markdown(
+                    "_When `AUTH_ENABLED=true`, only **admin** keys may delete "
+                    "(e.g. `dev-local-key`)._"
+                )
                 # Keep chat doc dropdown in sync when available
                 p_up.click(
                     upload_proposal_ui,
@@ -660,6 +682,10 @@ Indexed docs get `doc_id=user-proposal-…` for Chat filtering.
                     value=False,
                     label="LLM draft judge (Haiku; falls back to keywords)",
                 )
+                c_export = gr.Checkbox(
+                    value=True,
+                    label="Export report to data/eval/reports/ (md + json)",
+                )
                 c_draft = gr.Textbox(
                     label="Or paste draft text",
                     lines=5,
@@ -696,6 +722,7 @@ Indexed docs get `doc_id=user-proposal-…` for Chat filtering.
                         c_llm,
                         c_key,
                         c_sel,
+                        c_export,
                     ],
                     outputs=[c_out, c_sum],
                 )

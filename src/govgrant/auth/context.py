@@ -62,6 +62,16 @@ class AuthContext:
                 f"Requires role in {roles!r}; tenant {self.tenant_id!r} has {self.roles!r}"
             )
 
+    def require_admin_for_destructive(self) -> None:
+        """
+        When AUTH_ENABLED, destructive ops (proposal delete) require admin.
+
+        Open local mode (auth disabled) allows any resolved tenant context.
+        """
+        if not self.auth_enabled:
+            return
+        self.require_role("admin")
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "tenant_id": self.tenant_id,

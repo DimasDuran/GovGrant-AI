@@ -155,6 +155,9 @@ class ProposalService:
         if rec is None or rec.tenant_id != auth.tenant_id:
             return False
 
+        # AUTH on → only admin may delete (users can still upload/list)
+        auth.require_admin_for_destructive()
+
         index_info: dict[str, Any] | None = None
         if purge_index:
             docs = self.docs or HybridRAGService(self.settings)
