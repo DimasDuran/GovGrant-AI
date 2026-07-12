@@ -216,7 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-.Infra.md
 
 # Local RAG runtime
 data/indexes/
@@ -228,3 +227,12 @@ data/eval/reports/
 
 .DS_Store
 **/.DS_Store
+
+# Dev-only notes (architecture / product vision — not for remote)
+About.md
+Infra.md
+docs/rag-pipeline-plan.md
+docs/**/*-architecture*.md
+docs/**/*-plan*.md
+*.local.md
+DEVNOTES.md

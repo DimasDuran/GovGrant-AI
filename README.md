@@ -32,7 +32,9 @@ python -m govgrant.rag.cli checklist --package darpa --ot
 python -m govgrant.rag.cli checklist --draft-pdf ./proposal.pdf --llm-draft --package darpa --ot
 ```
 
-Full guide: [`docs/r1-quickstart.md`](docs/r1-quickstart.md) · architecture: [`docs/rag-pipeline-plan.md`](docs/rag-pipeline-plan.md)
+Operational guide: [`docs/r1-quickstart.md`](docs/r1-quickstart.md)
+
+Architecture / product-vision notes (e.g. `About.md`, `Infra.md`, pipeline plans) stay local only and are gitignored.
 
 ## Layout
 
