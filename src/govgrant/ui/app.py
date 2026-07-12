@@ -35,10 +35,10 @@ EXAMPLES = [
     "Does my proposal align with open MDA thermal battery topics?",
     "What are the Research Strategy page limits in the SF424 application guide?",
     (
-        "Estoy preparando una propuesta DARPA Fase II. Si uso universidad y FFRDC, "
-        "¿qué work-share aplica en SBIR vs STTR? Si envío una propuesta similar a otra "
-        "agencia, ¿qué debo revelar y cuándo? Si pido OT, ¿qué debe incluir el plan de "
-        "hitos y la estrategia de comercialización?"
+        "I am preparing a DARPA Phase II proposal. If I use a university and FFRDC, "
+        "what work-share applies for SBIR vs STTR? If I submit a similar proposal to "
+        "another agency, what must I disclose and when? If I request OT, what must "
+        "the milestone plan and commercialization strategy include?"
     ),
 ]
 
@@ -902,17 +902,6 @@ input[type="range"] {
 
 def build_ui() -> gr.Blocks:
     with gr.Blocks(title="GovGrant AI") as demo:
-        gr.Markdown(
-            """
-# GovGrant AI — Asistente SBIR/STTR
-Respuestas basadas en corpus indexado (DARPA · SBA · SF-424 · topics)
-            """
-        )
-        status = gr.Markdown(
-            f"LLM: `{get_settings().chat_model}` · corpus indexado · "
-            f"consulta sobre cumplimiento de propuestas SBIR/STTR"
-        )
-
         session_key = gr.State("")
         doc_id = gr.State(None)
         agency = gr.State(None)
@@ -920,82 +909,107 @@ Respuestas basadas en corpus indexado (DARPA · SBA · SF-424 · topics)
         use_llm = gr.State(True)
         show_debug = gr.State(False)
 
-        with gr.Tabs():
-            with gr.Tab("Assistant"):
-                chatbot = gr.Chatbot(
-                    height=480,
-                    label="Conversation",
-                    buttons=["copy"],
-                    layout="bubble",
-                )
-                with gr.Row():
-                    msg = gr.Textbox(
-                        placeholder=(
-                            "Pregunta lo que necesites sobre SBIR/STTR… "
-                            "(p. ej. Cost Volume DARPA Phase II, work-share, SF-424)"
-                        ),
-                        scale=5,
-                        show_label=False,
-                        lines=2,
-                    )
-                    send = gr.Button("Send", variant="primary", scale=1)
-
-                gr.Examples(examples=EXAMPLES, inputs=msg, label="Ejemplos")
-                clear = gr.Button("Clear chat", size="sm")
-
-                send.click(
-                    chat_ask,
-                    inputs=[msg, chatbot, doc_id, agency, intent, use_llm, show_debug, session_key],
-                    outputs=[chatbot, status, msg],
-                )
-                msg.submit(
-                    chat_ask,
-                    inputs=[msg, chatbot, doc_id, agency, intent, use_llm, show_debug, session_key],
-                    outputs=[chatbot, status, msg],
-                )
-                clear.click(lambda: ([], _status_md("")), outputs=[chatbot, status])
-
-            with gr.Tab("Compliance checklist"):
+        with gr.Row():
+            with gr.Column(scale=1, min_width=220):
                 gr.Markdown(
                     """
-### Control points multi-agencia (DARPA · SBA · SF424)
-Evalúa tu propuesta contra los requisitos de cumplimiento.
+### GovGrant AI
+
+**SBIR/STTR compliance is complex.**
+Each agency has unique rules for work-share, cost volumes, eligibility, and proposal structure. Missing a requirement can disqualify your proposal.
+
+**GovGrant AI helps you:**
+- Check your proposal against DARPA, SBA, and SF-424 requirements
+- Get quick answers on compliance rules, limits, and disclosures
+- Verify work-share percentages, OT milestones, and cost caps
+- Align your proposal with open SBIR/STTR topics
+
+Ask a question or run a compliance checklist.
                     """
                 )
-                with gr.Row():
-                    c_prog = gr.Radio(
-                        ["SBIR", "STTR"], value="SBIR", label="Program"
-                    )
-                    c_ot = gr.Checkbox(
-                        value=True, label="Include Other Transaction (OT) items"
-                    )
-                with gr.Row():
-                    c_darpa = gr.Checkbox(value=True, label="DARPA Phase II")
-                    c_sba = gr.Checkbox(value=True, label="SBA Policy Directive")
-                    c_sf424 = gr.Checkbox(value=True, label="SF424 Application Guide")
-                c_draft = gr.Textbox(
-                    label="Draft text (opcional — pega un extracto de tu propuesta)",
-                    lines=5,
-                    placeholder="Paste SOW / strategy excerpt…",
-                )
-                c_btn = gr.Button("Run checklist", variant="primary")
-                c_out = gr.Markdown(label="Report")
-                c_sum = gr.Code(label="Summary", language="json", lines=6)
 
-                c_btn.click(
-                    run_compliance_checklist,
-                    inputs=[
-                        c_prog, c_ot, c_darpa, c_sba, c_sf424,
-                        c_draft,
-                        gr.State(None),  # c_pdf
-                        gr.State(False),  # c_index
-                        gr.State(False),  # c_llm
-                        gr.State(""),     # session_key
-                        gr.State("(none)"),  # c_sel
-                        gr.State(False),  # c_export
-                    ],
-                    outputs=[c_out, c_sum],
+            with gr.Column(scale=3):
+                status = gr.Markdown(
+                    f"LLM: `{get_settings().chat_model}` · indexed corpus · "
+                    f"SBIR/STTR compliance queries"
                 )
+
+                with gr.Tabs():
+                    with gr.Tab("Assistant"):
+                        chatbot = gr.Chatbot(
+                            height=480,
+                            label="Conversation",
+                            buttons=["copy"],
+                            layout="bubble",
+                        )
+                        with gr.Row():
+                            msg = gr.Textbox(
+                                placeholder=(
+                                    "Ask anything about SBIR/STTR compliance… "
+                                    "(e.g. Cost Volume DARPA Phase II, work-share, SF-424)"
+                                ),
+                                scale=5,
+                                show_label=False,
+                                lines=2,
+                            )
+                            send = gr.Button("Send", variant="primary", scale=1)
+
+                        gr.Examples(examples=EXAMPLES, inputs=msg, label="Examples")
+                        clear = gr.Button("Clear chat", size="sm")
+
+                        send.click(
+                            chat_ask,
+                            inputs=[msg, chatbot, doc_id, agency, intent, use_llm, show_debug, session_key],
+                            outputs=[chatbot, status, msg],
+                        )
+                        msg.submit(
+                            chat_ask,
+                            inputs=[msg, chatbot, doc_id, agency, intent, use_llm, show_debug, session_key],
+                            outputs=[chatbot, status, msg],
+                        )
+                        clear.click(lambda: ([], _status_md("")), outputs=[chatbot, status])
+
+                    with gr.Tab("Compliance checklist"):
+                        gr.Markdown(
+                            """
+### Multi-agency control points (DARPA · SBA · SF424)
+Evaluate your proposal against compliance requirements.
+                            """
+                        )
+                        with gr.Row():
+                            c_prog = gr.Radio(
+                                ["SBIR", "STTR"], value="SBIR", label="Program"
+                            )
+                            c_ot = gr.Checkbox(
+                                value=True, label="Include Other Transaction (OT) items"
+                            )
+                        with gr.Row():
+                            c_darpa = gr.Checkbox(value=True, label="DARPA Phase II")
+                            c_sba = gr.Checkbox(value=True, label="SBA Policy Directive")
+                            c_sf424 = gr.Checkbox(value=True, label="SF424 Application Guide")
+                        c_draft = gr.Textbox(
+                            label="Draft text (optional — paste a proposal excerpt)",
+                            lines=5,
+                            placeholder="Paste SOW / strategy excerpt…",
+                        )
+                        c_btn = gr.Button("Run checklist", variant="primary")
+                        c_out = gr.Markdown(label="Report")
+                        c_sum = gr.Code(label="Summary", language="json", lines=6)
+
+                        c_btn.click(
+                            run_compliance_checklist,
+                            inputs=[
+                                c_prog, c_ot, c_darpa, c_sba, c_sf424,
+                                c_draft,
+                                gr.State(None),  # c_pdf
+                                gr.State(False),  # c_index
+                                gr.State(False),  # c_llm
+                                gr.State(""),     # session_key
+                                gr.State("(none)"),  # c_sel
+                                gr.State(False),  # c_export
+                            ],
+                            outputs=[c_out, c_sum],
+                        )
 
         return demo
 
