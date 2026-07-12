@@ -13,6 +13,8 @@ from govgrant.compliance.proposal import (
     proposal_doc_id,
 )
 
+# draft_llm is optional (ChatLLM); import lazily via checklist.use_llm_draft
+
 __all__ = [
     "ChecklistItem",
     "ChecklistResult",

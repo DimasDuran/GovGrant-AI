@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "govgrant-ai"
 version = "0.1.0"
 description = "GovGrant AI — multimodal hybrid RAG for federal grant compliance (SBIR/STTR)"
-readme = "About.md"
+readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
   "llama-index-core>=0.12.0",
