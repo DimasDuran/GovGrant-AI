@@ -42,6 +42,76 @@ def test_upload_list_delete(svc: ProposalService, tmp_path: Path):
     assert svc.get(auth, result.record.doc_id) is None
 
 
+def test_delete_document_purges_bm25(tmp_path: Path):
+    """HybridRAGService.delete_document removes matching BM25 leaves."""
+    from llama_index.core.schema import TextNode
+
+    from govgrant.rag.config import get_settings
+    from govgrant.rag.index.hybrid import HybridRAGService
+
+    settings = get_settings()
+    # Lightweight instance: only exercise BM25 list + tabular path
+    svc = HybridRAGService.__new__(HybridRAGService)
+    svc.settings = settings
+    svc._leaf_nodes = [
+        TextNode(
+            text="keep",
+            metadata={"tenant_id": "t1", "gg_doc_id": "other", "doc_id": "other"},
+        ),
+        TextNode(
+            text="drop",
+            metadata={
+                "tenant_id": "t1",
+                "gg_doc_id": "user-proposal-x",
+                "doc_id": "user-proposal-x",
+            },
+        ),
+        TextNode(
+            text="other-tenant",
+            metadata={
+                "tenant_id": "t2",
+                "gg_doc_id": "user-proposal-x",
+                "doc_id": "user-proposal-x",
+            },
+        ),
+    ]
+    svc._persist_bm25_nodes = lambda: None  # type: ignore[method-assign]
+    # tabular stub
+    class _Tab:
+        def delete_doc(self, **kwargs):
+            self.called = kwargs
+
+    svc.tabular = _Tab()
+    # Avoid real Qdrant by forcing client path to fail softly: monkeypatch delete body
+    # Call method with qdrant blocked via patching get_qdrant_client inside method
+    import govgrant.rag.index.hybrid as hybrid_mod
+
+    class Boom:
+        def collection_exists(self, *a, **k):
+            raise RuntimeError("no qdrant in unit test")
+
+    original = hybrid_mod.get_qdrant_client if hasattr(hybrid_mod, "get_qdrant_client") else None
+
+    def _fake_client(*a, **k):
+        return Boom()
+
+    # delete_document imports get_qdrant_client from qdrant_store
+    import govgrant.rag.index.qdrant_store as qs
+
+    prev = qs.get_qdrant_client
+    qs.get_qdrant_client = _fake_client  # type: ignore[assignment]
+    try:
+        info = HybridRAGService.delete_document(
+            svc, tenant_id="t1", doc_id="user-proposal-x"
+        )
+    finally:
+        qs.get_qdrant_client = prev  # type: ignore[assignment]
+
+    assert info["bm25_removed"] == 1
+    assert len(svc._leaf_nodes) == 2
+    assert svc.tabular.called["gg_doc_id"] == "user-proposal-x"
+
+
 def test_store_tenant_isolation(tmp_path: Path):
     store = ProposalStore(tmp_path / "x.sqlite")
     from govgrant.proposals.store import ProposalStore as PS

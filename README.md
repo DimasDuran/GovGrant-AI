@@ -90,8 +90,12 @@ auth = resolve_request_auth(api_key="dev-local-key")  # or AUTH_ENABLED=false
 svc = ProposalService()
 print(svc.upload(auth, "path/to/proposal.pdf", index=True).to_dict())
 print([r.doc_id for r in svc.list_proposals(auth)])
+svc.delete(auth, "user-proposal-…")  # also purges Qdrant + BM25 + tables
 PY
 ```
+
+Deleting a proposal removes registry + file **and** index vectors (Qdrant filter on `tenant_id`+`gg_doc_id`, BM25 leaves, tabular rows).
+
 
 ## Branching
 

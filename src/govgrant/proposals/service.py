@@ -138,18 +138,44 @@ class ProposalService:
             index_info=index_info,
         )
 
-    def delete(self, auth: AuthContext, doc_id: str, *, remove_file: bool = True) -> bool:
+    def delete(
+        self,
+        auth: AuthContext,
+        doc_id: str,
+        *,
+        remove_file: bool = True,
+        purge_index: bool = True,
+    ) -> bool:
+        """
+        Remove proposal from registry and optionally:
+          - delete PDF on disk
+          - purge Qdrant vectors + BM25 leaves + tabular rows (purge_index)
+        """
         rec = self.store.get(auth.tenant_id, doc_id)
         if rec is None or rec.tenant_id != auth.tenant_id:
             return False
+
+        index_info: dict[str, Any] | None = None
+        if purge_index:
+            docs = self.docs or HybridRAGService(self.settings)
+            try:
+                index_info = docs.delete_document(
+                    tenant_id=auth.tenant_id, doc_id=doc_id
+                )
+            except Exception:  # noqa: BLE001 — still remove registry
+                index_info = {"error": "index_purge_failed"}
+
         ok = self.store.delete(auth.tenant_id, doc_id)
         if ok and remove_file:
             path = Path(rec.stored_path)
-            if path.is_file() and self.proposals_dir in path.resolve().parents:
-                try:
+            try:
+                # Only delete under proposals_dir (safety)
+                if path.is_file() and self.proposals_dir.resolve() in path.resolve().parents:
                     path.unlink()
-                except OSError:
-                    pass
+            except OSError:
+                pass
+        # stash last purge stats for callers/UI (non-persistent)
+        self._last_delete_index = index_info  # type: ignore[attr-defined]
         return ok
 
     def read_draft_text(self, auth: AuthContext, doc_id: str) -> str:

@@ -186,8 +186,18 @@ def delete_proposal_ui(doc_id: str, api_key: str) -> tuple[str, str, gr.Dropdown
         return "Select a user-proposal doc_id to delete.", _proposals_table_md(api_key), gr.update()
     try:
         auth = resolve_request_auth(api_key=(api_key or "").strip() or None)
-        ok = _proposal_service().delete(auth, doc_id)
-        msg = f"Deleted `{doc_id}`." if ok else f"Not found: `{doc_id}`."
+        svc = _proposal_service()
+        ok = svc.delete(auth, doc_id, purge_index=True, remove_file=True)
+        if ok:
+            purge = getattr(svc, "_last_delete_index", None) or {}
+            msg = (
+                f"Deleted `{doc_id}` (registry + file). "
+                f"Index purge: bm25={purge.get('bm25_removed', '?')}, "
+                f"qdrant≈{purge.get('qdrant_deleted_estimate', '?')}, "
+                f"tables={purge.get('tabular_cleared', '?')}."
+            )
+        else:
+            msg = f"Not found: `{doc_id}`."
         choices = _doc_choices_for_key(api_key)
         return msg, _proposals_table_md(api_key), gr.update(choices=choices)
     except AuthError as exc:

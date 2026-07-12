@@ -985,6 +985,94 @@ class HybridRAGService:
             TextNode(text=d.text, metadata=dict(d.metadata or {})) for d in docs
         ]
 
+    def delete_document(
+        self,
+        *,
+        tenant_id: str,
+        doc_id: str,
+    ) -> dict[str, Any]:
+        """
+        Remove all indexed artifacts for one (tenant_id, gg_doc_id).
+
+        Clears Qdrant points, BM25 leaf nodes (+ persist), and tabular rows.
+        Safe to call if some layers are empty/missing.
+        """
+        tenant_id = tenant_id or self.settings.default_tenant_id
+        if not doc_id:
+            raise ValueError("doc_id is required")
+
+        qdrant_deleted = 0
+        try:
+            from govgrant.rag.index.qdrant_store import get_qdrant_client
+            from qdrant_client import models as qmodels
+
+            client = get_qdrant_client(self.settings)
+            coll = self.settings.qdrant_collection
+            if client.collection_exists(coll):
+                # Prefer FilterSelector when available
+                flt = qmodels.Filter(
+                    must=[
+                        qmodels.FieldCondition(
+                            key="tenant_id",
+                            match=qmodels.MatchValue(value=tenant_id),
+                        ),
+                        qmodels.FieldCondition(
+                            key="gg_doc_id",
+                            match=qmodels.MatchValue(value=doc_id),
+                        ),
+                    ]
+                )
+                # Count then delete (count is best-effort)
+                try:
+                    cnt = client.count(
+                        collection_name=coll,
+                        count_filter=flt,
+                        exact=False,
+                    )
+                    qdrant_deleted = int(getattr(cnt, "count", 0) or 0)
+                except Exception:  # noqa: BLE001
+                    qdrant_deleted = -1
+                client.delete(
+                    collection_name=coll,
+                    points_selector=qmodels.FilterSelector(filter=flt),
+                    wait=True,
+                )
+        except Exception as exc:  # noqa: BLE001
+            qdrant_error = str(exc)
+        else:
+            qdrant_error = None
+
+        before = len(self._leaf_nodes)
+        self._leaf_nodes = [
+            n
+            for n in self._leaf_nodes
+            if not (
+                (n.metadata or {}).get("tenant_id") == tenant_id
+                and (
+                    (n.metadata or {}).get("gg_doc_id") == doc_id
+                    or (n.metadata or {}).get("doc_id") == doc_id
+                )
+            )
+        ]
+        bm25_removed = before - len(self._leaf_nodes)
+        if bm25_removed:
+            self._persist_bm25_nodes()
+
+        try:
+            self.tabular.delete_doc(tenant_id=tenant_id, gg_doc_id=doc_id)
+            tabular_ok = True
+        except Exception:  # noqa: BLE001
+            tabular_ok = False
+
+        return {
+            "tenant_id": tenant_id,
+            "doc_id": doc_id,
+            "qdrant_deleted_estimate": qdrant_deleted,
+            "qdrant_error": qdrant_error,
+            "bm25_removed": bm25_removed,
+            "tabular_cleared": tabular_ok,
+        }
+
     def _prepare_nodes(
         self,
         leaf_nodes: list[BaseNode],
