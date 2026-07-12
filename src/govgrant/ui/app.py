@@ -924,6 +924,15 @@ Each agency has unique rules for work-share, cost volumes, eligibility, and prop
 - Verify work-share percentages, OT milestones, and cost caps
 - Align your proposal with open SBIR/STTR topics
 
+**How it works:**
+1. **Entry** — chat or CLI
+2. **Orchestration** — routes your question through the right pipeline
+3. **Routing** — identifies intent (QA, cross-check, topic search)
+4. **Data** — indexed corpus (agency docs, policies, SBIR topics)
+5. **Generation** — LLM answers grounded in retrieved evidence
+6. **Safety** — evidence validation, tenant isolation, guardrails
+7. **Feedback** — eval suite for continuous improvement
+
 Ask a question or run a compliance checklist.
                     """
                 )
