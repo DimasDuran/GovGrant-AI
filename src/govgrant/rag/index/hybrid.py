@@ -113,7 +113,7 @@ def _stitch_page_boundary_docs(
             text,
             flags=re.I,
         )
-        d.text = text
+        d.set_content(text)
         out.append(d)
     return out
 
