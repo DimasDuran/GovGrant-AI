@@ -20,6 +20,31 @@ from govgrant.agent.llm import ChatLLM
 from govgrant.agent.tools import RagToolBelt
 from govgrant.compliance.checklist import run_checklist
 
+def _insufficient_message(sources_used: list[str] | None) -> str:
+    src = (sources_used or ["unknown"])[0]
+    if src == "sbir_topics":
+        return (
+            "No se encontraron topics SBIR/STTR relevantes. Los datos disponibles son limitados "
+            "(fallback offline). Para obtener topics reales, configura SBIR_API_KEY en .env "
+            "y ejecuta 'govgrant sbir sync' para descargar e indexar las solicitudes abiertas."
+        )
+    if src in ("user_docs", "documents"):
+        return (
+            "No se encontraron documentos relevantes para tu consulta. "
+            "Verifica que los documentos estén cargados en Qdrant con 'govgrant index' "
+            "o especifica un --doc-id correcto."
+        )
+    if src == "table":
+        return (
+            "No se encontraron datos tabulares relevantes. "
+            "Verifica que los documentos con tablas estén indexados."
+        )
+    return (
+        "I don't have enough retrieved evidence to answer reliably. "
+        "Please refine the question, specify --doc-id, or ingest more sources."
+    )
+
+
 # Soft doc targeting when user names a known fixture corpus
 _DOC_HINTS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"\bDARPA\b", re.I), "darpa-sbir-sttr-phase-II-instructions"),
@@ -253,10 +278,7 @@ def build_agent_graph(
                     return {
                         **state,
                         "next_action": "format_answer",
-                        "answer": (
-                            "I don't have enough retrieved evidence to answer reliably. "
-                            "Please refine the question, specify --doc-id, or ingest more sources."
-                        ),
+                        "answer": _insufficient_message(state.get("sources_used")),
                         "insufficient": True,
                         "meta": meta,
                     }
@@ -276,10 +298,7 @@ def build_agent_graph(
         return {
             **state,
             "next_action": "format_answer",
-            "answer": (
-                "I don't have enough retrieved evidence to answer reliably. "
-                "Please refine the question, specify --doc-id, or ingest more sources."
-            ),
+            "answer": _insufficient_message(state.get("sources_used")),
             "insufficient": True,
         }
 

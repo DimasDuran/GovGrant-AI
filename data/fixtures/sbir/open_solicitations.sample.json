@@ -136,5 +136,97 @@
         "topic_code": "MDA-VLA-01"
       }
     ]
+  },
+  {
+    "solicitation_title": "Advanced Lithium-Sulfur Battery Technology for Military Platforms",
+    "solicitation_number": "DOD-SBIR-2026-ARMY-LSB",
+    "program": "SBIR",
+    "phase": "BOTH",
+    "agency": "DOD",
+    "branch": "ARMY",
+    "solicitation_year": "2026",
+    "release_date": "2026-06-15",
+    "open_date": "2026-07-01",
+    "close_date": "2026-09-15",
+    "application_due_date": ["2026-09-15"],
+    "solicitation_agency_url": "https://www.dodsbirsttr.mil",
+    "current_status": "open",
+    "solicitation_topics": [
+      {
+        "topic_title": "High-Energy-Density Lithium-Sulfur Batteries for Expeditionary Operations",
+        "topic_number": "13001",
+        "topic_description": "The Army seeks advanced lithium-sulfur battery technologies with significantly higher energy density than current lithium-ion systems for expeditionary military operations. Key requirements include specific energy >500 Wh/kg, stable cycling over 500+ charge/discharge cycles, and safe operation under extreme temperatures (-40°C to +60°C). Solutions should address sulfur cathode degradation, lithium anode protection, and scalable manufacturing processes suitable for military-grade battery packs.",
+        "topic_code": "ARMY-LSB-01"
+      }
+    ]
+  },
+  {
+    "solicitation_title": "Solid-State Battery Technology for Naval Applications",
+    "solicitation_number": "DOD-SBIR-2026-NAVY-SSB",
+    "program": "SBIR",
+    "phase": "BOTH",
+    "agency": "DOD",
+    "branch": "NAVY",
+    "solicitation_year": "2026",
+    "release_date": "2026-06-01",
+    "open_date": "2026-06-20",
+    "close_date": "2026-10-01",
+    "application_due_date": ["2026-10-01"],
+    "solicitation_agency_url": "https://www.dodsbirsttr.mil",
+    "current_status": "open",
+    "solicitation_topics": [
+      {
+        "topic_title": "Solid-State Electrolyte Batteries for Shipboard Energy Storage",
+        "topic_number": "13022",
+        "topic_description": "The Navy seeks solid-state battery technologies with non-flammable electrolytes for shipboard energy storage applications. Requirements include energy density >400 Wh/L, cycle life exceeding 2000 cycles at 80% depth of discharge, and compliance with MIL-STD-810H shock and vibration standards. Ceramic, polymer, and composite solid electrolyte approaches are of interest. Thermal management integration and seawater immersion safety are critical evaluation criteria.",
+        "topic_code": "NAVY-SSB-01"
+      }
+    ]
+  },
+  {
+    "solicitation_title": "Rapid-Charge Battery Systems for Electric Military Vehicles",
+    "solicitation_number": "DOD-SBIR-2026-ARMY-RCB",
+    "program": "SBIR",
+    "phase": "BOTH",
+    "agency": "DOD",
+    "branch": "ARMY",
+    "solicitation_year": "2026",
+    "release_date": "2026-07-01",
+    "open_date": "2026-07-15",
+    "close_date": "2026-09-30",
+    "application_due_date": ["2026-09-30"],
+    "solicitation_agency_url": "https://www.dodsbirsttr.mil",
+    "current_status": "open",
+    "solicitation_topics": [
+      {
+        "topic_title": "Ultra-Fast Charging Battery Architectures for Tactical Vehicle Electrification",
+        "topic_number": "13045",
+        "topic_description": "The Army seeks battery systems capable of charging from 10% to 80% state of charge in under 15 minutes for electric tactical vehicles. Technologies of interest include multi-chemistry hybrid battery packs, advanced thermal management for high-rate charging, silicon-dominant anodes, and cell designs optimized for extreme fast charging (XFC) without compromising cycle life (>1000 cycles) or safety. Integration with vehicle-level power management systems and battlefield charging infrastructure is expected.",
+        "topic_code": "ARMY-RCB-01"
+      }
+    ]
+  },
+  {
+    "solicitation_title": "Long-Endurance Sensor Battery Technology for Remote Surveillance",
+    "solicitation_number": "DOD-SBIR-2026-AF-BSE",
+    "program": "SBIR",
+    "phase": "BOTH",
+    "agency": "DOD",
+    "branch": "AF",
+    "solicitation_year": "2026",
+    "release_date": "2026-05-01",
+    "open_date": "2026-05-15",
+    "close_date": "2026-11-01",
+    "application_due_date": ["2026-11-01"],
+    "solicitation_agency_url": "https://www.dodsbirsttr.mil",
+    "current_status": "open",
+    "solicitation_topics": [
+      {
+        "topic_title": "Extended-Life Primary and Rechargeable Batteries for Unattended Ground Sensors",
+        "topic_number": "13067",
+        "topic_description": "The Air Force requires battery technologies capable of powering remote unattended ground sensors for 12+ months without maintenance. Primary battery options should achieve energy density >800 Wh/kg with <1% annual self-discharge. Rechargeable options must support 5000+ deep discharge cycles and operate reliably across -50°C to +85°C. Energy harvesting hybridization (solar, thermoelectric, vibration) is encouraged to extend operational life in denied-access environments.",
+        "topic_code": "AF-BSE-01"
+      }
+    ]
   }
 ]
