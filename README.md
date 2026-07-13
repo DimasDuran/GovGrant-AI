@@ -19,17 +19,16 @@ graph TB
 
     %% Router + RAG
     ROUTER["QueryRouter<br/>heuristic intent → source"]
-    HR["HybridRAGService<br/>Qdrant vectors + BM25 + RRF"]
-    SBIR["SBIRTopicService<br/>Qdrant + BM25 + API"]
-    TABULAR["TabularStore<br/>SQLite"]
+    HR["HybridRAGService<br/>Qdrant dense + sparse vectors<br/>+ RRF fusion"]
+    SBIR["SBIRTopicService<br/>Qdrant dense + sparse + API"]
+    TABULAR["TabularStore<br/>SQLite + FTS5"]
 
-    %% External
-    QD[(Qdrant)]
+    %% External / infra
+    QD[(Qdrant<br/>dense + sparse vectors)]
     OLL(("Ollama<br/>nomic-embed-text"))
     LLAMA("LlamaParse")
     ANTH("Anthropic<br/>Claude Haiku")
     SBIRAPI("SBIR.gov API")
-    BM25[(BM25 pickle)]
 
     %% Flows
     UI --> AUTH
@@ -40,11 +39,9 @@ graph TB
     ROUTER --> HR
     ROUTER --> SBIR
     ROUTER --> TABULAR
-    HR --> QD
+    HR -->|dense + sparse| QD
     HR --> OLL
-    HR --> BM25
-    SBIR --> QD
-    SBIR --> BM25
+    SBIR -->|dense + sparse| QD
     SBIR --> SBIRAPI
     LLAMA -.-> HR
     ANTH -.-> AGENT
@@ -133,7 +130,7 @@ auth = resolve_request_auth(api_key="dev-local-key")  # or AUTH_ENABLED=false
 svc = ProposalService()
 print(svc.upload(auth, "path/to/proposal.pdf", index=True).to_dict())
 print([r.doc_id for r in svc.list_proposals(auth)])
-svc.delete(auth, "user-proposal-…")  # also purges Qdrant + BM25 + tables
+svc.delete(auth, "user-proposal-…")  # also purges Qdrant + page index + tables
 PY
 
 # CLI
@@ -148,7 +145,7 @@ python -m govgrant.rag.cli proposals audit --limit 20
 - **Capabilities** (session banner / `whoami`): `upload_proposals`, `delete_proposals` (admin when `AUTH_ENABLED`), `run_checklist`.
 - **Audit log**: upload / delete / delete_denied events per tenant (`proposals audit`).
 
-Deleting a proposal removes registry + file **and** index vectors (Qdrant filter on `tenant_id`+`gg_doc_id`, BM25 leaves, tabular rows).
+Deleting a proposal removes registry + file **and** index vectors (Qdrant filter on `tenant_id`+`gg_doc_id`, page index, tabular rows).
 
 
 ## Branching
