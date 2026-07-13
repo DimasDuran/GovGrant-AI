@@ -4,13 +4,51 @@
 
 Multimodal hybrid RAG + agent for **U.S. SBIR/STTR** grant compliance (DoD/DARPA, SBA, NIH SF424).
 
-| Layer | Stack |
-|-------|--------|
-| Retrieval | LlamaIndex hybrid (Qdrant vectors + BM25 + RRF), local Ollama `nomic-embed-text` |
-| Agent | LangGraph · Claude Haiku (grounded answers) |
-| Sources | Agency PDFs, tables/figures, SBIR.gov topics |
-| Eval | Runtime golden set (fact recall / precision) |
-| Product | Gradio UI · compliance checklist · proposal PDF draft scoring |
+```mermaid
+graph TB
+    %% Entry points
+    UI["Gradio UI"]
+    CLI["CLI"]
+
+    %% Auth
+    AUTH["Auth<br/>tenant · roles · permissions"]
+
+    %% Two main paths
+    AGENT["Agent (LangGraph)<br/>classify → retrieve → validate<br/>→ format_answer (Claude Haiku)"]
+    CHECKLIST["Compliance Checklist<br/>corpus + draft scoring"]
+
+    %% Router + RAG
+    ROUTER["QueryRouter<br/>heuristic intent → source"]
+    HR["HybridRAGService<br/>Qdrant vectors + BM25 + RRF"]
+    SBIR["SBIRTopicService<br/>Qdrant + BM25 + API"]
+    TABULAR["TabularStore<br/>SQLite"]
+
+    %% External
+    QD[(Qdrant)]
+    OLL(("Ollama<br/>nomic-embed-text"))
+    LLAMA("LlamaParse")
+    ANTH("Anthropic<br/>Claude Haiku")
+    SBIRAPI("SBIR.gov API")
+    BM25[(BM25 pickle)]
+
+    %% Flows
+    UI --> AUTH
+    CLI --> AUTH
+    AUTH --> AGENT
+    AUTH --> CHECKLIST
+    AGENT --> ROUTER
+    ROUTER --> HR
+    ROUTER --> SBIR
+    ROUTER --> TABULAR
+    HR --> QD
+    HR --> OLL
+    HR --> BM25
+    SBIR --> QD
+    SBIR --> BM25
+    SBIR --> SBIRAPI
+    LLAMA -.-> HR
+    ANTH -.-> AGENT
+```
 
 ## Quick start
 
