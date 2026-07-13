@@ -845,7 +845,7 @@ def proposals_main(argv: list[str] | None = None) -> None:
         else:
             print(
                 f"deleted {args.doc_id} "
-                f"bm25={purge.get('bm25_removed')} "
+                f"pages_removed={purge.get('pages_removed')} "
                 f"qdrant≈{purge.get('qdrant_deleted_estimate')} "
                 f"tables={purge.get('tabular_cleared')}"
             )

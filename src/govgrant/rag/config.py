@@ -27,7 +27,6 @@ class Settings:
 
     default_tenant_id: str = os.getenv("DEFAULT_TENANT_ID", "local-dev")
     fixtures_pdf_dir: Path = REPO_ROOT / "data" / "fixtures" / "pdfs"
-    bm25_persist_dir: Path = REPO_ROOT / "data" / "indexes" / "bm25"
     # User proposals (tenant-scoped uploads)
     proposals_dir: Path = Path(
         os.getenv(
@@ -71,12 +70,6 @@ class Settings:
             str(REPO_ROOT / "data" / "indexes" / "sbir" / "topics.sqlite"),
         )
     )
-    sbir_bm25_dir: Path = Path(
-        os.getenv(
-            "SBIR_BM25_DIR",
-            str(REPO_ROOT / "data" / "indexes" / "sbir_bm25"),
-        )
-    )
 
     # Figures / charts (R4)
     figures_dir: Path = Path(
@@ -100,7 +93,6 @@ class Settings:
 
     # Hybrid retrieve defaults (higher recall for multi-section compliance docs)
     similarity_top_k: int = int(os.getenv("SIMILARITY_TOP_K", "12"))
-    bm25_top_k: int = int(os.getenv("BM25_TOP_K", "12"))
     fusion_top_k: int = int(os.getenv("FUSION_TOP_K", "10"))
 
 

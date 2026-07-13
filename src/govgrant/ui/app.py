@@ -82,7 +82,7 @@ def _status_md(api_key: str | None = None) -> str:
     llm = ChatLLM()
     docs, sbir, _ = _services()
     try:
-        n_bm25 = len(docs._leaf_nodes)
+        n_bm25 = len(docs._by_page)
     except Exception:  # noqa: BLE001
         n_bm25 = "?"
     try:
@@ -102,7 +102,7 @@ def _status_md(api_key: str | None = None) -> str:
         f"**LLM ready:** {'yes' if llm.available else 'no'} · "
         f"**tenant:** `{tenant}` · "
         f"**my proposals:** {n_props} · "
-        f"**BM25 nodes:** {n_bm25} · "
+        f"**Pages:** {n_bm25} · "
         f"**SBIR topics:** {n_sbir} · "
         f"**Qdrant:** `{s.qdrant_url}`"
     )
@@ -262,7 +262,7 @@ def delete_proposal_ui(
             purge = getattr(svc, "_last_delete_index", None) or {}
             msg = (
                 f"Deleted `{doc_id}` (registry + file). "
-                f"Index purge: bm25={purge.get('bm25_removed', '?')}, "
+                f"Index purge: pages={purge.get('pages_removed', '?')}, "
                 f"qdrant≈{purge.get('qdrant_deleted_estimate', '?')}, "
                 f"tables={purge.get('tabular_cleared', '?')}."
             )

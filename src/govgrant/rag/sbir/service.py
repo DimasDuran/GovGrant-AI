@@ -3,10 +3,8 @@
 from __future__ import annotations
 
 import json
-import pickle
 import uuid
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any
 
 from llama_index.core import Settings as LISettings
@@ -17,12 +15,14 @@ from llama_index.core.vector_stores.types import (
     MetadataFilter,
     MetadataFilters,
 )
-from llama_index.retrievers.bm25 import BM25Retriever
 
 from govgrant.rag.config import Settings, get_settings
 from govgrant.rag.index.embeddings import build_embed_model
-from govgrant.rag.index.hybrid import code_aware_tokenizer
-from govgrant.rag.index.qdrant_store import build_vector_store
+from govgrant.rag.index.qdrant_store import (
+    build_vector_store,
+    get_qdrant_client,
+    retriever_kwargs,
+)
 from govgrant.rag.sbir.client import SBIRAPIError, SBIRTopicClient
 from govgrant.rag.sbir.disclaimer import with_disclaimer
 from govgrant.rag.sbir.models import TopicDocument
@@ -51,8 +51,6 @@ class SBIRTopicService:
         self.storage_context = StorageContext.from_defaults(
             vector_store=self.vector_store
         )
-        self._nodes: list[BaseNode] = []
-        self._load_bm25()
 
     # ------------------------------------------------------------------- sync
     def sync(
@@ -160,18 +158,6 @@ class SBIRTopicService:
             ]
             nodes.append(node)
 
-        # Replace entire BM25 corpus for SBIR (small public set for open topics)
-        # Merge by topic_id
-        by_id = {
-            n.metadata.get("topic_id"): n
-            for n in self._nodes
-            if n.metadata.get("topic_id")
-        }
-        for n in nodes:
-            by_id[n.metadata["topic_id"]] = n
-        self._nodes = list(by_id.values())
-        self._persist_bm25()
-
         VectorStoreIndex(
             nodes=nodes,
             storage_context=self.storage_context,
@@ -196,26 +182,14 @@ class SBIRTopicService:
             self.vector_store,
             embed_model=self.embed_model,
         )
-        vector_hits = list(
-            vector_index.as_retriever(
-                similarity_top_k=max(top_k, 8),
-                filters=filters if filters.filters else None,
-            ).retrieve(query)
+
+        kwargs = retriever_kwargs(
+            top_k=max(top_k, 8),
+            sparse_top_k=max(top_k, 8),
+            hybrid_top_k=max(top_k, 8),
+            filters=filters if filters.filters else None,
         )
-
-        bm25_nodes = self._filter_nodes(agency=agency, status=status, program=program)
-        if bm25_nodes:
-            bm25_hits = list(
-                BM25Retriever.from_defaults(
-                    nodes=bm25_nodes,
-                    similarity_top_k=max(top_k, 8),
-                    tokenizer=code_aware_tokenizer,
-                ).retrieve(query)
-            )
-        else:
-            bm25_hits = []
-
-        fused = self._rrf([vector_hits, bm25_hits], top_k=top_k)
+        fused = list(vector_index.as_retriever(**kwargs).retrieve(query))
         formatted = self.format_hits(fused)
         topic_ids = []
         for h in fused:
@@ -306,25 +280,6 @@ class SBIRTopicService:
             )
         return MetadataFilters(filters=filters)
 
-    def _filter_nodes(
-        self,
-        *,
-        agency: str | None,
-        status: str | None,
-        program: str | None,
-    ) -> list[BaseNode]:
-        out = []
-        for n in self._nodes:
-            md = n.metadata or {}
-            if agency and (md.get("agency") or "").upper() != agency.upper():
-                continue
-            if status and (md.get("status") or "").lower() != status.lower():
-                continue
-            if program and (md.get("program") or "").upper() != program.upper():
-                continue
-            out.append(n)
-        return out
-
     @staticmethod
     def _rrf(
         result_lists: list[list[NodeWithScore]],
@@ -341,35 +296,3 @@ class SBIRTopicService:
                 nodes[nid] = item.node
         ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:top_k]
         return [NodeWithScore(node=nodes[i], score=s) for i, s in ranked]
-
-    def _bm25_path(self) -> Path:
-        return self.settings.sbir_bm25_dir / "sbir_nodes.pkl"
-
-    def _persist_bm25(self) -> None:
-        path = self._bm25_path()
-        path.parent.mkdir(parents=True, exist_ok=True)
-        payload = [
-            {
-                "id_": n.node_id,
-                "text": n.get_content(),
-                "metadata": dict(n.metadata or {}),
-            }
-            for n in self._nodes
-        ]
-        with path.open("wb") as f:
-            pickle.dump(payload, f)
-        path.with_suffix(".json").write_text(
-            json.dumps({"count": len(payload)}, indent=2), encoding="utf-8"
-        )
-
-    def _load_bm25(self) -> None:
-        path = self._bm25_path()
-        if not path.exists():
-            self._nodes = []
-            return
-        with path.open("rb") as f:
-            raw = pickle.load(f)
-        self._nodes = [
-            TextNode(id_=i["id_"], text=i["text"], metadata=i.get("metadata") or {})
-            for i in raw
-        ]

@@ -1,10 +1,10 @@
-"""Hybrid RAG: Qdrant vectors + BM25 + RRF fusion (R1) + tables dual (R2)."""
+"""Hybrid RAG: Qdrant dense + sparse vectors + RRF fusion (R1) + tables dual (R2)."""
 
 from __future__ import annotations
 
 import json
-import pickle
 import re
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -17,23 +17,22 @@ from llama_index.core.vector_stores.types import (
     MetadataFilter,
     MetadataFilters,
 )
-from llama_index.retrievers.bm25 import BM25Retriever
 
 from govgrant.rag.config import Settings, get_settings
 from govgrant.rag.contracts import DocumentMeta, Modality
 from govgrant.rag.index.embeddings import build_embed_model
-from govgrant.rag.index.qdrant_store import build_vector_store
+from govgrant.rag.index.qdrant_store import (
+    build_vector_store,
+    get_qdrant_client,
+    retriever_kwargs,
+)
 from govgrant.rag.index.rerank import lexical_rerank
+from govgrant.rag.index.sparse import code_aware_tokenizer
 from govgrant.rag.parsers.figures import FigureChartParser
 from govgrant.rag.parsers.prose import LocalPDFFallbackParser, ProsePDFParser
 from govgrant.rag.parsers.tables import TableMarkdownParser
 from govgrant.rag.tabular.sql_store import TabularStore
 
-
-_CODE_TOKEN_RE = re.compile(
-    r"[A-Za-z0-9]+(?:[-./][A-Za-z0-9]+)*|[^\s\w]",
-    re.UNICODE,
-)
 
 # Split compound questions into focused sub-queries for broader recall
 _SPLIT_CUES = re.compile(
@@ -43,11 +42,6 @@ _SPLIT_CUES = re.compile(
     r"(?:\bmy questions are\b)",
     re.I,
 )
-
-
-def code_aware_tokenizer(text: str) -> list[str]:
-    """Keep codes like SF-424, 2 CFR 200, FOA-XXXX as useful tokens."""
-    return [t.lower() for t in _CODE_TOKEN_RE.findall(text or "") if t.strip()]
 
 
 def _stitch_page_boundary_docs(
@@ -276,10 +270,10 @@ def diversify_by_page(
 
 class HybridRAGService:
     """
-    Ingest user PDFs and run hybrid retrieve (vector + BM25 + RRF).
+    Ingest user PDFs and run hybrid retrieve (Qdrant dense + sparse vectors + RRF).
 
     R2: also extracts markdown tables → modality=table RAG nodes + SQLite rows.
-    BM25 nodes are persisted under data/indexes/bm25 for reuse across processes.
+    Sparse vectors replace the legacy BM25 pickle — stored natively in Qdrant.
     """
 
     def __init__(self, settings: Settings | None = None) -> None:
@@ -294,8 +288,11 @@ class HybridRAGService:
             vector_store=self.vector_store
         )
         self.tabular = TabularStore(self.settings.tabular_db_path)
-        self._leaf_nodes: list[BaseNode] = []
-        self._load_bm25_nodes()
+        # Page index for page-level operations (neighbors, siblings, page assembly)
+        # Key: (tenant_id, gg_doc_id, page_str) → list[BaseNode]
+        self._by_page: dict[tuple[str, str, str], list[BaseNode]] = {}
+        self._lock = threading.Lock()
+        self._rebuild_page_index()
 
     # ------------------------------------------------------------------ ingest
     def ingest_pdf(
@@ -400,16 +397,15 @@ class HybridRAGService:
         )
         _ = index  # index writes into Qdrant via storage_context
 
-        # Replace BM25 corpus entries for this doc_id+tenant, then append
-        self._leaf_nodes = [
-            n
-            for n in self._leaf_nodes
-            if not (
-                n.metadata.get("gg_doc_id") == doc_id
-                and n.metadata.get("tenant_id") == tenant_id
-            )
-        ] + list(leaf_nodes)
-        self._persist_bm25_nodes()
+        # Update page index (replace old entries for this doc, append new)
+        with self._lock:
+            for key in list(self._by_page.keys()):
+                if key[1] == doc_id and key[0] == tenant_id:
+                    del self._by_page[key]
+            for n in leaf_nodes:
+                key = self._make_page_key(n)
+                if key:
+                    self._by_page.setdefault(key, []).append(n)
 
         return {
             "file": path.name,
@@ -556,31 +552,18 @@ class HybridRAGService:
             self.vector_store,
             embed_model=self.embed_model,
         )
-        vector_retriever = vector_index.as_retriever(
-            similarity_top_k=max(self.settings.similarity_top_k, top_k),
+
+        # Qdrant native hybrid: dense + sparse vectors + fusion
+        kwargs = retriever_kwargs(
+            top_k=max(self.settings.similarity_top_k, top_k),
+            sparse_top_k=max(self.settings.similarity_top_k, top_k),
+            hybrid_top_k=max(top_k * 2, top_k),
             filters=filters,
         )
+        results = list(vector_index.as_retriever(**kwargs).retrieve(query))
 
-        bm25_nodes = self._filter_nodes_for_bm25(
-            tenant_id=tenant_id, doc_id=doc_id, modality=modality
-        )
-        if not bm25_nodes:
-            return list(vector_retriever.retrieve(query))[:top_k]
-
-        bm25_retriever = BM25Retriever.from_defaults(
-            nodes=bm25_nodes,
-            similarity_top_k=max(self.settings.bm25_top_k, top_k),
-            tokenizer=code_aware_tokenizer,
-        )
-
-        fused = self._rrf_fuse(
-            [
-                list(vector_retriever.retrieve(query)),
-                list(bm25_retriever.retrieve(query)),
-            ],
-            top_k=max(top_k * 3, top_k),
-        )
-        return lexical_rerank(query, fused, top_k=top_k)
+        # Final lexical re-rank for query-term ordering
+        return lexical_rerank(query, results, top_k=top_k)
 
     def _expand_page_neighbors(
         self,
@@ -591,7 +574,7 @@ class HybridRAGService:
         modality: str | None,
         window: int = 1,
     ) -> list[NodeWithScore]:
-        """Pull BM25 corpus siblings from adjacent pages of each hit."""
+        """Pull page index siblings from adjacent pages of each hit."""
         if not hits:
             return hits
         wanted: set[tuple[str, int]] = set()
@@ -610,21 +593,22 @@ class HybridRAGService:
 
         extra: list[NodeWithScore] = []
         seen = {h.node.node_id for h in hits}
-        pool = self._filter_nodes_for_bm25(
-            tenant_id=tenant_id, doc_id=doc_id, modality=modality
-        )
-        for n in pool:
-            if n.node_id in seen:
+        for (tid, d, page_str), nodes in self._by_page.items():
+            if tid != tenant_id:
                 continue
-            md = n.metadata or {}
-            d = str(md.get("gg_doc_id") or md.get("doc_id") or "")
-            try:
-                p = int(md.get("page"))
-            except (TypeError, ValueError):
+            if doc_id and d != doc_id:
                 continue
-            if (d, p) in wanted:
-                extra.append(NodeWithScore(node=n, score=0.05))
-                seen.add(n.node_id)
+            for n in nodes:
+                if n.node_id in seen:
+                    continue
+                md = n.metadata or {}
+                try:
+                    p = int(md.get("page"))
+                except (TypeError, ValueError):
+                    continue
+                if (d, p) in wanted:
+                    extra.append(NodeWithScore(node=n, score=0.05))
+                    seen.add(n.node_id)
         return list(hits) + extra
 
     def _expand_same_page_siblings(
@@ -647,18 +631,20 @@ class HybridRAGService:
                 pages.add((d, p))
         seen = {h.node.node_id for h in hits}
         extra: list[NodeWithScore] = []
-        pool = self._filter_nodes_for_bm25(
-            tenant_id=tenant_id, doc_id=doc_id, modality=modality
-        )
-        for n in pool:
-            if n.node_id in seen:
+        for (tid, d, p_str), nodes in self._by_page.items():
+            if tid != tenant_id:
                 continue
-            md = n.metadata or {}
-            d = str(md.get("gg_doc_id") or md.get("doc_id") or "")
-            p = str(md.get("page") if md.get("page") is not None else "")
-            if (d, p) in pages:
-                extra.append(NodeWithScore(node=n, score=0.08))
-                seen.add(n.node_id)
+            if doc_id and d != doc_id:
+                continue
+            for n in nodes:
+                if n.node_id in seen:
+                    continue
+                md = n.metadata or {}
+                d2 = str(md.get("gg_doc_id") or md.get("doc_id") or "")
+                p2 = str(md.get("page") if md.get("page") is not None else "")
+                if (d2, p2) in pages:
+                    extra.append(NodeWithScore(node=n, score=0.08))
+                    seen.add(n.node_id)
         return list(hits) + extra
 
     def _force_phrase_pages(
@@ -756,17 +742,19 @@ class HybridRAGService:
         if not required_phrases:
             return hits
 
-        pool = self._filter_nodes_for_bm25(
-            tenant_id=tenant_id, doc_id=doc_id, modality=modality
-        )
-        # Build page assemblies for matching phrases
+        # Build page assemblies from page index
         by_page: dict[tuple[str, str], list[BaseNode]] = {}
-        for n in pool:
-            md = n.metadata or {}
-            d = str(md.get("gg_doc_id") or md.get("doc_id") or "")
-            p = str(md.get("page") if md.get("page") is not None else "")
-            if d and p:
-                by_page.setdefault((d, p), []).append(n)
+        for (tid, d, p_str), nodes in self._by_page.items():
+            if tid != tenant_id:
+                continue
+            if doc_id and d != doc_id:
+                continue
+            for n in nodes:
+                md = n.metadata or {}
+                d2 = str(md.get("gg_doc_id") or md.get("doc_id") or "")
+                p2 = str(md.get("page") if md.get("page") is not None else "")
+                if d2 and p2:
+                    by_page.setdefault((d2, p2), []).append(n)
 
         existing = {
             (
@@ -818,18 +806,19 @@ class HybridRAGService:
         if not hits:
             return hits
 
-        pool = self._filter_nodes_for_bm25(
-            tenant_id=tenant_id, doc_id=doc_id, modality=modality
-        )
-        # group pool by (gg_doc_id, page)
+        # Build page groups from page index
         by_page: dict[tuple[str, str], list[BaseNode]] = {}
-        for n in pool:
-            md = n.metadata or {}
-            d = str(md.get("gg_doc_id") or md.get("doc_id") or "")
-            p = str(md.get("page") if md.get("page") is not None else "")
-            if not d or not p:
+        for (tid, d, p_str), nodes in self._by_page.items():
+            if tid != tenant_id:
                 continue
-            by_page.setdefault((d, p), []).append(n)
+            if doc_id and d != doc_id:
+                continue
+            for n in nodes:
+                md = n.metadata or {}
+                d2 = str(md.get("gg_doc_id") or md.get("doc_id") or "")
+                p2 = str(md.get("page") if md.get("page") is not None else "")
+                if d2 and p2:
+                    by_page.setdefault((d2, p2), []).append(n)
 
         assembled: list[NodeWithScore] = []
         seen_pages: set[tuple[str, str]] = set()
@@ -994,7 +983,7 @@ class HybridRAGService:
         """
         Remove all indexed artifacts for one (tenant_id, gg_doc_id).
 
-        Clears Qdrant points, BM25 leaf nodes (+ persist), and tabular rows.
+        Clears Qdrant points, page index, and tabular rows.
         Safe to call if some layers are empty/missing.
         """
         tenant_id = tenant_id or self.settings.default_tenant_id
@@ -1042,21 +1031,14 @@ class HybridRAGService:
         else:
             qdrant_error = None
 
-        before = len(self._leaf_nodes)
-        self._leaf_nodes = [
-            n
-            for n in self._leaf_nodes
-            if not (
-                (n.metadata or {}).get("tenant_id") == tenant_id
-                and (
-                    (n.metadata or {}).get("gg_doc_id") == doc_id
-                    or (n.metadata or {}).get("doc_id") == doc_id
-                )
-            )
-        ]
-        bm25_removed = before - len(self._leaf_nodes)
-        if bm25_removed:
-            self._persist_bm25_nodes()
+        with self._lock:
+            before = len(self._by_page)
+            self._by_page = {
+                k: v
+                for k, v in self._by_page.items()
+                if not (k[0] == tenant_id and k[1] == doc_id)
+            }
+            pages_removed = before - len(self._by_page)
 
         try:
             self.tabular.delete_doc(tenant_id=tenant_id, gg_doc_id=doc_id)
@@ -1069,7 +1051,7 @@ class HybridRAGService:
             "doc_id": doc_id,
             "qdrant_deleted_estimate": qdrant_deleted,
             "qdrant_error": qdrant_error,
-            "bm25_removed": bm25_removed,
+            "pages_removed": pages_removed,
             "tabular_cleared": tabular_ok,
         }
 
@@ -1155,26 +1137,6 @@ class HybridRAGService:
             )
         return MetadataFilters(filters=filters)
 
-    def _filter_nodes_for_bm25(
-        self,
-        *,
-        tenant_id: str,
-        doc_id: str | None,
-        modality: str | None = None,
-    ) -> list[BaseNode]:
-        out = []
-        for n in self._leaf_nodes:
-            md = n.metadata or {}
-            if md.get("tenant_id") != tenant_id:
-                continue
-            node_doc = md.get("gg_doc_id") or md.get("doc_id")
-            if doc_id and node_doc != doc_id:
-                continue
-            if modality and md.get("modality") != modality:
-                continue
-            out.append(n)
-        return out
-
     @staticmethod
     def _rrf_fuse(
         result_lists: list[list[NodeWithScore]],
@@ -1193,43 +1155,55 @@ class HybridRAGService:
         ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:top_k]
         return [NodeWithScore(node=nodes[nid], score=sc) for nid, sc in ranked]
 
-    def _bm25_path(self) -> Path:
-        return self.settings.bm25_persist_dir / "leaf_nodes.pkl"
+    def _make_page_key(self, node: BaseNode) -> tuple[str, str, str] | None:
+        md = node.metadata or {}
+        tid = md.get("tenant_id", "")
+        doc = str(md.get("gg_doc_id") or md.get("doc_id") or "")
+        page = str(md.get("page") if md.get("page") is not None else "")
+        if tid and doc and page:
+            return (tid, doc, page)
+        return None
 
-    def _persist_bm25_nodes(self) -> None:
-        path = self._bm25_path()
-        path.parent.mkdir(parents=True, exist_ok=True)
-        serializable = []
-        for n in self._leaf_nodes:
-            serializable.append(
-                {
-                    "id_": n.node_id,
-                    "text": n.get_content(),
-                    "metadata": dict(n.metadata or {}),
-                }
-            )
-        with path.open("wb") as f:
-            pickle.dump(serializable, f)
-        meta_path = path.with_suffix(".json")
-        meta_path.write_text(
-            json.dumps({"count": len(serializable)}, indent=2),
-            encoding="utf-8",
-        )
-
-    def _load_bm25_nodes(self) -> None:
-        path = self._bm25_path()
-        if not path.exists():
-            self._leaf_nodes = []
+    def _rebuild_page_index(self) -> None:
+        """Rebuild in-memory page index from Qdrant on startup."""
+        client = get_qdrant_client(self.settings)
+        collection = self.settings.qdrant_collection
+        if not client.collection_exists(collection):
+            self._by_page = {}
             return
-        with path.open("rb") as f:
-            raw = pickle.load(f)
-        nodes: list[BaseNode] = []
-        for item in raw:
-            nodes.append(
-                TextNode(
-                    id_=item["id_"],
-                    text=item["text"],
-                    metadata=item.get("metadata") or {},
-                )
+        next_offset: Any = None
+
+        def _reconstruct_node(point) -> BaseNode | None:
+            raw = point.payload.get("_node_content")
+            if not raw:
+                return None
+            try:
+                data = json.loads(raw)
+            except json.JSONDecodeError:
+                return None
+            text = data.get("text") or ""
+            skip = {
+                "_node_content", "_node_type",
+                "document_id", "doc_id", "ref_doc_id",
+            }
+            meta = {k: v for k, v in point.payload.items() if k not in skip}
+            return TextNode(text=text, metadata=meta, id_=point.id)
+
+        self._by_page = {}
+        while True:
+            points, next_offset = client.scroll(
+                collection_name=collection,
+                limit=200,
+                offset=next_offset,
+                with_payload=True,
+                with_vectors=False,
             )
-        self._leaf_nodes = nodes
+            for p in points:
+                node = _reconstruct_node(p)
+                if node is None:
+                    continue
+                key = self._make_page_key(node)
+                if key:
+                    self._by_page.setdefault(key, []).append(node)
+            if next_offset is None:
+                break
