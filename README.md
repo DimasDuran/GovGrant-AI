@@ -21,12 +21,31 @@ graph TB
     %% Auth
     AUTH["Auth<br/>tenant · roles · permissions"]
 
-    %% Two main paths
-    AGENT["Agent (LangGraph)<br/>classify → retrieve → validate<br/>→ format_answer (Claude Haiku)"]
-    CHECKLIST["Compliance Checklist<br/>corpus + draft scoring"]
+    %% Agent (LangGraph) — full pipeline
+    subgraph AGENT["Agent (LangGraph + Claude Haiku)"]
+        C["classify<br/><i>LLM tool‑use routing</i><br/>or heuristic fallback"]
+        R["retrieve<br/><i>Qdrant dense + sparse</i>"]
+        V["validate<br/><i>LLM judge</i><br/>mark_sufficient<br/>request_more_evidence"]
+        F["format_answer<br/><i>LLM synthesis</i>"]
+        S["self_check<br/><i>LLM verifies answer</i><br/>answer_complete<br/>answer_incomplete"]
+        CK["checklist<br/><i>LLM‑planned compliance audit</i>"]
+
+        C -->|doc_qa / table / topic| R
+        C -->|checklist| CK
+        C -->|chat| F
+        R --> V
+        V -->|sufficient| F
+        V -->|retry + reformulated query| R
+        F --> S
+        S -->|incomplete + critique| F
+        S -->|complete| E
+        CK --> F
+    end
+
+    E(("END"))
 
     %% Router + RAG
-    ROUTER["QueryRouter<br/>heuristic intent → source"]
+    ROUTER["QueryRouter<br/>heuristic intent → source<br/><i>(also used by CLI)</i>"]
     HR["HybridRAGService<br/>Qdrant dense + sparse vectors<br/>+ RRF fusion"]
     SBIR["SBIRTopicService<br/>Qdrant dense + sparse + API"]
     TABULAR["TabularStore<br/>SQLite + FTS5"]
@@ -42,11 +61,9 @@ graph TB
     UI --> AUTH
     CLI --> AUTH
     AUTH --> AGENT
-    AUTH --> CHECKLIST
-    AGENT --> ROUTER
-    ROUTER --> HR
-    ROUTER --> SBIR
-    ROUTER --> TABULAR
+    ROUTER -.->|CLI query path| HR
+    ROUTER -.->|CLI query path| SBIR
+    ROUTER -.->|CLI query path| TABULAR
     HR -->|dense + sparse| QD
     HR --> OLL
     SBIR -->|dense + sparse| QD
@@ -67,19 +84,21 @@ SBIR/STTR compliance documents mix two search modes that no single retriever han
 
 ### Why an agent (LangGraph)
 
-Plain RAG can't orchestrate multi-step decisions. The agent structures every response:
+Plain RAG can't orchestrate multi-step decisions. The agent structures every response with LLM-driven tool-calling at each stage:
 
-1. **classify** — greeting? document / table / SBIR.gov query?
-2. **retrieve** — hybrid RAG + neighbor page expansion + force-include pages with exact phrase matches
-3. **validate** — short-circuits if evidence is insufficient (no LLM call wasted)
-4. **format_answer** — Claude Haiku synthesizes an answer grounded in the retrieved evidence
+1. **classify** — Claude Haiku selects a retrieval tool via Anthropic function-calling (`search_documents`, `search_tables`, `search_sbir_topics`, `cross_check`, `compliance_checklist`). Heuristic fallback when the LLM is unavailable.
+2. **retrieve** — hybrid RAG (Qdrant dense + sparse vectors) + neighbor page expansion + force-include pages with exact phrase matches.
+3. **validate** — LLM judge using `mark_sufficient` / `request_more_evidence(reason, suggested_query)` tools. If evidence is insufficient, the LLM reformulates the query and retries (up to 2 times) instead of using hardcoded string-matching heuristics.
+4. **format_answer** — Claude Haiku synthesizes an answer grounded in the retrieved evidence.
+5. **self_check** — LLM verifies the answer covers every sub-question using `answer_complete` / `answer_incomplete(critique)`. If incomplete, loops back to `format_answer` with specific revision guidance before returning to the user.
+6. **checklist** — When the user asks for a compliance audit, the LLM selects which agency packages (DARPA, SBA, SF424) to check and dynamically runs the compliance checklist, then interprets the results.
 
-Without an agent, there's no reliable way to combine SBIR.gov data, milestone tables, and DARPA instructions in a single answer without hallucinating.
+Every decision point uses real tool-calling (not regex or keyword heuristics) — routing source selection, evidence sufficiency, query reformulation, answer quality, and checklist planning.
 
 ### Why LlamaIndex + LangGraph
 
 - **LlamaIndex** handles data orchestration out of the box: hierarchical chunking (`HierarchicalNodeParser`), `QdrantVectorStore` with native hybrid mode, and ingestion into Qdrant in a few lines — replacing what would otherwise be ~400 lines of boilerplate.
-- **LangGraph** models the flow as an explicit `StateGraph` with typed shared state rather than a linear chain. Each node (`classify`, `retrieve`, `validate`, `format_answer`) is independently testable, and `validate` short-circuits with no LLM call when evidence is missing. The alternative (LangChain Expression Language) is more verbose for the same graph.
+- **LangGraph** models the flow as an explicit `StateGraph` with typed shared state rather than a linear chain. Each node (`classify`, `retrieve`, `validate`, `format_answer`, `self_check`, `checklist`) is independently testable and debuggable. `StateGraph.add_conditional_edges` enables runtime retry loops and branching without bespoke orchestration code. The alternative (LangChain Expression Language) is more verbose for the same graph.
 
 ## Data sources
 
@@ -111,7 +130,12 @@ python -m govgrant.ui.app
 # Golden eval (run after ingest)
 python -m govgrant.rag.cli eval --golden
 
-# Compliance checklist (corpus, or against a draft PDF)
+# Agent (LLM‑routed: classify → retrieve → validate → format → self_check)
+python -m govgrant.rag.cli agent "What is the DARPA Phase II work-share requirement?"
+python -m govgrant.rag.cli agent "Run a compliance checklist for my DARPA proposal"
+python -m govgrant.rag.cli agent "Cross‑check my abstract with open SBIR topics"
+
+# Compliance checklist (direct, or via agent)
 python -m govgrant.rag.cli checklist --package darpa --ot
 python -m govgrant.rag.cli checklist --draft-pdf ./proposal.pdf --llm-draft --package darpa --ot
 python -m govgrant.rag.cli checklist --package darpa --ot --export   # writes md+json to data/eval/reports/ (gitignored)
@@ -122,11 +146,11 @@ python -m govgrant.rag.cli checklist --package darpa --ot --export   # writes md
 ```
 src/govgrant/
   rag/          # ingest, hybrid index, router, eval, CLI
-  agent/        # LangGraph + Haiku
-  compliance/   # multi-agency checklist + proposal PDF + draft LLM judge
+  agent/        # LangGraph pipeline: classify → retrieve → validate → format → self_check (Claude Haiku)
+  compliance/   # multi-agency checklist (DARPA, SBA, SF424) + proposal PDF + draft LLM judge
   ui/           # Gradio console
-data/eval/      # golden cases (01–10) + SCHEMA.json
-tests/rag/      # unit tests
+data/eval/      # golden cases (01–10) + THRESHOLDS.json
+tests/          # unit tests (rag, agent, compliance)
 ```
 
 ## Quality gates

@@ -51,6 +51,319 @@ class ChatLLM:
                 parts.append(text)
         return "\n".join(parts).strip()
 
+    def classify_with_tools(self, query: str) -> dict | None:
+        """Use Anthropic tool-use to select retrieval route.
+
+        Returns {"tool": str, "arguments": dict} or None if LLM unavailable / no tool chosen.
+        """
+        if not self.available or self._client is None:
+            return None
+        tools = [
+            {
+                "name": "search_documents",
+                "description": (
+                    "Search SBIR/STTR agency documents (DARPA Phase II instructions, "
+                    "SBA Policy Directive, SF424 Application Guide) for compliance rules, "
+                    "eligibility, proposal instructions, work-share, milestone plans, "
+                    "commercialization strategy, page limits, funding restrictions."
+                ),
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "search_query": {
+                            "type": "string",
+                            "description": "Search terms — keep the user's own words",
+                        }
+                    },
+                    "required": ["search_query"],
+                },
+            },
+            {
+                "name": "search_tables",
+                "description": (
+                    "Search structured table data extracted from PDFs: budget tables, "
+                    "proposal forms, data rights assertion matrices, row/column data."
+                ),
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "search_query": {
+                            "type": "string",
+                            "description": "Search terms",
+                        }
+                    },
+                    "required": ["search_query"],
+                },
+            },
+            {
+                "name": "search_sbir_topics",
+                "description": (
+                    "Search open SBIR/STTR funding topics and solicitations from "
+                    "SBIR.gov — topic descriptions, agency, phase, deadlines."
+                ),
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "search_query": {
+                            "type": "string",
+                            "description": "Search terms — technology area or topic keywords",
+                        },
+                        "agency": {
+                            "type": "string",
+                            "description": "Agency code: DOD, NIH, NASA, NSF, DARPA, etc.",
+                        },
+                    },
+                    "required": ["search_query"],
+                },
+            },
+            {
+                "name": "cross_check",
+                "description": (
+                    "Cross-reference user proposal or draft content with open SBIR topics "
+                    "to check alignment, eligibility fit, and topic matching."
+                ),
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "search_query": {
+                            "type": "string",
+                            "description": "The proposal description or technology keywords",
+                        },
+                        "agency": {
+                            "type": "string",
+                            "description": "Target agency code if known",
+                        },
+                    },
+                    "required": ["search_query"],
+                },
+            },
+            {
+                "name": "compliance_checklist",
+                "description": (
+                    "Run the SBIR/STTR compliance checklist against agency documents. "
+                    "Use this when the user asks to run a compliance review, checklist, "
+                    "or audit of their proposal against DARPA Phase II instructions, "
+                    "SBA Policy Directive, or SF424 Application Guide requirements."
+                ),
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "packages": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": ["darpa", "sba", "sf424"],
+                            },
+                            "description": (
+                                "Which compliance packages to check. "
+                                "darpa = DARPA Phase II Proposal Instructions, "
+                                "sba = SBA SBIR/STTR Policy Directive, "
+                                "sf424 = NIH SF424 Application Guide. "
+                                "Default to all three unless the user specifies an agency."
+                            ),
+                        },
+                        "program": {
+                            "type": "string",
+                            "enum": ["sbir", "sttr"],
+                            "description": "SBIR or STTR program (default: sbir)",
+                        },
+                    },
+                    "required": ["packages"],
+                },
+            },
+        ]
+        try:
+            msg = self._client.messages.create(
+                model=self.model,
+                max_tokens=200,
+                system=(
+                    "You are a routing classifier for a SBIR/STTR compliance assistant. "
+                    "Select the most appropriate retrieval tool for the user's question. "
+                    "Always choose one tool — do not answer directly."
+                ),
+                messages=[{"role": "user", "content": query}],
+                tools=tools,
+                tool_choice={"type": "any"},
+            )
+            for block in msg.content:
+                if getattr(block, "type", None) == "tool_use":
+                    return {"tool": block.name, "input": block.input}
+        except Exception:  # noqa: BLE001
+            pass
+        return None
+
+    def judge_evidence(
+        self,
+        *,
+        query: str,
+        evidence: str,
+        retry_count: int,
+        max_tokens: int = 300,
+    ) -> dict | None:
+        """LLM tool-calling judge: is the evidence sufficient to answer?
+
+        Returns {"action": "sufficient", "reason": "..."}
+        or {"action": "retry", "reason": "...", "suggested_query": "..."}
+        or None if LLM unavailable / error.
+        """
+        if not self.available or self._client is None:
+            return None
+        tools = [
+            {
+                "name": "mark_sufficient",
+                "description": (
+                    "The retrieved evidence is sufficient to answer the user's question. "
+                    "Call this when evidence directly addresses the query with relevant "
+                    "details — even if partial or incomplete."
+                ),
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "reason": {
+                            "type": "string",
+                            "description": "Brief explanation of why the evidence suffices",
+                        }
+                    },
+                    "required": ["reason"],
+                },
+            },
+            {
+                "name": "request_more_evidence",
+                "description": (
+                    "The retrieved evidence does NOT sufficiently answer the user's "
+                    "question. Call this to request a new retrieval with a reformulated "
+                    "query. Use when evidence is off-topic, too generic, or missing "
+                    "specific details the user asked about."
+                ),
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "reason": {
+                            "type": "string",
+                            "description": "Why the current evidence is insufficient",
+                        },
+                        "suggested_query": {
+                            "type": "string",
+                            "description": (
+                                "A reformulated search query that should retrieve "
+                                "better evidence. Focus on keywords from the user's "
+                                "question that were missing in the results."
+                            ),
+                        },
+                    },
+                    "required": ["reason", "suggested_query"],
+                },
+            },
+        ]
+        try:
+            msg = self._client.messages.create(
+                model=self.model,
+                max_tokens=max_tokens,
+                system=(
+                    "You are an evidence judge for a SBIR/STTR compliance assistant. "
+                    "Review the retrieved evidence and decide whether it is sufficient "
+                    "to answer the user's question. "
+                    f"Retry attempt {retry_count + 1} of up to 3.\n\n"
+                    "Rules:\n"
+                    "- Choose mark_sufficient if evidence addresses the question, "
+                    "even if partially.\n"
+                    "- Choose request_more_evidence if evidence is off-topic, empty, "
+                    "or missing key information.\n"
+                    "- Always pick one tool — do not answer directly."
+                ),
+                messages=[{"role": "user", "content": f"User question: {query}\n\nRetrieved evidence:\n{evidence[:12000]}"}],
+                tools=tools,
+                tool_choice={"type": "any"},
+            )
+            for block in msg.content:
+                if getattr(block, "type", None) == "tool_use":
+                    if block.name == "mark_sufficient":
+                        return {"action": "sufficient", "reason": block.input.get("reason", "")}
+                    if block.name == "request_more_evidence":
+                        return {
+                            "action": "retry",
+                            "reason": block.input.get("reason", ""),
+                            "suggested_query": block.input.get("suggested_query", query),
+                        }
+        except Exception:  # noqa: BLE001
+            pass
+        return None
+
+    def self_check_answer(
+        self,
+        *,
+        query: str,
+        answer: str,
+        max_tokens: int = 200,
+    ) -> dict | None:
+        """LLM verifies answer covers the user's question before returning.
+
+        Returns {"action": "complete", "reason": "..."}
+        or {"action": "incomplete", "reason": "...", "critique": "..."}
+        or None if LLM unavailable / error.
+        """
+        if not self.available or self._client is None:
+            return None
+        tools = [
+            {
+                "name": "answer_complete",
+                "description": "The answer fully addresses the user's question. Call this when the answer covers every aspect the user asked about.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "reason": {"type": "string", "description": "Brief confirmation"},
+                    },
+                    "required": ["reason"],
+                },
+            },
+            {
+                "name": "answer_incomplete",
+                "description": "The answer does NOT fully address the user's question. Call this when the answer missed sub-questions, went off-topic, or is too vague.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "reason": {"type": "string", "description": "Why the answer is incomplete"},
+                        "critique": {
+                            "type": "string",
+                            "description": "Specific guidance on what to add or change in the revised answer",
+                        },
+                    },
+                    "required": ["reason", "critique"],
+                },
+            },
+        ]
+        try:
+            msg = self._client.messages.create(
+                model=self.model,
+                max_tokens=max_tokens,
+                system=(
+                    "You are a quality checker for a SBIR/STTR compliance assistant. "
+                    "Review the answer against the user's question. Verify: "
+                    "(1) every sub-question is addressed, "
+                    "(2) the answer stays within the asked scope, "
+                    "(3) no critical detail from the question is ignored.\n"
+                    "Choose answer_complete if satisfactory, answer_incomplete otherwise."
+                ),
+                messages=[
+                    {"role": "user", "content": f"User question:\n{query}\n\nDraft answer:\n{answer}"}
+                ],
+                tools=tools,
+                tool_choice={"type": "any"},
+            )
+            for block in msg.content:
+                if getattr(block, "type", None) == "tool_use":
+                    if block.name == "answer_complete":
+                        return {"action": "complete", "reason": block.input.get("reason", "")}
+                    if block.name == "answer_incomplete":
+                        return {
+                            "action": "incomplete",
+                            "reason": block.input.get("reason", ""),
+                            "critique": block.input.get("critique", ""),
+                        }
+        except Exception:  # noqa: BLE001
+            pass
+        return None
+
     def answer_from_evidence(
         self,
         *,
