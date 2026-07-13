@@ -1,5 +1,7 @@
 # GovGrant AI
 
+![U.S. SBIR/STTR](https://res.cloudinary.com/diyzwz1mx/image/upload/v1783962148/U.S._SBIR_STTR_seexwv.png)
+
 Multimodal hybrid RAG + agent for **U.S. SBIR/STTR** grant compliance (DoD/DARPA, SBA, NIH SF424).
 
 | Layer | Stack |
