@@ -6,9 +6,50 @@
 
 GovGrant AI answers questions about agency regulations (DoD/DARPA, SBA, NIH SF424) using multimodal RAG over text, tables, and figures, orchestrated by a LangGraph agent with Claude Haiku. It also runs compliance checklists against the source corpus and scores proposal drafts against each agency's requirements.
 
-[Architecture](#architecture) · [Quick start](#quick-start) · [Project layout](#project-layout) · [Quality gates](#quality-gates) · [Auth & multi-tenancy](#dev-auth--multi-tenant)
+[The problem](#the-problem) · [Architecture](#architecture) · [Quick start](#quick-start) · [Project layout](#project-layout) · [Quality gates](#quality-gates) · [Auth & multi-tenancy](#dev-auth--multi-tenant)
 
 ---
+
+## The problem
+
+SBIR/STTR compliance failures rarely come from not knowing the rules — they come from
+missing the one clause, threshold, or cross-reference buried in a 40-page agency
+instruction document. A proposal can get desk-rejected over a work-share percentage
+that's off by a few points, or a budget line that violates a cost cap stated once, in
+a footnote, in a different document than the one the applicant was reading.
+
+That failure mode has two distinct causes, and each one rules out a simpler solution:
+
+- **Retrieval alone isn't enough.** Compliance text mixes prose ("what does the
+  work-share policy say?") with exact codes and clauses (`2 CFR 200`, `SF-424`, `40%`)
+  that must be matched verbatim, not approximately — a purely semantic search can
+  return a plausible-sounding paragraph that isn't the one containing the actual rule.
+  This is why the system uses **hybrid dense + sparse retrieval** rather than a single
+  vector index (see [Why hybrid RAG](#why-hybrid-rag-dense--sparse--multimodal) below).
+
+- **A single retrieval pass isn't enough either.** A real compliance question often
+  spans more than one source — the indexed regulation corpus, a structured budget
+  table, and live SBIR.gov topic data — and the first retrieval attempt doesn't always
+  return sufficient evidence. Answering anyway, using whatever was retrieved, is how
+  compliance tools produce confident-sounding but wrong answers. This is why the system
+  needs an **agent**: something that decides which source to query, judges whether the
+  evidence actually supports an answer, reformulates and retries when it doesn't, and
+  checks its own final answer against the original question before returning it (see
+  [Why an agent](#why-an-agent-langgraph) below).
+
+**Why the combination matters, not just the parts:** hybrid RAG without an agent would
+return the best evidence found on the first try, even when that evidence is incomplete
+or from the wrong document — silently risky in a compliance context. An agent without
+hybrid RAG would have decision-making and control flow, but no reliable way to ground
+that decision-making in the exact regulatory text — a hallucination risk in a domain
+where the exact wording is the whole point. Combining them means the agent decides
+*where* and *when* to look and *whether* to keep looking, but never fabricates content
+— every claim in the final answer has to trace back to retrieved, citable evidence.
+
+The goal is narrow and concrete: **reduce the chance that an applicant submits an SBIR/STTR
+proposal with an undetected compliance error** — a miscalculated work-share requirement,
+a misquoted budget threshold, a missed agency-specific clause — because they trusted an
+answer that sounded authoritative but wasn't actually checked against the source document.
 
 ## Architecture
 
@@ -28,7 +69,7 @@ graph TB
         V["validate<br/><i>LLM judge</i><br/>mark_sufficient<br/>request_more_evidence"]
         F["format_answer<br/><i>LLM synthesis</i>"]
         S["self_check<br/><i>LLM verifies answer</i><br/>answer_complete<br/>answer_incomplete"]
-        CK["checklist<br/><i>LLM‑planned compliance audit</i>"]
+        CK["checklist<br/><i>LLM‑triggered, deterministic scoring</i>"]
 
         C -->|doc_qa / table / topic| R
         C -->|checklist| CK
@@ -91,14 +132,62 @@ Plain RAG can't orchestrate multi-step decisions. The agent structures every res
 3. **validate** — LLM judge using `mark_sufficient` / `request_more_evidence(reason, suggested_query)` tools. If evidence is insufficient, the LLM reformulates the query and retries (up to 2 times) instead of using hardcoded string-matching heuristics.
 4. **format_answer** — Claude Haiku synthesizes an answer grounded in the retrieved evidence.
 5. **self_check** — LLM verifies the answer covers every sub-question using `answer_complete` / `answer_incomplete(critique)`. If incomplete, loops back to `format_answer` with specific revision guidance before returning to the user.
-6. **checklist** — When the user asks for a compliance audit, the LLM selects which agency packages (DARPA, SBA, SF424) to check and dynamically runs the compliance checklist, then interprets the results.
+6. **checklist** — When the user asks for a compliance audit, the LLM selects which agency packages (DARPA, SBA, SF424) to check and dynamically triggers the compliance checklist; the scoring itself stays deterministic (keyword-coverage against a fixed 27-item corpus) so results stay reproducible and auditable, then the LLM interprets the results for the user.
 
-Every decision point uses real tool-calling (not regex or keyword heuristics) — routing source selection, evidence sufficiency, query reformulation, answer quality, and checklist planning.
+Every decision point uses real tool-calling (not regex or keyword heuristics) — routing source selection, evidence sufficiency, query reformulation, answer quality, and checklist planning. The one deliberate exception is the checklist's internal scoring, which stays deterministic on purpose: in a compliance domain, reproducibility of the audit itself matters more than letting the model improvise it.
 
-### Why LlamaIndex + LangGraph
+### Architecture notes: multi-tenancy and concurrency
 
-- **LlamaIndex** handles data orchestration out of the box: hierarchical chunking (`HierarchicalNodeParser`), `QdrantVectorStore` with native hybrid mode, and ingestion into Qdrant in a few lines — replacing what would otherwise be ~400 lines of boilerplate.
-- **LangGraph** models the flow as an explicit `StateGraph` with typed shared state rather than a linear chain. Each node (`classify`, `retrieve`, `validate`, `format_answer`, `self_check`, `checklist`) is independently testable and debuggable. `StateGraph.add_conditional_edges` enables runtime retry loops and branching without bespoke orchestration code. The alternative (LangChain Expression Language) is more verbose for the same graph.
+**Multi-tenancy is enforced at the storage layer, not just the app layer.** Every
+Qdrant query builds a mandatory `tenant_id` metadata filter before it runs — a
+tenant cannot see another tenant's vectors even if application-layer auth were
+bypassed, because the filter is baked into the retrieval call itself, not applied
+as a post-hoc check on returned results:
+
+```python
+filters = [MetadataFilter(key="tenant_id", value=tenant_id, operator=FilterOperator.EQ)]
+if doc_id:
+    filters.append(MetadataFilter(key="gg_doc_id", value=doc_id, operator=FilterOperator.EQ))
+```
+
+This is defense in depth on top of the `AuthContext` allow-list layer (`auth/context.py`):
+even if a caller manipulated `doc_id`, the Qdrant filter and the `allowed_doc_ids` /
+`public_doc_ids` check both have to agree before a document is served.
+
+**Concurrency is handled where it's actually needed, and left as a known boundary
+where it isn't yet.** Ingest and delete both mutate an in-memory page index
+(`_by_page`) used for neighbor-page expansion; that mutation is guarded by a
+`threading.Lock` so concurrent ingests can't corrupt it, and Qdrant deletes use
+`wait=True` so a delete is visible to the next query immediately, not eventually.
+The SQLite-backed stores (`proposals`, `tabular`) currently run on SQLite's default
+journal mode rather than WAL — safe for the current usage pattern (low write
+concurrency, read-heavy), but a deliberate scaling boundary: high concurrent
+write load would serialize there before it would anywhere else in the stack.
+Flagging it here rather than glossing over it, since it's the honest next
+bottleneck if usage grows.
+
+### Why LlamaIndex + LangGraph, specifically (not one or the other)
+
+The two libraries solve different layers of the problem, and using one instead of
+both would have meant reimplementing the other's job by hand:
+
+- **LlamaIndex owns the data layer**: chunking strategy (`HierarchicalNodeParser`),
+  embedding, hybrid dense+sparse indexing into Qdrant, and metadata-filtered
+  retrieval. This is roughly ~400 lines of infrastructure code that LlamaIndex
+  provides as a few configuration calls instead.
+- **LangGraph owns the control-flow layer**: what to do with that data once
+  retrieved — which source to query, whether the evidence is sufficient, when to
+  retry, when to stop. This is state and branching logic, not indexing logic, and
+  LlamaIndex has no primitive for it (nor should it — it's not a data library's job).
+
+Using LlamaIndex for control flow would mean bolting ad-hoc branching onto a data
+library not built for it. Using LangGraph for retrieval would mean reimplementing
+hierarchical chunking and hybrid fusion by hand. Keeping them separate — LlamaIndex
+as a tool the agent calls, not a framework the agent lives inside — keeps each
+piece testable and replaceable on its own: the retrieval layer could be swapped
+for a different vector store without touching the agent's decision logic, and vice
+versa. `StateGraph.add_conditional_edges` enables the retry/branching loops in the
+diagram above without any bespoke orchestration code.
 
 ## Data sources
 
@@ -142,85 +231,3 @@ python -m govgrant.rag.cli checklist --package darpa --ot --export   # writes md
 ```
 
 ## Project layout
-
-```
-src/govgrant/
-  rag/          # ingest, hybrid index, router, eval, CLI
-  agent/        # LangGraph pipeline: classify → retrieve → validate → format → self_check (Claude Haiku)
-  compliance/   # multi-agency checklist (DARPA, SBA, SF424) + proposal PDF + draft LLM judge
-  ui/           # Gradio console
-data/eval/      # golden cases (01–10) + THRESHOLDS.json
-tests/          # unit tests (rag, agent, compliance)
-```
-
-## Quality gates
-
-Thresholds are versioned in `data/eval/THRESHOLDS.json`. Reports are written to `data/eval/reports/` (gitignored).
-
-| Gate | Command | Target |
-|---|---|---|
-| Unit | `pytest -q tests/rag` | pass |
-| Router | `python -m govgrant.rag.cli gate router` | see `THRESHOLDS.json` |
-| Hard LLM | `python -m govgrant.rag.cli gate hard_llm` | pre-release |
-| Checklist corpus | `./scripts/run_gates.sh checklist_corpus` | DARPA critical corpus |
-
-```bash
-./scripts/run_gates.sh unit              # pytest
-./scripts/run_gates.sh router            # golden + thresholds (needs stack)
-./scripts/run_gates.sh hard_llm          # agent + Haiku, multi_hop/not_found
-./scripts/run_gates.sh checklist_corpus  # DARPA critical corpus
-python -m govgrant.rag.cli gate --list
-```
-
-## Dev auth / multi-tenant
-
-Default mode is open and local (`AUTH_ENABLED=false`, tenant `local-dev`).
-
-```bash
-# Enable API-key → tenant binding (see data/auth/tenants.example.json)
-export AUTH_ENABLED=true
-# optional: cp data/auth/tenants.example.json data/auth/tenants.local.json
-
-python -m govgrant.rag.cli agent "What is SBIR work-share?" --api-key dev-local-key
-python -m govgrant.rag.cli query "cost volume" --api-key demo-beta-key --doc-id darpa-sbir-sttr-phase-II-instructions
-```
-
-- **Public agency docs** are listed in `public_doc_ids` and readable by all tenants.
-- **User proposals** are registered under the caller's `tenant_id` (UI tab **My proposals**).
-- `allowed_doc_ids: []` on a tenant restricts access to non-public docs (cross-tenant isolation).
-
-```bash
-# Programmatic upload (no Gradio)
-python - <<'PY'
-from govgrant.auth import resolve_request_auth
-from govgrant.proposals import ProposalService
-
-auth = resolve_request_auth(api_key="dev-local-key")  # or AUTH_ENABLED=false
-svc = ProposalService()
-print(svc.upload(auth, "path/to/proposal.pdf", index=True).to_dict())
-print([r.doc_id for r in svc.list_proposals(auth)])
-svc.delete(auth, "user-proposal-…")  # also purges Qdrant + page index + tables
-PY
-
-# CLI equivalents
-python -m govgrant.rag.cli proposals whoami
-python -m govgrant.rag.cli proposals list
-python -m govgrant.rag.cli proposals upload ./proposal.pdf
-python -m govgrant.rag.cli proposals get user-proposal-my-file
-python -m govgrant.rag.cli proposals delete user-proposal-my-file
-python -m govgrant.rag.cli proposals audit --limit 20
-```
-
-- **Capabilities** (session banner / `whoami`): `upload_proposals`, `delete_proposals` (admin, when `AUTH_ENABLED`), `run_checklist`.
-- **Audit log**: upload / delete / delete_denied events per tenant (`proposals audit`).
-
-Deleting a proposal removes the registry entry, the file, and all index data — Qdrant vectors filtered by `tenant_id` + `gg_doc_id`, plus the page index and tabular rows.
-
-## Branching
-
-- `main` — stable baseline
-- `develop` — active feature integration
-
-## License
-
-See [LICENSE](LICENSE).
