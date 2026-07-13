@@ -183,9 +183,7 @@ class ProposalService:
         if purge_index:
             docs = self.docs or HybridRAGService(self.settings)
             try:
-                index_info = docs.delete_document(
-                    tenant_id=auth.tenant_id, doc_id=doc_id
-                )
+                index_info = docs.delete_document(tenant_id=auth.tenant_id, doc_id=doc_id)
             except Exception:  # noqa: BLE001 — still remove registry
                 index_info = {"error": "index_purge_failed"}
 
@@ -223,9 +221,7 @@ class ProposalService:
         doc_id: str | None = None,
     ) -> list[ProposalEvent]:
         """Tenant-scoped audit events (newest first)."""
-        return self.store.list_events(
-            auth.tenant_id, limit=limit, doc_id=doc_id
-        )
+        return self.store.list_events(auth.tenant_id, limit=limit, doc_id=doc_id)
 
     def read_draft_text(self, auth: AuthContext, doc_id: str) -> str:
         rec = self.get(auth, doc_id)

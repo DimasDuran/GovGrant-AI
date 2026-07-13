@@ -2,19 +2,19 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class SourceType(str, Enum):
+class SourceType(StrEnum):
     USER_DOC = "user_doc"
     SBIR_TOPIC = "sbir_topic"
     POLICY = "policy"
 
 
-class Modality(str, Enum):
+class Modality(StrEnum):
     PROSE = "prose"
     TABLE = "table"
     FIGURE = "figure"

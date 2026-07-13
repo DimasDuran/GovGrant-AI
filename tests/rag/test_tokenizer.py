@@ -1,4 +1,4 @@
-from govgrant.rag.index.hybrid import code_aware_tokenizer
+from govgrant.rag.index.sparse import code_aware_tokenizer
 
 
 def test_code_tokens():

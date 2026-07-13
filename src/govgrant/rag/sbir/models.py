@@ -32,7 +32,7 @@ class TopicDocument(BaseModel):
     source: str = "api"  # api | fixture | cache
     content_hash: str = ""
 
-    def model_post_init(self, __context: Any) -> None:  # noqa: ANN401
+    def model_post_init(self, __context: Any) -> None:
         if not self.citation_uri and self.topic_id:
             self.citation_uri = f"https://www.sbir.gov/topics/{self.topic_id}"
 
@@ -54,9 +54,7 @@ class TopicDocument(BaseModel):
         if self.status:
             parts.append(f"Status: {self.status}")
         if self.open_date or self.close_date:
-            parts.append(
-                f"Open: {self.open_date or '?'} | Close: {self.close_date or '?'}"
-            )
+            parts.append(f"Open: {self.open_date or '?'} | Close: {self.close_date or '?'}")
         if self.solicitation_title:
             parts.append(f"Solicitation: {self.solicitation_title}")
         if self.solicitation_number:

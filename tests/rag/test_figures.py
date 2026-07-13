@@ -2,8 +2,8 @@ from llama_index.core.schema import Document
 
 from govgrant.rag.contracts import Modality
 from govgrant.rag.parsers.figures import (
-    extract_figures_from_markdown,
     _guess_modality,
+    extract_figures_from_markdown,
 )
 
 

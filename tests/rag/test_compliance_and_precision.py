@@ -14,9 +14,7 @@ from govgrant.compliance.checklist import (
 
 
 def test_strip_volume5_when_not_asked():
-    q = (
-        "Compare SBIR vs STTR work-share and OT milestones and commercialization strategy"
-    )
+    q = "Compare SBIR vs STTR work-share and OT milestones and commercialization strategy"
     answer = """# Work-share
 
 SBIR 50%. STTR 40% and 30%.
@@ -88,7 +86,7 @@ def test_draft_signals_detect_workshare():
 
 def test_draft_gap_when_empty():
     item = next(i for i in sba_items() if i.id == "SBA-FOREIGN")
-    status, hits = _score_draft(item, "We propose a novel sensor architecture.")
+    status, _hits = _score_draft(item, "We propose a novel sensor architecture.")
     assert status == "draft_gap"
 
 

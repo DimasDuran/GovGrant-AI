@@ -27,12 +27,10 @@ from govgrant.rag.index.qdrant_store import (
     retriever_kwargs,
 )
 from govgrant.rag.index.rerank import lexical_rerank
-from govgrant.rag.index.sparse import code_aware_tokenizer
 from govgrant.rag.parsers.figures import FigureChartParser
 from govgrant.rag.parsers.prose import LocalPDFFallbackParser, ProsePDFParser
 from govgrant.rag.parsers.tables import TableMarkdownParser
 from govgrant.rag.tabular.sql_store import TabularStore
-
 
 # Split compound questions into focused sub-queries for broader recall
 _SPLIT_CUES = re.compile(
@@ -101,7 +99,7 @@ def _stitch_page_boundary_docs(
                     flags=re.I,
                 )
             elif nxt:
-                # generic: take first 1–2 sentences of next page if page ends mid-phrase
+                # generic: take first 1-2 sentences of next page if page ends mid-phrase
                 first = re.split(r"(?<=[.!?])\s+", nxt.strip(), maxsplit=1)[0]
                 if first and len(first) < 400 and first.lower() not in text.lower():
                     text = f"{text} {first}".strip()
@@ -116,7 +114,6 @@ def _stitch_page_boundary_docs(
         d.set_content(text)
         out.append(d)
     return out
-
 
 
 def _topic_seeds(query: str) -> list[str]:
@@ -191,7 +188,10 @@ def _topic_seeds(query: str) -> list[str]:
             "do NOT count against any page limit commercialization claims"
         )
     # Spanish multi-part cues for work-share / similar proposals
-    if any(k in low for k in ("subcontrat", "universidad", "restricciones", "sbir o sttr", "sbir o sttr")):
+    if any(
+        k in low
+        for k in ("subcontrat", "universidad", "restricciones", "sbir o sttr", "sbir o sttr")
+    ):
         seeds.append(
             "SBIR STTR Phase II minimum work share percentage university "
             "subcontractor FFRDC research institution one-half 40% 30%"
@@ -284,9 +284,7 @@ class HybridRAGService:
         LISettings.chunk_overlap = 128
 
         self.vector_store = build_vector_store(self.settings, ensure=True)
-        self.storage_context = StorageContext.from_defaults(
-            vector_store=self.vector_store
-        )
+        self.storage_context = StorageContext.from_defaults(vector_store=self.vector_store)
         self.tabular = TabularStore(self.settings.tabular_db_path)
         # Page index for page-level operations (neighbors, siblings, page assembly)
         # Key: (tenant_id, gg_doc_id, page_str) → list[BaseNode]
@@ -350,9 +348,7 @@ class HybridRAGService:
         table_docs: list[Document] = []
         n_tables = 0
         if extract_tables:
-            table_docs, extracted = TableMarkdownParser().extract_from_documents(
-                docs, meta
-            )
+            table_docs, extracted = TableMarkdownParser().extract_from_documents(docs, meta)
             n_tables = self.tabular.upsert_tables(
                 extracted,
                 tenant_id=tenant_id,
@@ -439,8 +435,7 @@ class HybridRAGService:
         pdfs = sorted(directory.glob("*.pdf"))
         if not pdfs:
             raise FileNotFoundError(
-                f"No PDFs found in {directory}. "
-                "Copy your 3 PDFs into data/fixtures/pdfs/"
+                f"No PDFs found in {directory}. Copy your 3 PDFs into data/fixtures/pdfs/"
             )
         results = []
         for pdf in pdfs:
@@ -545,9 +540,7 @@ class HybridRAGService:
         modality: str | None,
         top_k: int,
     ) -> list[NodeWithScore]:
-        filters = self._build_filters(
-            tenant_id=tenant_id, doc_id=doc_id, modality=modality
-        )
+        filters = self._build_filters(tenant_id=tenant_id, doc_id=doc_id, modality=modality)
         vector_index = VectorStoreIndex.from_vector_store(
             self.vector_store,
             embed_model=self.embed_model,
@@ -593,7 +586,7 @@ class HybridRAGService:
 
         extra: list[NodeWithScore] = []
         seen = {h.node.node_id for h in hits}
-        for (tid, d, page_str), nodes in self._by_page.items():
+        for (tid, d, _page_str), nodes in self._by_page.items():
             if tid != tenant_id:
                 continue
             if doc_id and d != doc_id:
@@ -631,7 +624,7 @@ class HybridRAGService:
                 pages.add((d, p))
         seen = {h.node.node_id for h in hits}
         extra: list[NodeWithScore] = []
-        for (tid, d, p_str), nodes in self._by_page.items():
+        for (tid, d, _p_str), nodes in self._by_page.items():
             if tid != tenant_id:
                 continue
             if doc_id and d != doc_id:
@@ -718,7 +711,10 @@ class HybridRAGService:
                     "cannot send sbir/sttr funding directly",
                 ]
             )
-        if any(k in low for k in ("similar", "idéntic", "identical", "equivalent", "revelar", "divulgar")):
+        if any(
+            k in low
+            for k in ("similar", "idéntic", "identical", "equivalent", "revelar", "divulgar")
+        ):
             required_phrases.append("essentially equivalent effort")
         if any(k in low for k in ("classified", "clasificad", "security clearance")):
             required_phrases.append("classified proposals are not accepted")
@@ -744,7 +740,7 @@ class HybridRAGService:
 
         # Build page assemblies from page index
         by_page: dict[tuple[str, str], list[BaseNode]] = {}
-        for (tid, d, p_str), nodes in self._by_page.items():
+        for (tid, d, _p_str), nodes in self._by_page.items():
             if tid != tenant_id:
                 continue
             if doc_id and d != doc_id:
@@ -808,7 +804,7 @@ class HybridRAGService:
 
         # Build page groups from page index
         by_page: dict[tuple[str, str], list[BaseNode]] = {}
-        for (tid, d, p_str), nodes in self._by_page.items():
+        for (tid, d, _p_str), nodes in self._by_page.items():
             if tid != tenant_id:
                 continue
             if doc_id and d != doc_id:
@@ -834,6 +830,7 @@ class HybridRAGService:
                 continue
             seen_pages.add(key)
             siblings = by_page.get(key) or [h.node]
+
             # preserve approximate reading order by start_char_idx if present
             def _order(n: BaseNode) -> tuple[int, str]:
                 m = n.metadata or {}
@@ -873,9 +870,7 @@ class HybridRAGService:
     ) -> list[dict[str, Any]]:
         """Structured path: keyword search over SQLite table cells."""
         tenant_id = tenant_id or self.settings.default_tenant_id
-        return self.tabular.search_cells(
-            query, tenant_id=tenant_id, gg_doc_id=doc_id, limit=limit
-        )
+        return self.tabular.search_cells(query, tenant_id=tenant_id, gg_doc_id=doc_id, limit=limit)
 
     def list_tables(
         self,
@@ -964,15 +959,13 @@ class HybridRAGService:
     def _docs_to_leaves(self, docs: list[Document]) -> list[BaseNode]:
         if not docs:
             return []
-        nodes = HierarchicalNodeParser.from_defaults(
-            chunk_sizes=[4096]
-        ).get_nodes_from_documents(docs, show_progress=False)
+        nodes = HierarchicalNodeParser.from_defaults(chunk_sizes=[4096]).get_nodes_from_documents(
+            docs, show_progress=False
+        )
         leaves = get_leaf_nodes(nodes)
         if leaves:
             return list(leaves)
-        return [
-            TextNode(text=d.text, metadata=dict(d.metadata or {})) for d in docs
-        ]
+        return [TextNode(text=d.text, metadata=dict(d.metadata or {})) for d in docs]
 
     def delete_document(
         self,
@@ -992,8 +985,9 @@ class HybridRAGService:
 
         qdrant_deleted = 0
         try:
-            from govgrant.rag.index.qdrant_store import get_qdrant_client
             from qdrant_client import models as qmodels
+
+            from govgrant.rag.index.qdrant_store import get_qdrant_client
 
             client = get_qdrant_client(self.settings)
             coll = self.settings.qdrant_collection
@@ -1034,9 +1028,7 @@ class HybridRAGService:
         with self._lock:
             before = len(self._by_page)
             self._by_page = {
-                k: v
-                for k, v in self._by_page.items()
-                if not (k[0] == tenant_id and k[1] == doc_id)
+                k: v for k, v in self._by_page.items() if not (k[0] == tenant_id and k[1] == doc_id)
             }
             pages_removed = before - len(self._by_page)
 
@@ -1183,8 +1175,11 @@ class HybridRAGService:
                 return None
             text = data.get("text") or ""
             skip = {
-                "_node_content", "_node_type",
-                "document_id", "doc_id", "ref_doc_id",
+                "_node_content",
+                "_node_type",
+                "document_id",
+                "doc_id",
+                "ref_doc_id",
             }
             meta = {k: v for k, v in point.payload.items() if k not in skip}
             return TextNode(text=text, metadata=meta, id_=point.id)

@@ -31,9 +31,7 @@ def test_tabular_store_roundtrip(tmp_path):
 """
     tables = parse_markdown_tables(md, page=3, doc_id="d1")
     store = TabularStore(tmp_path / "t.sqlite")
-    n = store.upsert_tables(
-        tables, tenant_id="local-dev", gg_doc_id="d1", file_name="x.pdf"
-    )
+    n = store.upsert_tables(tables, tenant_id="local-dev", gg_doc_id="d1", file_name="x.pdf")
     assert n == 1
     listed = store.list_tables(tenant_id="local-dev")
     assert len(listed) == 1

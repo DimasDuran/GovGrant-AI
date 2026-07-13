@@ -26,9 +26,7 @@ def test_greeting_is_friendly_vertical_assistant():
     assert is_conversational_turn("¡Hola! 👋")
     assert is_conversational_turn("hello!")
     assert is_conversational_turn("quién eres")
-    assert not is_conversational_turn(
-        "What is the maximum DARPA Phase II cost volume?"
-    )
+    assert not is_conversational_turn("What is the maximum DARPA Phase II cost volume?")
     out = run_agent("Hola", use_llm=False)
     assert out.get("meta", {}).get("mode") == "conversation"
     assert out.get("intent") == "chat"

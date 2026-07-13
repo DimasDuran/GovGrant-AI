@@ -145,10 +145,7 @@ def _fact_present(haystack: str, fact: str) -> bool:
     """Loose fact match: substring, or all significant tokens present."""
     h = haystack.lower()
     h_norm = (
-        h.replace("8-1/2", "8.5")
-        .replace("8½", "8.5")
-        .replace("–", "-")
-        .replace("—", "-")
+        h.replace("8-1/2", "8.5").replace("8½", "8.5").replace("\u2013", "-").replace("\u2014", "-")
     )
     f = _normalize_fact(fact)
     if not f:
@@ -178,9 +175,7 @@ def _fact_present(haystack: str, fact: str) -> bool:
     ]
     # Entity + number/roman (Volume 5, Phase II): require near-contiguous phrase.
     # Avoid "Volume 2 ... 5 pages" matching "Volume 5".
-    if len(tokens) >= 2 and any(
-        t.isdigit() or re.fullmatch(r"[ivxlcdm]+", t) for t in tokens
-    ):
+    if len(tokens) >= 2 and any(t.isdigit() or re.fullmatch(r"[ivxlcdm]+", t) for t in tokens):
         phrase = " ".join(tokens)
         if phrase in h_norm:
             return True
@@ -212,13 +207,10 @@ def _fact_present(haystack: str, fact: str) -> bool:
     remaining = list(tokens)
     for tok in tokens:
         for key, alts in synonyms.items():
-            if key in tok or tok in key:
-                if any(a in h_norm for a in alts):
-                    remaining = [t for t in remaining if t != tok]
-                    break
-    if remaining and all(t in h_norm for t in remaining):
-        return True
-    return False
+            if (key in tok or tok in key) and any(a in h_norm for a in alts):
+                remaining = [t for t in remaining if t != tok]
+                break
+    return bool(remaining and all(t in h_norm for t in remaining))
 
 
 def _extract_pages(text: str) -> set[int]:
@@ -278,9 +270,7 @@ def normalize_case(raw: dict[str, Any]) -> dict[str, Any]:
     case["expected_facts"] = list(case["facts_required"])
 
     # --- optional ---
-    case["facts_optional"] = _as_str_list(
-        case.get("facts_optional") or case.get("optional_facts")
-    )
+    case["facts_optional"] = _as_str_list(case.get("facts_optional") or case.get("optional_facts"))
 
     # --- forbidden ---
     forbidden = case.get("facts_forbidden")
@@ -290,9 +280,7 @@ def normalize_case(raw: dict[str, Any]) -> dict[str, Any]:
     case["must_not_include"] = list(case["facts_forbidden"])
 
     pages = case.get("source_pages") or case.get("expected_pages") or []
-    case["source_pages"] = [
-        int(p) for p in pages if p is not None and str(p).strip() != ""
-    ]
+    case["source_pages"] = [int(p) for p in pages if p is not None and str(p).strip() != ""]
     case["should_refuse"] = bool(case.get("should_refuse", False))
     case["category"] = case.get("category") or case.get("intent") or "regression"
 
@@ -379,8 +367,8 @@ def score_case(
     )
 
     if score_answer_only is None:
-        score_answer_only = not raw_retrieval and bool(answer.strip()) and not _is_raw_retrieval(
-            answer
+        score_answer_only = (
+            not raw_retrieval and bool(answer.strip()) and not _is_raw_retrieval(answer)
         )
 
     # Where to look for required/optional facts
@@ -389,17 +377,19 @@ def score_case(
     forbidden_text = answer if not raw_retrieval else ""
 
     # --- Legacy regression checks ---
-    if case.get("expect_any_keywords") and not case.get("facts_required"):
-        if not _contains_any(combined, case["expect_any_keywords"]):
-            failures.append(f"missing keywords anyof={case['expect_any_keywords']}")
-    if case.get("expect_doc_id_contains"):
-        if case["expect_doc_id_contains"].lower() not in combined.lower():
-            failures.append(
-                f"expected doc_id fragment {case['expect_doc_id_contains']!r}"
-            )
-    if case.get("expect_topic_id"):
-        if case["expect_topic_id"] not in combined:
-            failures.append(f"expected topic_id {case['expect_topic_id']}")
+    if (
+        case.get("expect_any_keywords")
+        and not case.get("facts_required")
+        and not _contains_any(combined, case["expect_any_keywords"])
+    ):
+        failures.append(f"missing keywords anyof={case['expect_any_keywords']}")
+    if (
+        case.get("expect_doc_id_contains")
+        and case["expect_doc_id_contains"].lower() not in combined.lower()
+    ):
+        failures.append(f"expected doc_id fragment {case['expect_doc_id_contains']!r}")
+    if case.get("expect_topic_id") and case["expect_topic_id"] not in combined:
+        failures.append(f"expected topic_id {case['expect_topic_id']}")
     if case.get("expect_modality"):
         needle = f"mod={case['expect_modality']}"
         if needle not in combined and case["expect_modality"] not in combined.lower():
@@ -410,9 +400,13 @@ def score_case(
                 failures.append(f"expected source {src}")
 
     # --- Refusal / not_found ---
-    if case.get("should_refuse") and not raw_retrieval:
-        if not _looks_like_refusal(answer) and not _looks_like_refusal(evidence):
-            failures.append("expected refusal / not-in-document language")
+    if (
+        case.get("should_refuse")
+        and not raw_retrieval
+        and not _looks_like_refusal(answer)
+        and not _looks_like_refusal(evidence)
+    ):
+        failures.append("expected refusal / not-in-document language")
 
     # --- Required facts → recall ---
     required = list(case.get("facts_required") or case.get("expected_facts") or [])
@@ -455,9 +449,7 @@ def score_case(
                 forb_hits += 1
                 hit_forbidden.append(fact)
         if forb_hits:
-            failures.append(
-                f"precision: forbidden facts in answer: {hit_forbidden[:8]}"
-            )
+            failures.append(f"precision: forbidden facts in answer: {hit_forbidden[:8]}")
     forb_total = len(forbidden)
     # precision = 1 when no forbidden list or none hit
     precision = 1.0 - (forb_hits / forb_total) if forb_total else 1.0
@@ -466,19 +458,14 @@ def score_case(
     # Only enforce page overlap when required facts are incomplete; full fact
     # recall already proves the right content was retrieved (page labels can drift).
     want_pages = list(case.get("source_pages") or [])
-    if want_pages and pages_found and missing_required:
-        if not set(want_pages) & set(pages_found):
-            failures.append(
-                f"no expected pages {want_pages} in retrieved pages {pages_found[:12]}"
-            )
+    if want_pages and pages_found and missing_required and not set(want_pages) & set(pages_found):
+        failures.append(f"no expected pages {want_pages} in retrieved pages {pages_found[:12]}")
 
     # --- Boolean soft check ---
     if case.get("expected_boolean") is not None and required:
         exp_bool = bool(case["expected_boolean"])
         low = answer.lower()
-        if exp_bool is False and re.search(r"\byes\b", low) and not re.search(
-            r"\bno\b", low
-        ):
+        if exp_bool is False and re.search(r"\byes\b", low) and not re.search(r"\bno\b", low):
             failures.append("expected negative boolean answer")
 
     return CaseResult(
@@ -628,7 +615,7 @@ def run_regression(
         slot["recall_sum"] += r.recall
         slot["precision_sum"] += r.precision
 
-    for cat, slot in by_cat.items():
+    for _cat, slot in by_cat.items():
         n = max(1, slot["total"])
         slot["avg_recall"] = round(slot.pop("recall_sum") / n, 4)
         slot["avg_precision"] = round(slot.pop("precision_sum") / n, 4)
@@ -638,8 +625,8 @@ def run_regression(
     avg_precision = round(sum(r.precision for r in results) / n, 4) if results else 1.0
     avg_optional = (
         round(
-            sum(r.optional_recall for r in results if r.optional_total) /
-            max(1, sum(1 for r in results if r.optional_total)),
+            sum(r.optional_recall for r in results if r.optional_total)
+            / max(1, sum(1 for r in results if r.optional_total)),
             4,
         )
         if any(r.optional_total for r in results)

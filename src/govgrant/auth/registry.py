@@ -73,7 +73,7 @@ def _parse_tenant(raw: dict[str, Any]) -> TenantRecord:
     tid = str(raw["tenant_id"]).strip()
     keys = tuple(str(k).strip() for k in (raw.get("api_keys") or []) if str(k).strip())
     roles = tuple(str(r).strip() for r in (raw.get("roles") or ["user"]) if str(r).strip())
-    allowed_raw = raw.get("allowed_doc_ids", None)
+    allowed_raw = raw.get("allowed_doc_ids")
     allowed: frozenset[str] | None
     if allowed_raw is None:
         allowed = None

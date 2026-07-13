@@ -1,6 +1,6 @@
+from govgrant.rag.config import REPO_ROOT
 from govgrant.rag.sbir.disclaimer import with_disclaimer
 from govgrant.rag.sbir.normalizer import load_fixture_json, normalize_solicitations
-from govgrant.rag.config import REPO_ROOT
 
 
 def test_normalize_fixture_topics():

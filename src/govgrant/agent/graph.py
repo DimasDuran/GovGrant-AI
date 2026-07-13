@@ -68,9 +68,7 @@ def is_conversational_turn(query: str) -> bool:
     norm = _normalize_chat_query(q)
     if not norm:
         return True
-    if _CONVERSATIONAL_RE.match(norm):
-        return True
-    return False
+    return bool(_CONVERSATIONAL_RE.match(norm))
 
 
 class AgentState(TypedDict, total=False):
@@ -325,10 +323,7 @@ def build_agent_graph(
             try:
                 query = state["query"]
                 if critique:
-                    query = (
-                        f"{state['query']}\n\n"
-                        f"[Revision requested by quality check: {critique}]"
-                    )
+                    query = f"{state['query']}\n\n[Revision requested by quality check: {critique}]"
                 answer = llm.answer_from_evidence(
                     query=query,
                     evidence=state.get("evidence") or "",

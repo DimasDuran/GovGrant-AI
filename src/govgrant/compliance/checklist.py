@@ -98,7 +98,7 @@ class ChecklistRun:
             "pass": "✅",
             "fail": "❌",
             "warn": "⚠️",
-            "info": "ℹ️",
+            "info": "\u2139\ufe0f",
             "unknown": "❓",
             "draft_ok": "📝✅",
             "draft_gap": "📝⚠️",
@@ -131,9 +131,7 @@ class ChecklistRun:
                 ("draft_gap", "not found in draft"),
             ):
                 if self.draft_summary.get(k):
-                    lines.append(
-                        f"| {icon.get(k, k)} {label} | {self.draft_summary[k]} |"
-                    )
+                    lines.append(f"| {icon.get(k, k)} {label} | {self.draft_summary[k]} |")
         lines.append("")
         current = ""
         for it in self.items:
@@ -142,10 +140,7 @@ class ChecklistRun:
                 current = head
                 lines.append(f"## {head}")
                 lines.append("")
-            lines.append(
-                f"### {icon.get(it.status, '•')} {it.title} "
-                f"(`{it.id}` · {it.severity})"
-            )
+            lines.append(f"### {icon.get(it.status, '•')} {it.title} (`{it.id}` · {it.severity})")
             lines.append(f"- **Corpus status:** {it.status}")
             if it.draft_status:
                 method = f" · {it.draft_method}" if it.draft_method else ""
@@ -153,16 +148,12 @@ class ChecklistRun:
                 if it.draft_rationale:
                     lines.append(f"- **Draft note:** {it.draft_rationale}")
                 if it.draft_signals_found:
-                    lines.append(
-                        f"- **Draft signals:** {', '.join(it.draft_signals_found)}"
-                    )
+                    lines.append(f"- **Draft signals:** {', '.join(it.draft_signals_found)}")
             lines.append(f"- **Rule:** {it.guidance}")
             if it.facts_found:
                 lines.append(f"- **Found in corpus:** {', '.join(it.facts_found)}")
             if it.facts_missing:
-                lines.append(
-                    f"- **Missing from retrieve:** {', '.join(it.facts_missing)}"
-                )
+                lines.append(f"- **Missing from retrieve:** {', '.join(it.facts_missing)}")
             if it.citation:
                 lines.append(f"- **Citation:** {it.citation}")
             if it.detail:
@@ -191,7 +182,14 @@ def darpa_items() -> list[ChecklistItem]:
             applies_to=("sbir",),
             source_pages=[8],
             guidance="SBIR: proposer must perform ≥ one-half (50%) of Phase II work (direct+indirect).",
-            draft_signals=["50%", "one-half", "work-share", "work share", "in-house", "proposer will perform"],
+            draft_signals=[
+                "50%",
+                "one-half",
+                "work-share",
+                "work share",
+                "in-house",
+                "proposer will perform",
+            ],
         ),
         ChecklistItem(
             id="DARPA-WS-STTR",
@@ -231,7 +229,12 @@ def darpa_items() -> list[ChecklistItem]:
             severity="critical",
             source_pages=[9],
             guidance="Equivalent submissions OK; dual awards for equivalent effort unlawful; disclose before award.",
-            draft_signals=["essentially equivalent", "similar proposal", "other agency", "disclosure"],
+            draft_signals=[
+                "essentially equivalent",
+                "similar proposal",
+                "other agency",
+                "disclosure",
+            ],
         ),
         ChecklistItem(
             id="DARPA-TECH-FMT",
@@ -608,9 +611,7 @@ def run_checklist(
             )
 
             llm = ChatLLM(settings)
-            keyword_scores = {
-                it.id: _score_draft(it, draft) for it in selected
-            }
+            keyword_scores = {it.id: _score_draft(it, draft) for it in selected}
             llm_raw = score_drafts_with_llm(selected, draft, llm)
             llm_map = merge_draft_scores(selected, keyword_scores, llm_raw)
         except Exception:  # noqa: BLE001

@@ -77,7 +77,7 @@ class RobustOllamaEmbedding(BaseEmbedding):
                 # Progressive shorten on server errors (pathological tokens)
                 if attempt >= 2:
                     prompt = prompt[: max(200, len(prompt) // 2)]
-                time.sleep(min(2 ** attempt * 0.2, 3.0))
+                time.sleep(min(2**attempt * 0.2, 3.0))
         raise RuntimeError(f"Ollama embed failed after retries: {last_err}")
 
     def _get_query_embedding(self, query: str) -> list[float]:

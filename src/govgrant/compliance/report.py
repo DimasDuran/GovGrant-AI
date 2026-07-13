@@ -8,7 +8,7 @@ no network, easy to test with tmp_path.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -19,7 +19,7 @@ DEFAULT_REPORT_DIR = REPO_ROOT / "data" / "eval" / "reports"
 
 
 def _stamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
 
 
 def export_checklist_run(
@@ -68,9 +68,7 @@ def export_checklist_run(
         written["latest_md"] = str(latest_md.resolve())
     if "json" in written:
         latest_json = directory / "checklist_latest.json"
-        latest_json.write_text(
-            Path(written["json"]).read_text(encoding="utf-8"), encoding="utf-8"
-        )
+        latest_json.write_text(Path(written["json"]).read_text(encoding="utf-8"), encoding="utf-8")
         written["latest_json"] = str(latest_json.resolve())
 
     return written
@@ -90,11 +88,7 @@ def list_export_history(
     if not directory.is_dir():
         return []
     files = sorted(
-        (
-            p
-            for p in directory.glob("checklist_*.md")
-            if p.name != "checklist_latest.md"
-        ),
+        (p for p in directory.glob("checklist_*.md") if p.name != "checklist_latest.md"),
         key=lambda p: p.stat().st_mtime,
         reverse=True,
     )
@@ -108,9 +102,7 @@ def list_export_history(
                 "path": str(p.resolve()),
                 "json_path": str(json_sib.resolve()) if json_sib.is_file() else None,
                 "bytes": st.st_size,
-                "mtime": datetime.fromtimestamp(
-                    st.st_mtime, tz=timezone.utc
-                ).isoformat(),
+                "mtime": datetime.fromtimestamp(st.st_mtime, tz=UTC).isoformat(),
             }
         )
     return out
@@ -131,9 +123,7 @@ def export_history_markdown(
         "|------|-----:|----------------|",
     ]
     for r in rows:
-        lines.append(
-            f"| `{r['name']}` | {r['bytes']} | {r['mtime']} |"
-        )
+        lines.append(f"| `{r['name']}` | {r['bytes']} | {r['mtime']} |")
     latest = (Path(out_dir) if out_dir else DEFAULT_REPORT_DIR) / "checklist_latest.md"
     if latest.is_file():
         lines.append("")

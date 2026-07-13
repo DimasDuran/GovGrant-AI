@@ -7,7 +7,6 @@ from collections import Counter
 
 from llama_index.core.schema import NodeWithScore
 
-
 _TOKEN = re.compile(r"[a-z0-9][a-z0-9\-./]*", re.I)
 
 
@@ -43,8 +42,11 @@ def lexical_rerank(
         else:
             counts = Counter(t_tokens)
             # exact code / rare token boost
-            overlap = sum(1.0 + (0.5 if "-" in tok or tok.isupper() else 0.0)
-                          for tok in q_set if tok in counts)
+            overlap = sum(
+                1.0 + (0.5 if "-" in tok or tok.isupper() else 0.0)
+                for tok in q_set
+                if tok in counts
+            )
             overlap = overlap / max(len(q_set), 1)
         base = float(h.score or 0.0)
         new_score = 0.55 * base + 0.45 * overlap

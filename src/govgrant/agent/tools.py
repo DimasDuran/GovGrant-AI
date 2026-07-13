@@ -12,7 +12,7 @@ from govgrant.rag.sbir.service import SBIRTopicService
 
 class RagToolBelt:
     """
-    Thin façade over R1–R5 services.
+    Thin façade over R1-R5 services.
 
     Designed to be registered as LangGraph node helpers / @tool callables later
     when a chat LLM is available. Today the graph calls these methods directly.
@@ -22,9 +22,7 @@ class RagToolBelt:
         self.settings = get_settings()
         self.docs = HybridRAGService(self.settings)
         self.sbir = SBIRTopicService(self.settings)
-        self.router = QueryRouter(
-            self.settings, docs=self.docs, sbir=self.sbir
-        )
+        self.router = QueryRouter(self.settings, docs=self.docs, sbir=self.sbir)
 
     def classify(self, query: str) -> str:
         return self.router.classify(query).value
@@ -75,6 +73,4 @@ class RagToolBelt:
         agency: str | None = None,
         top_k: int = 5,
     ) -> str:
-        return self.sbir.search(
-            query, agency=agency, top_k=top_k, include_disclaimer=True
-        )["text"]
+        return self.sbir.search(query, agency=agency, top_k=top_k, include_disclaimer=True)["text"]

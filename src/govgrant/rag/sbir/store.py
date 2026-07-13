@@ -163,9 +163,7 @@ class SBIRStructuredStore:
 
     def count(self) -> int:
         with self._connect() as conn:
-            return int(
-                conn.execute("SELECT COUNT(*) AS c FROM sbir_topics").fetchone()["c"]
-            )
+            return int(conn.execute("SELECT COUNT(*) AS c FROM sbir_topics").fetchone()["c"])
 
     def set_meta(self, key: str, value: str) -> None:
         with self._connect() as conn:
@@ -179,9 +177,7 @@ class SBIRStructuredStore:
 
     def get_meta(self, key: str) -> str | None:
         with self._connect() as conn:
-            row = conn.execute(
-                "SELECT value FROM sbir_sync_meta WHERE key=?", (key,)
-            ).fetchone()
+            row = conn.execute("SELECT value FROM sbir_sync_meta WHERE key=?", (key,)).fetchone()
         return row["value"] if row else None
 
     def mark_all_stale(self) -> None:

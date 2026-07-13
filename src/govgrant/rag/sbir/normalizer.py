@@ -46,9 +46,7 @@ def normalize_solicitations(
         if not isinstance(item, dict):
             continue
         topics = _as_list(
-            item.get("solicitation_topics")
-            or item.get("topics")
-            or item.get("topic")
+            item.get("solicitation_topics") or item.get("topics") or item.get("topic")
         )
         if not topics:
             topics = [
@@ -85,13 +83,12 @@ def normalize_solicitations(
                 title = title or "Untitled topic"
 
             desc = _str(t.get("topic_description") or t.get("description") or "") or ""
-            status = _str(
-                item.get("current_status") or item.get("status") or t.get("status") or "open"
-            ) or "open"
-
-            due = _as_list(
-                item.get("application_due_date") or item.get("application_due_dates")
+            status = (
+                _str(item.get("current_status") or item.get("status") or t.get("status") or "open")
+                or "open"
             )
+
+            due = _as_list(item.get("application_due_date") or item.get("application_due_dates"))
             due_dates = [str(d) for d in due if d is not None]
 
             doc = TopicDocument(

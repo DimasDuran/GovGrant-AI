@@ -256,10 +256,6 @@ class TabularStore:
                     (tenant_id,),
                 ).fetchone()["c"]
             else:
-                tables = conn.execute(
-                    "SELECT COUNT(*) AS c FROM table_registry"
-                ).fetchone()["c"]
-                rows = conn.execute(
-                    "SELECT COUNT(*) AS c FROM table_rows"
-                ).fetchone()["c"]
+                tables = conn.execute("SELECT COUNT(*) AS c FROM table_registry").fetchone()["c"]
+                rows = conn.execute("SELECT COUNT(*) AS c FROM table_rows").fetchone()["c"]
         return {"tables": tables, "rows": rows}

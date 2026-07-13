@@ -53,7 +53,7 @@ def test_export_writes_md_and_json(tmp_path: Path):
 
 
 def test_list_export_history(tmp_path: Path):
-    from govgrant.compliance.report import list_export_history, export_history_markdown
+    from govgrant.compliance.report import export_history_markdown, list_export_history
 
     run = _sample_run()
     export_checklist_run(run, out_dir=tmp_path, basename="checklist_a")

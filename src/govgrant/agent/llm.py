@@ -34,9 +34,7 @@ class ChatLLM:
         max_tokens: int | None = None,
     ) -> str:
         if not self.available or self._client is None:
-            raise RuntimeError(
-                "Chat LLM unavailable. Set ANTHROPIC_API_KEY and CHAT_ENABLED=true."
-            )
+            raise RuntimeError("Chat LLM unavailable. Set ANTHROPIC_API_KEY and CHAT_ENABLED=true.")
         msg = self._client.messages.create(
             model=self.model,
             max_tokens=max_tokens or self.max_tokens,
@@ -271,7 +269,12 @@ class ChatLLM:
                     "or missing key information.\n"
                     "- Always pick one tool — do not answer directly."
                 ),
-                messages=[{"role": "user", "content": f"User question: {query}\n\nRetrieved evidence:\n{evidence[:12000]}"}],
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f"User question: {query}\n\nRetrieved evidence:\n{evidence[:12000]}",
+                    }
+                ],
                 tools=tools,
                 tool_choice={"type": "any"},
             )
@@ -345,7 +348,10 @@ class ChatLLM:
                     "Choose answer_complete if satisfactory, answer_incomplete otherwise."
                 ),
                 messages=[
-                    {"role": "user", "content": f"User question:\n{query}\n\nDraft answer:\n{answer}"}
+                    {
+                        "role": "user",
+                        "content": f"User question:\n{query}\n\nDraft answer:\n{answer}",
+                    }
                 ],
                 tools=tools,
                 tool_choice={"type": "any"},
@@ -438,14 +444,14 @@ class ChatLLM:
             "14. When evidence includes 'THE FOLLOWING PERTAINS TO SBIR ONLY' and "
             "'THE FOLLOWING PERTAINS TO STTR ONLY', report BOTH sections fully "
             "(work-share %, FFRDC rules, funding flow, prohibitions).\n"
-             "15. If the answer is not in the evidence, say so briefly—do not pad with "
-             "other volumes or general SBIR background.\n"
-             "16. When the user greets you (e.g. hola, hello, buenos días, good morning), "
-             "respond naturally and briefly. Say a simple greeting back and ask how you "
-             "can help — do NOT list capabilities, topics, or things you can do. "
-             "Be warm and concise (1-2 sentences max). Never enumerate features. "
-             "Do not use emojis.\n"
-         )
+            "15. If the answer is not in the evidence, say so briefly—do not pad with "
+            "other volumes or general SBIR background.\n"
+            "16. When the user greets you (e.g. hola, hello, buenos días, good morning), "
+            "respond naturally and briefly. Say a simple greeting back and ask how you "
+            "can help — do NOT list capabilities, topics, or things you can do. "
+            "Be warm and concise (1-2 sentences max). Never enumerate features. "
+            "Do not use emojis.\n"
+        )
         user = (
             f"Intent: {intent}\n"
             f"Sources used: {', '.join(sources) or 'n/a'}\n\n"
@@ -487,9 +493,7 @@ def strip_unsolicited_digressions(answer: str, *, query: str) -> str:
                 "data rights assertion",
             )
         ),
-        "volume 4": any(
-            k in q for k in ("volume 4", "ccr", "commercialization report")
-        ),
+        "volume 4": any(k in q for k in ("volume 4", "ccr", "commercialization report")),
         "cost volume": any(
             k in q
             for k in (
@@ -519,18 +523,23 @@ def strip_unsolicited_digressions(answer: str, *, query: str) -> str:
     for part in parts:
         low = part.lower()
         is_heading_digression = bool(
-            re.match(r"^#{1,3}\s+.*", part.strip())
-            and digression.search(part[:200])
+            re.match(r"^#{1,3}\s+.*", part.strip()) and digression.search(part[:200])
         )
-        if is_heading_digression:
-            if "volume 5" in low or "supporting document" in low:
-                if not allow["volume 5"]:
-                    continue
-            if "volume 4" in low or "ccr" in low or "commercialization report" in low:
-                if not allow["volume 4"] and "commercialization strategy" not in low:
-                    continue
-            if "cost volume" in low and not allow["cost volume"]:
-                continue
+        if (
+            is_heading_digression
+            and ("volume 5" in low or "supporting document" in low)
+            and not allow["volume 5"]
+        ):
+            continue
+        if (
+            is_heading_digression
+            and ("volume 4" in low or "ccr" in low or "commercialization report" in low)
+            and not allow["volume 4"]
+            and "commercialization strategy" not in low
+        ):
+            continue
+        if "cost volume" in low and not allow["cost volume"]:
+            continue
         kept.append(part)
 
     cleaned = "".join(kept).strip() or answer

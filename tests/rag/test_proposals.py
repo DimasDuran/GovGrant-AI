@@ -112,6 +112,7 @@ def test_delete_document_purges_bm25(tmp_path: Path):
         ),
     ]
     svc._persist_bm25_nodes = lambda: None  # type: ignore[method-assign]
+
     # tabular stub
     class _Tab:
         def delete_doc(self, **kwargs):
@@ -126,7 +127,7 @@ def test_delete_document_purges_bm25(tmp_path: Path):
         def collection_exists(self, *a, **k):
             raise RuntimeError("no qdrant in unit test")
 
-    original = hybrid_mod.get_qdrant_client if hasattr(hybrid_mod, "get_qdrant_client") else None
+    hybrid_mod.get_qdrant_client if hasattr(hybrid_mod, "get_qdrant_client") else None
 
     def _fake_client(*a, **k):
         return Boom()
@@ -137,9 +138,7 @@ def test_delete_document_purges_bm25(tmp_path: Path):
     prev = qs.get_qdrant_client
     qs.get_qdrant_client = _fake_client  # type: ignore[assignment]
     try:
-        info = HybridRAGService.delete_document(
-            svc, tenant_id="t1", doc_id="user-proposal-x"
-        )
+        info = HybridRAGService.delete_document(svc, tenant_id="t1", doc_id="user-proposal-x")
     finally:
         qs.get_qdrant_client = prev  # type: ignore[assignment]
 
@@ -150,7 +149,7 @@ def test_delete_document_purges_bm25(tmp_path: Path):
 
 def test_store_tenant_isolation(tmp_path: Path):
     store = ProposalStore(tmp_path / "x.sqlite")
-    from govgrant.proposals.store import ProposalStore as PS
+    from govgrant.proposals.store import ProposalStore as PS  # noqa: N817
 
     a = PS.new_record(
         doc_id="user-proposal-a",

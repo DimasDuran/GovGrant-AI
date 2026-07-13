@@ -3,4 +3,4 @@
 from govgrant.rag.index.embeddings import build_embed_model
 from govgrant.rag.index.hybrid import HybridRAGService
 
-__all__ = ["build_embed_model", "HybridRAGService"]
+__all__ = ["HybridRAGService", "build_embed_model"]

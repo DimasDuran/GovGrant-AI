@@ -19,8 +19,8 @@ from govgrant.agent.graph import run_agent
 from govgrant.agent.llm import ChatLLM
 from govgrant.auth import AuthError, resolve_request_auth
 from govgrant.compliance.checklist import run_checklist
-from govgrant.compliance.proposal import extract_proposal_text, proposal_doc_id
-from govgrant.compliance.report import export_checklist_run, export_history_markdown
+from govgrant.compliance.proposal import extract_proposal_text
+from govgrant.compliance.report import export_checklist_run
 from govgrant.proposals import ProposalService
 from govgrant.rag.config import get_settings
 from govgrant.rag.index.hybrid import HybridRAGService
@@ -134,10 +134,7 @@ def _proposals_table_md(api_key: str) -> str:
         f"**capabilities:** {cap_bits}"
     )
     if not rows:
-        return (
-            f"{header}\n\n_No proposals for tenant `{auth.tenant_id}` yet. "
-            "Upload a PDF below._"
-        )
+        return f"{header}\n\n_No proposals for tenant `{auth.tenant_id}` yet. Upload a PDF below._"
     lines = [
         f"{header} · **count:** {len(rows)}",
         "",
@@ -167,9 +164,7 @@ def _audit_table_md(api_key: str, *, limit: int = 15) -> str:
         "|------|--------|--------|-------|",
     ]
     for e in events:
-        lines.append(
-            f"| {e.created_at} | `{e.action}` | `{e.doc_id}` | {e.actor_roles or '—'} |"
-        )
+        lines.append(f"| {e.created_at} | `{e.action}` | `{e.doc_id}` | {e.actor_roles or '—'} |")
     return "\n".join(lines)
 
 
@@ -178,11 +173,7 @@ def _delete_btn_update(api_key: str) -> gr.Button:
     try:
         auth = resolve_request_auth(api_key=(api_key or "").strip() or None)
         can = auth.can_delete_proposals()
-        label = (
-            "Delete proposal"
-            if can
-            else "Delete (admin required when AUTH_ENABLED)"
-        )
+        label = "Delete proposal" if can else "Delete (admin required when AUTH_ENABLED)"
         return gr.update(interactive=can, value=label)
     except AuthError:
         return gr.update(interactive=False, value="Delete (auth error)")
@@ -243,9 +234,7 @@ def refresh_proposals_ui(api_key: str) -> tuple[str, str, gr.Dropdown]:
     )
 
 
-def delete_proposal_ui(
-    doc_id: str, api_key: str
-) -> tuple[str, str, str, gr.Dropdown]:
+def delete_proposal_ui(doc_id: str, api_key: str) -> tuple[str, str, str, gr.Dropdown]:
     doc_id = (doc_id or "").strip()
     if not doc_id or doc_id in DOC_CHOICES:
         return (
@@ -477,9 +466,7 @@ def run_compliance_checklist(
         pdf_path = getattr(draft_pdf, "name", None) or draft_pdf
         if pdf_path:
             try:
-                result = _proposal_service().upload(
-                    auth, pdf_path, index=bool(index_proposal)
-                )
+                result = _proposal_service().upload(auth, pdf_path, index=bool(index_proposal))
                 draft = extract_proposal_text(result.record.stored_path).text
                 proposal_id = result.record.doc_id
                 extract_note = (
@@ -968,12 +955,30 @@ Ask a question or run a compliance checklist.
 
                         send.click(
                             chat_ask,
-                            inputs=[msg, chatbot, doc_id, agency, intent, use_llm, show_debug, session_key],
+                            inputs=[
+                                msg,
+                                chatbot,
+                                doc_id,
+                                agency,
+                                intent,
+                                use_llm,
+                                show_debug,
+                                session_key,
+                            ],
                             outputs=[chatbot, status, msg],
                         )
                         msg.submit(
                             chat_ask,
-                            inputs=[msg, chatbot, doc_id, agency, intent, use_llm, show_debug, session_key],
+                            inputs=[
+                                msg,
+                                chatbot,
+                                doc_id,
+                                agency,
+                                intent,
+                                use_llm,
+                                show_debug,
+                                session_key,
+                            ],
                             outputs=[chatbot, status, msg],
                         )
                         clear.click(lambda: ([], _status_md("")), outputs=[chatbot, status])
@@ -986,9 +991,7 @@ Evaluate your proposal against compliance requirements.
                             """
                         )
                         with gr.Row():
-                            c_prog = gr.Radio(
-                                ["SBIR", "STTR"], value="SBIR", label="Program"
-                            )
+                            c_prog = gr.Radio(["SBIR", "STTR"], value="SBIR", label="Program")
                             c_ot = gr.Checkbox(
                                 value=True, label="Include Other Transaction (OT) items"
                             )
@@ -1008,12 +1011,16 @@ Evaluate your proposal against compliance requirements.
                         c_btn.click(
                             run_compliance_checklist,
                             inputs=[
-                                c_prog, c_ot, c_darpa, c_sba, c_sf424,
+                                c_prog,
+                                c_ot,
+                                c_darpa,
+                                c_sba,
+                                c_sf424,
                                 c_draft,
                                 gr.State(None),  # c_pdf
                                 gr.State(False),  # c_index
                                 gr.State(False),  # c_llm
-                                gr.State(""),     # session_key
+                                gr.State(""),  # session_key
                                 gr.State("(none)"),  # c_sel
                                 gr.State(False),  # c_export
                             ],

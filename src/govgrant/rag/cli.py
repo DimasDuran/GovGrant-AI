@@ -12,7 +12,9 @@ from govgrant.rag.index.hybrid import HybridRAGService
 
 
 def ingest_main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Ingest PDFs into hybrid RAG (Qdrant + BM25 + tables)")
+    parser = argparse.ArgumentParser(
+        description="Ingest PDFs into hybrid RAG (Qdrant + BM25 + tables)"
+    )
     parser.add_argument(
         "path",
         nargs="?",
@@ -212,7 +214,7 @@ def eval_main(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--golden",
         action="store_true",
-        help="Load all data/eval/01–08 golden files (unified schema)",
+        help="Load all data/eval/01-08 golden files (unified schema)",
     )
     parser.add_argument(
         "--backend",
@@ -272,11 +274,7 @@ def eval_main(argv: list[str] | None = None) -> None:
         "use_llm": report.get("use_llm"),
         "pass_rate": metrics.get(
             "pass_rate",
-            (
-                round(100.0 * report["passed"] / report["total"], 2)
-                if report["total"]
-                else 0.0
-            ),
+            (round(100.0 * report["passed"] / report["total"], 2) if report["total"] else 0.0),
         ),
         "avg_recall": metrics.get("avg_recall"),
         "avg_precision": metrics.get("avg_precision"),
@@ -424,9 +422,7 @@ def sbir_main(argv: list[str] | None = None) -> None:
         }
         print("\n# meta:", json.dumps(meta))
     elif args.action == "get":
-        result = svc.get_topic(
-            args.topic_id, include_disclaimer=not args.no_disclaimer
-        )
+        result = svc.get_topic(args.topic_id, include_disclaimer=not args.no_disclaimer)
         print(result["text"])
     elif args.action == "list":
         topics = svc.store.list_topics(
@@ -591,9 +587,7 @@ def checklist_main(argv: list[str] | None = None) -> None:
         print(run.to_markdown())
         if export_paths:
             print(f"\n# reports: {export_paths.get('md') or export_paths}")
-    critical_fail = any(
-        i.status == "fail" and i.severity == "critical" for i in run.items
-    )
+    critical_fail = any(i.status == "fail" and i.severity == "critical" for i in run.items)
     if critical_fail:
         raise SystemExit(1)
 
@@ -636,10 +630,7 @@ def gate_main(argv: list[str] | None = None) -> None:
 
     out = Path(args.out) if args.out else None
     if out is None and args.gate in {"router", "hard_llm", "checklist_corpus"}:
-        out = (
-            Path("data/eval/reports")
-            / f"gate_{args.gate}_latest.json"
-        )
+        out = Path("data/eval/reports") / f"gate_{args.gate}_latest.json"
 
     result = run_configured_gate(args.gate, thresholds_path=thr_path, out_path=out)
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
@@ -694,9 +685,7 @@ def proposals_main(argv: list[str] | None = None) -> None:
 
     sub.add_parser("list", parents=[common], help="List proposals for this tenant")
 
-    p_up = sub.add_parser(
-        "upload", parents=[common], help="Register PDF (+ optional index)"
-    )
+    p_up = sub.add_parser("upload", parents=[common], help="Register PDF (+ optional index)")
     p_up.add_argument("path", help="Path to proposal PDF")
     p_up.add_argument(
         "--no-index",
@@ -705,9 +694,7 @@ def proposals_main(argv: list[str] | None = None) -> None:
     )
     p_up.add_argument("--notes", default="", help="Optional note")
 
-    p_get = sub.add_parser(
-        "get", parents=[common], help="Show one proposal metadata"
-    )
+    p_get = sub.add_parser("get", parents=[common], help="Show one proposal metadata")
     p_get.add_argument("doc_id")
 
     p_del = sub.add_parser(
@@ -756,9 +743,7 @@ def proposals_main(argv: list[str] | None = None) -> None:
         return
 
     if args.action == "audit":
-        events = svc.list_events(
-            auth, limit=max(1, int(args.limit)), doc_id=args.doc_id or None
-        )
+        events = svc.list_events(auth, limit=max(1, int(args.limit)), doc_id=args.doc_id or None)
         rows = [e.to_dict() for e in events]
         if args.json:
             print(json.dumps(rows, indent=2, ensure_ascii=False))
@@ -767,10 +752,7 @@ def proposals_main(argv: list[str] | None = None) -> None:
                 print(f"(no audit events for tenant {auth.tenant_id})")
                 return
             for e in rows:
-                print(
-                    f"{e['created_at']}\t{e['action']}\t{e['doc_id']}\t"
-                    f"roles={e['actor_roles']}"
-                )
+                print(f"{e['created_at']}\t{e['action']}\t{e['doc_id']}\troles={e['actor_roles']}")
         return
 
     if args.action == "list":

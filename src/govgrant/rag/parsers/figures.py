@@ -18,7 +18,7 @@ from govgrant.rag.parsers.base import BaseModalityParser
 # Markdown image / figure cues from LlamaParse and narrative text
 _MD_IMAGE = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
 _FIGURE_CAPTION = re.compile(
-    r"(?im)^\s*(?:figure|fig\.|chart|graph|plot|exhibit|image)\s*[\d.IVX]*\s*[:.\-–]?\s*(.+)$"
+    r"(?im)^\s*(?:figure|fig\.|chart|graph|plot|exhibit|image)\s*[\d.IVX]*\s*[:.\-\u2013]?\s*(.+)$"
 )
 _CHART_HINTS = re.compile(
     r"\b(chart|graph|plot|histogram|bar chart|line chart|scatter|axis|series|trend)\b",

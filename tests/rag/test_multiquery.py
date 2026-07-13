@@ -1,5 +1,6 @@
-from govgrant.rag.index.hybrid import diversify_by_page, split_subqueries
 from llama_index.core.schema import NodeWithScore, TextNode
+
+from govgrant.rag.index.hybrid import diversify_by_page, split_subqueries
 
 
 def test_split_multipart_also_finally():

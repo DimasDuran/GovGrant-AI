@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import Protocol
 
 from govgrant.compliance.checklist import ChecklistItem
 

@@ -155,10 +155,7 @@ def evaluate_checklist_report(
             ok=ok,
             actual=critical_fail,
             threshold=max_fail,
-            message=(
-                f"critical corpus fails: {critical_fail} "
-                f"{'<=' if ok else '>'} {max_fail}"
-            ),
+            message=(f"critical corpus fails: {critical_fail} {'<=' if ok else '>'} {max_fail}"),
         )
     ]
     return GateResult(
@@ -215,9 +212,7 @@ def run_configured_gate(
             use_ot=bool(gate_cfg.get("use_ot", True)),
             packages=list(gate_cfg.get("packages") or ["darpa"]),
         )
-        result = evaluate_checklist_report(
-            run.to_dict(), gate_id=gate_id, gate_cfg=gate_cfg
-        )
+        result = evaluate_checklist_report(run.to_dict(), gate_id=gate_id, gate_cfg=gate_cfg)
     else:
         from govgrant.rag.eval.runner import run_regression
 

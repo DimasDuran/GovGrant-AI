@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from llama_index.core import Settings as LISettings
@@ -20,7 +20,6 @@ from govgrant.rag.config import Settings, get_settings
 from govgrant.rag.index.embeddings import build_embed_model
 from govgrant.rag.index.qdrant_store import (
     build_vector_store,
-    get_qdrant_client,
     retriever_kwargs,
 )
 from govgrant.rag.sbir.client import SBIRAPIError, SBIRTopicClient
@@ -48,9 +47,7 @@ class SBIRTopicService:
             ensure=True,
             collection_name=self.settings.sbir_qdrant_collection,
         )
-        self.storage_context = StorageContext.from_defaults(
-            vector_store=self.vector_store
-        )
+        self.storage_context = StorageContext.from_defaults(vector_store=self.vector_store)
 
     # ------------------------------------------------------------------- sync
     def sync(
@@ -90,16 +87,12 @@ class SBIRTopicService:
 
         topics = normalize_solicitations(raw, source=source, stale=stale)
         if agency:
-            topics = [
-                t
-                for t in topics
-                if (t.agency or "").upper() == agency.upper()
-            ]
+            topics = [t for t in topics if (t.agency or "").upper() == agency.upper()]
 
         n_store = self.store.upsert_topics(topics)
         n_index = self._index_topics(topics)
 
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         self.store.set_meta("last_sync_at", now)
         self.store.set_meta("last_source", source)
         self.store.set_meta("last_error", error or "")
@@ -214,7 +207,11 @@ class SBIRTopicService:
     def get_topic(self, topic_id: str, *, include_disclaimer: bool = True) -> dict[str, Any]:
         doc = self.store.get(topic_id)
         if not doc:
-            return {"found": False, "topic_id": topic_id, "text": f"Topic {topic_id} not found in local store."}
+            return {
+                "found": False,
+                "topic_id": topic_id,
+                "text": f"Topic {topic_id} not found in local store.",
+            }
         text = doc.to_rag_text() + f"\n\nAgency URL: {doc.solicitation_agency_url or 'n/a'}"
         if include_disclaimer:
             text = with_disclaimer(text, topic_ids=[doc.topic_id])
@@ -262,21 +259,15 @@ class SBIRTopicService:
         ]
         if agency:
             filters.append(
-                MetadataFilter(
-                    key="agency", value=agency.upper(), operator=FilterOperator.EQ
-                )
+                MetadataFilter(key="agency", value=agency.upper(), operator=FilterOperator.EQ)
             )
         if status:
             filters.append(
-                MetadataFilter(
-                    key="status", value=status.lower(), operator=FilterOperator.EQ
-                )
+                MetadataFilter(key="status", value=status.lower(), operator=FilterOperator.EQ)
             )
         if program:
             filters.append(
-                MetadataFilter(
-                    key="program", value=program.upper(), operator=FilterOperator.EQ
-                )
+                MetadataFilter(key="program", value=program.upper(), operator=FilterOperator.EQ)
             )
         return MetadataFilters(filters=filters)
 

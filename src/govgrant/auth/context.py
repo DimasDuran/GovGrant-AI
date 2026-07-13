@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any
 
-from govgrant.auth.registry import AuthRegistry, TenantRecord, load_auth_registry
+from govgrant.auth.registry import AuthRegistry, load_auth_registry
 from govgrant.rag.config import get_settings
 
 
@@ -47,9 +47,7 @@ class AuthContext:
         if doc_id is None:
             return None
         if not self.may_access_doc(doc_id):
-            raise AuthError(
-                f"Document {doc_id!r} is not allowed for tenant {self.tenant_id!r}"
-            )
+            raise AuthError(f"Document {doc_id!r} is not allowed for tenant {self.tenant_id!r}")
         return doc_id
 
     def has_role(self, *roles: str) -> bool:
@@ -169,8 +167,7 @@ def resolve_request_auth(
         raise AuthError("AUTH_ENABLED: invalid API key")
     if explicit and explicit != rec.tenant_id:
         raise AuthError(
-            f"AUTH_ENABLED: tenant {explicit!r} does not match API key binding "
-            f"{rec.tenant_id!r}"
+            f"AUTH_ENABLED: tenant {explicit!r} does not match API key binding {rec.tenant_id!r}"
         )
     return AuthContext(
         tenant_id=rec.tenant_id,

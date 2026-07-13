@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from govgrant.rag.config import Settings, get_settings
@@ -22,7 +22,7 @@ from govgrant.rag.sbir.disclaimer import with_disclaimer
 from govgrant.rag.sbir.service import SBIRTopicService
 
 
-class RouteIntent(str, Enum):
+class RouteIntent(StrEnum):
     DOC_QA = "doc_qa"
     TABLE = "table"
     FIGURE = "figure"
@@ -52,9 +52,7 @@ _CROSS_CUES = re.compile(
     r"(?:topic|solicitation).*(?:my|proposal|abstract|draft))\b",
     re.I,
 )
-_AGENCY = re.compile(
-    r"\b(DOD|DoD|NIH|NSF|NASA|DOE|HHS|MDA|DARPA|USDA|EPA|DOT|DHS)\b"
-)
+_AGENCY = re.compile(r"\b(DOD|DoD|NIH|NSF|NASA|DOE|HHS|MDA|DARPA|USDA|EPA|DOT|DHS)\b")
 # Map common branch / component names to parent agency codes used in SBIR index
 _AGENCY_ALIASES = {
     "MDA": "DOD",
@@ -107,8 +105,13 @@ class QueryRouter:
         table = bool(_TABLE_CUES.search(q))
         figure = bool(_FIGURE_CUES.search(q))
         # SBIR-only phrasing
-        if topic and not table and not figure and not re.search(
-            r"\b(my |our |proposal|application guide|policy directive)\b", q, re.I
+        if (
+            topic
+            and not table
+            and not figure
+            and not re.search(
+                r"\b(my |our |proposal|application guide|policy directive)\b", q, re.I
+            )
         ):
             return RouteIntent.TOPIC_SEARCH
         if table and not topic:
@@ -143,13 +146,9 @@ class QueryRouter:
         if intent == RouteIntent.TOPIC_SEARCH:
             return self._route_sbir(query, agency=agency, top_k=top_k)
         if intent == RouteIntent.TABLE:
-            return self._route_table(
-                query, tenant_id=tenant_id, doc_id=doc_id, top_k=top_k
-            )
+            return self._route_table(query, tenant_id=tenant_id, doc_id=doc_id, top_k=top_k)
         if intent == RouteIntent.FIGURE:
-            return self._route_figure(
-                query, tenant_id=tenant_id, doc_id=doc_id, top_k=top_k
-            )
+            return self._route_figure(query, tenant_id=tenant_id, doc_id=doc_id, top_k=top_k)
         if intent == RouteIntent.CROSS_CHECK:
             return self._route_cross(
                 query,
@@ -166,9 +165,7 @@ class QueryRouter:
                 agency=agency,
                 top_k=top_k,
             )
-        return self._route_docs(
-            query, tenant_id=tenant_id, doc_id=doc_id, top_k=top_k
-        )
+        return self._route_docs(query, tenant_id=tenant_id, doc_id=doc_id, top_k=top_k)
 
     # ---------------------------------------------------------------- routes
     def _route_docs(
@@ -220,9 +217,7 @@ class QueryRouter:
             modality="table",
             top_k=top_k,
         )
-        structured = self.docs.search_tables(
-            query, tenant_id=tenant_id, doc_id=doc_id, limit=top_k
-        )
+        structured = self.docs.search_tables(query, tenant_id=tenant_id, doc_id=doc_id, limit=top_k)
         parts = ["## Table RAG hits", self.docs.format_hits(rag)]
         parts += ["", "## Structured cell hits", self.docs.format_table_hits(structured)]
         if not rag and not structured:
@@ -289,9 +284,7 @@ class QueryRouter:
         agency: str | None,
         top_k: int,
     ) -> RouteResult:
-        result = self.sbir.search(
-            query, agency=agency, top_k=top_k, include_disclaimer=True
-        )
+        result = self.sbir.search(query, agency=agency, top_k=top_k, include_disclaimer=True)
         text = result["text"]
         if not result["topic_ids"]:
             text = with_disclaimer(
@@ -319,9 +312,7 @@ class QueryRouter:
         agency: str | None,
         top_k: int,
     ) -> RouteResult:
-        docs = self.docs.retrieve(
-            query, tenant_id=tenant_id, doc_id=doc_id, top_k=top_k
-        )
+        docs = self.docs.retrieve(query, tenant_id=tenant_id, doc_id=doc_id, top_k=top_k)
         # Strip proposal-framing so hybrid topic search focuses on tech keywords
         sbir_query = re.sub(
             r"(?i)\b(does|do|can|will)?\s*(my|our)\s+(proposal|abstract|draft|application)\b",
@@ -334,9 +325,7 @@ class QueryRouter:
             sbir_query,
         )
         sbir_query = re.sub(r"\s+", " ", sbir_query).strip() or query
-        sbir = self.sbir.search(
-            sbir_query, agency=agency, top_k=top_k, include_disclaimer=False
-        )
+        sbir = self.sbir.search(sbir_query, agency=agency, top_k=top_k, include_disclaimer=False)
         parts = [
             "## A) User document evidence",
             self.docs.format_hits(docs) if docs else self._insufficient("user documents", query),
@@ -372,16 +361,12 @@ class QueryRouter:
         top_k: int,
     ) -> RouteResult:
         # Lightweight fan-out: docs + tables + sbir snippets
-        docs = self._route_docs(
-            query, tenant_id=tenant_id, doc_id=doc_id, top_k=max(3, top_k // 2)
-        )
-        tables = self._route_table(
-            query, tenant_id=tenant_id, doc_id=doc_id, top_k=3
-        )
+        docs = self._route_docs(query, tenant_id=tenant_id, doc_id=doc_id, top_k=max(3, top_k // 2))
+        tables = self._route_table(query, tenant_id=tenant_id, doc_id=doc_id, top_k=3)
         sbir = self._route_sbir(query, agency=agency, top_k=3)
         body = "\n\n".join(
             [
-                f"# Intent: mixed\n",
+                "# Intent: mixed\n",
                 "## Documents\n" + docs.text,
                 "## Tables\n" + tables.text,
                 "## SBIR topics\n" + sbir.text,
