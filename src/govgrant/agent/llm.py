@@ -4,6 +4,17 @@ from __future__ import annotations
 
 import re
 
+from govgrant.agent.tools import (
+    ANSWER_SYSTEM_BASE,
+    ANSWER_SYSTEM_FOOTER,
+    ANSWER_SYSTEM_INTENT_RULES,
+    JUDGE_SYSTEM_TEMPLATE,
+    JUDGE_TOOLS,
+    ROUTING_SYSTEM,
+    ROUTING_TOOLS,
+    SELF_CHECK_SYSTEM,
+    SELF_CHECK_TOOLS,
+)
 from govgrant.rag.config import Settings, get_settings
 
 
@@ -56,129 +67,12 @@ class ChatLLM:
         """
         if not self.available or self._client is None:
             return None
-        tools = [
-            {
-                "name": "search_documents",
-                "description": (
-                    "Search SBIR/STTR agency documents (DARPA Phase II instructions, "
-                    "SBA Policy Directive, SF424 Application Guide) for compliance rules, "
-                    "eligibility, proposal instructions, work-share, milestone plans, "
-                    "commercialization strategy, page limits, funding restrictions."
-                ),
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "search_query": {
-                            "type": "string",
-                            "description": "Search terms — keep the user's own words",
-                        }
-                    },
-                    "required": ["search_query"],
-                },
-            },
-            {
-                "name": "search_tables",
-                "description": (
-                    "Search structured table data extracted from PDFs: budget tables, "
-                    "proposal forms, data rights assertion matrices, row/column data."
-                ),
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "search_query": {
-                            "type": "string",
-                            "description": "Search terms",
-                        }
-                    },
-                    "required": ["search_query"],
-                },
-            },
-            {
-                "name": "search_sbir_topics",
-                "description": (
-                    "Search open SBIR/STTR funding topics and solicitations from "
-                    "SBIR.gov — topic descriptions, agency, phase, deadlines."
-                ),
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "search_query": {
-                            "type": "string",
-                            "description": "Search terms — technology area or topic keywords",
-                        },
-                        "agency": {
-                            "type": "string",
-                            "description": "Agency code: DOD, NIH, NASA, NSF, DARPA, etc.",
-                        },
-                    },
-                    "required": ["search_query"],
-                },
-            },
-            {
-                "name": "cross_check",
-                "description": (
-                    "Cross-reference user proposal or draft content with open SBIR topics "
-                    "to check alignment, eligibility fit, and topic matching."
-                ),
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "search_query": {
-                            "type": "string",
-                            "description": "The proposal description or technology keywords",
-                        },
-                        "agency": {
-                            "type": "string",
-                            "description": "Target agency code if known",
-                        },
-                    },
-                    "required": ["search_query"],
-                },
-            },
-            {
-                "name": "compliance_checklist",
-                "description": (
-                    "Run the SBIR/STTR compliance checklist against agency documents. "
-                    "Use this when the user asks to run a compliance review, checklist, "
-                    "or audit of their proposal against DARPA Phase II instructions, "
-                    "SBA Policy Directive, or SF424 Application Guide requirements."
-                ),
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "packages": {
-                            "type": "array",
-                            "items": {
-                                "type": "string",
-                                "enum": ["darpa", "sba", "sf424"],
-                            },
-                            "description": (
-                                "Which compliance packages to check. "
-                                "darpa = DARPA Phase II Proposal Instructions, "
-                                "sba = SBA SBIR/STTR Policy Directive, "
-                                "sf424 = NIH SF424 Application Guide. "
-                                "Default to all three unless the user specifies an agency."
-                            ),
-                        },
-                        "program": {
-                            "type": "string",
-                            "enum": ["sbir", "sttr"],
-                            "description": "SBIR or STTR program (default: sbir)",
-                        },
-                    },
-                    "required": ["packages"],
-                },
-            },
-        ]
+        tools = ROUTING_TOOLS
         try:
             msg = self._client.messages.create(
                 model=self.model,
                 max_tokens=200,
-                system=(
-                    "You are a routing classifier for a SBIR/STTR compliance assistant. "
-                    "Select the most appropriate retrieval tool for the user's question. "
-                    "Always choose one tool — do not answer directly."
-                ),
+                system=ROUTING_SYSTEM,
                 messages=[{"role": "user", "content": query}],
                 tools=tools,
                 tool_choice={"type": "any"},
@@ -206,69 +100,12 @@ class ChatLLM:
         """
         if not self.available or self._client is None:
             return None
-        tools = [
-            {
-                "name": "mark_sufficient",
-                "description": (
-                    "The retrieved evidence is sufficient to answer the user's question. "
-                    "Call this when evidence directly addresses the query with relevant "
-                    "details — even if partial or incomplete."
-                ),
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "reason": {
-                            "type": "string",
-                            "description": "Brief explanation of why the evidence suffices",
-                        }
-                    },
-                    "required": ["reason"],
-                },
-            },
-            {
-                "name": "request_more_evidence",
-                "description": (
-                    "The retrieved evidence does NOT sufficiently answer the user's "
-                    "question. Call this to request a new retrieval with a reformulated "
-                    "query. Use when evidence is off-topic, too generic, or missing "
-                    "specific details the user asked about."
-                ),
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "reason": {
-                            "type": "string",
-                            "description": "Why the current evidence is insufficient",
-                        },
-                        "suggested_query": {
-                            "type": "string",
-                            "description": (
-                                "A reformulated search query that should retrieve "
-                                "better evidence. Focus on keywords from the user's "
-                                "question that were missing in the results."
-                            ),
-                        },
-                    },
-                    "required": ["reason", "suggested_query"],
-                },
-            },
-        ]
+        tools = JUDGE_TOOLS
         try:
             msg = self._client.messages.create(
                 model=self.model,
                 max_tokens=max_tokens,
-                system=(
-                    "You are an evidence judge for a SBIR/STTR compliance assistant. "
-                    "Review the retrieved evidence and decide whether it is sufficient "
-                    "to answer the user's question. "
-                    f"Retry attempt {retry_count + 1} of up to 3.\n\n"
-                    "Rules:\n"
-                    "- Choose mark_sufficient if evidence addresses the question, "
-                    "even if partially.\n"
-                    "- Choose request_more_evidence if evidence is off-topic, empty, "
-                    "or missing key information.\n"
-                    "- Always pick one tool — do not answer directly."
-                ),
+                system=JUDGE_SYSTEM_TEMPLATE.format(retry=retry_count + 1),
                 messages=[
                     {
                         "role": "user",
@@ -307,46 +144,12 @@ class ChatLLM:
         """
         if not self.available or self._client is None:
             return None
-        tools = [
-            {
-                "name": "answer_complete",
-                "description": "The answer fully addresses the user's question. Call this when the answer covers every aspect the user asked about.",
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "reason": {"type": "string", "description": "Brief confirmation"},
-                    },
-                    "required": ["reason"],
-                },
-            },
-            {
-                "name": "answer_incomplete",
-                "description": "The answer does NOT fully address the user's question. Call this when the answer missed sub-questions, went off-topic, or is too vague.",
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "reason": {"type": "string", "description": "Why the answer is incomplete"},
-                        "critique": {
-                            "type": "string",
-                            "description": "Specific guidance on what to add or change in the revised answer",
-                        },
-                    },
-                    "required": ["reason", "critique"],
-                },
-            },
-        ]
+        tools = SELF_CHECK_TOOLS
         try:
             msg = self._client.messages.create(
                 model=self.model,
                 max_tokens=max_tokens,
-                system=(
-                    "You are a quality checker for a SBIR/STTR compliance assistant. "
-                    "Review the answer against the user's question. Verify: "
-                    "(1) every sub-question is addressed, "
-                    "(2) the answer stays within the asked scope, "
-                    "(3) no critical detail from the question is ignored.\n"
-                    "Choose answer_complete if satisfactory, answer_incomplete otherwise."
-                ),
+                system=SELF_CHECK_SYSTEM,
                 messages=[
                     {
                         "role": "user",
@@ -378,80 +181,11 @@ class ChatLLM:
         intent: str,
         sources: list[str],
     ) -> str:
-        system = (
-            "You are GovGrant AI, a specialized AI assistant for U.S. SBIR/STTR "
-            "grant compliance. Behave like Claude or ChatGPT: clear, natural, and direct — "
-            "but you are a **vertical** product: only SBIR/STTR / federal small-business "
-            "innovation funding compliance, proposal instructions, and related agency docs.\n"
-            "Rules:\n"
-            "1. For this turn you MUST ground the answer in the provided evidence. "
-            "If evidence is weak or off-topic, say so briefly and ask a clarifying question.\n"
-            "2. Be precise and concise (short paragraphs + bullets when useful).\n"
-            "3. Cite sources inline using file names, page numbers, or "
-            "https://www.sbir.gov/topics/{id} when present in evidence.\n"
-            "4. Never invent award amounts, deadlines, eligibility, or proposal content.\n"
-            "5. Prefer the highest-relevance evidence that directly answers the question; "
-            "ignore table-of-contents noise when better pages exist.\n"
-            "6. If evidence includes an SBIR disclaimer, keep a short disclaimer.\n"
-            "7. Write in the same language as the user question.\n"
-            "8. Do not write long capability menus. Answer the question; if out of domain, "
-            "say you only cover SBIR/STTR compliance.\n"
-            "\n"
-            "PRECISION / SCOPE (critical):\n"
-            "A. Answer ONLY what the user asked. Do not volunteer extra proposal volumes, "
-            "sections, or programs that were not requested.\n"
-            "B. Do NOT append digressions such as Volume 5 / Supporting Documents, Volume 4 / CCR, "
-            "Cost Volume template details, Fraud/Waste training, or full proposal volume lists "
-            "unless the user explicitly asked about those topics. "
-            "Even if evidence mentions Volume 5, omit it unless the question is about supporting "
-            "documents, data-rights packaging, or subcontract pricing documentation.\n"
-            "C. Do NOT add unstated assumptions (e.g. 'Research Institution is typically a "
-            "university') unless the evidence says so.\n"
-            "D. Optional extras that are directly named in the evidence AND clearly related "
-            "to the asked topic (e.g. optional Advocacy Letters when asked about "
-            "commercialization strategy) are allowed; unrelated neighboring sections are not.\n"
-            "E. Prefer grounded facts over exhaustive document tours.\n"
-        )
-        if intent == "cross_check":
-            system += (
-                "F. CROSS-CHECK MODE: Do NOT claim the user's proposal aligns with a topic "
-                "unless the evidence contains the user's proposal/abstract text. "
-                "If only official topics are present, list matching open topics and say "
-                "you cannot judge alignment without the proposal content.\n"
-            )
-        if intent == "table":
-            system += (
-                "F. TABLE MODE: Prefer table rows, headers, and structured cell evidence "
-                "over general narrative.\n"
-            )
-
-        system += (
-            "9. If the user asked multiple questions, answer EACH one separately "
-            "with clear headings. Only say evidence is missing after checking all "
-            "retrieved passages carefully for that sub-question.\n"
-            "10. Do not claim the evidence lacks a topic if a later passage covers it.\n"
-            "11. When the user asks about optional documents/supporting materials, "
-            "list EVERY optional item named in the evidence (e.g. Advocacy Letters AND "
-            "Letters of Intent/Commitment). Do not stop after the first example.\n"
-            "12. For Other Transaction / milestone questions, list EVERY required "
-            "milestone field present in evidence (description, exit criteria, due date, "
-            "payment schedule, government data rights).\n"
-            "13. Distinguish carefully: 'Transition and Commercialization Strategy' "
-            "in Technical Volume (proposal content, 5 pages) is NOT the same as the "
-            "Transition and Commercialization Support Program (TCSP) agency program. "
-            "Prefer evidence that mentions Technical Volume / Volume 2 / 5 pages for "
-            "proposal strategy questions.\n"
-            "14. When evidence includes 'THE FOLLOWING PERTAINS TO SBIR ONLY' and "
-            "'THE FOLLOWING PERTAINS TO STTR ONLY', report BOTH sections fully "
-            "(work-share %, FFRDC rules, funding flow, prohibitions).\n"
-            "15. If the answer is not in the evidence, say so briefly—do not pad with "
-            "other volumes or general SBIR background.\n"
-            "16. When the user greets you (e.g. hola, hello, buenos días, good morning), "
-            "respond naturally and briefly. Say a simple greeting back and ask how you "
-            "can help — do NOT list capabilities, topics, or things you can do. "
-            "Be warm and concise (1-2 sentences max). Never enumerate features. "
-            "Do not use emojis.\n"
-        )
+        system = ANSWER_SYSTEM_BASE
+        intent_rule = ANSWER_SYSTEM_INTENT_RULES.get(intent)
+        if intent_rule:
+            system += intent_rule
+        system += ANSWER_SYSTEM_FOOTER
         user = (
             f"Intent: {intent}\n"
             f"Sources used: {', '.join(sources) or 'n/a'}\n\n"
