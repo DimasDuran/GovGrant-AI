@@ -302,7 +302,7 @@ def build_agent_graph(
                 "next_action": "format_answer",
                 "meta": {
                     **(state.get("meta") or {}),
-                    "checklist_summary": run.summary.to_dict(),
+                    "checklist_summary": run.summary,
                 },
             }
         except Exception as exc:  # noqa: BLE001
