@@ -233,6 +233,10 @@ The `QueryRouter` doesn't send every query to the vector store — it picks betw
 
 In short: two of the three paths sit outside the main vector DB, and one of those (`SBIRTopicService`) also reaches out to a live external API rather than relying solely on indexed data.
 
+> **SBIR.gov API status:** The Solicitation API is **public** (no API key required). It uses simple query parameters — `?open=1` returns all open solicitations, with optional filters for `agency`, `keyword`, and pagination via `rows` / `start`.  
+> As of mid-2026 the API is returning `429 Too Many Requests` / *"not available at this time"* (maintenance notice on the SBIR.gov site). When it recovers, `SBIRTopicClient.fetch_all_open()` will pull live data again. Until then, fall back to fixtures via `govgrant sbir sync --fixtures`.  
+> Contact: [`sba.sbir.support@decisionpointcorp.com`](mailto:sba.sbir.support@decisionpointcorp.com)
+
 ## Observability
 
 Two observability backends instrument every agent run. Both are optional — no-op when unconfigured.
