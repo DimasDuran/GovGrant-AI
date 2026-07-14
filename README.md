@@ -86,7 +86,7 @@ graph TB
     E(("END"))
 
     %% Router + RAG
-    ROUTER["QueryRouter<br/>heuristic intent → source<br/><i>(also used by CLI)</i>"]
+    ROUTER["QueryRouter<br/>LLM intent / heuristic → source"]
     HR["HybridRAGService<br/>Qdrant dense + sparse vectors<br/>+ RRF fusion"]
     SBIR["SBIRTopicService<br/>Qdrant dense + sparse + API"]
     TABULAR["TabularStore<br/>SQLite + FTS5"]
@@ -106,9 +106,12 @@ graph TB
     UI --> AUTH
     CLI --> AUTH
     AUTH --> AGENT
-    ROUTER -.->|CLI query path| HR
-    ROUTER -.->|CLI query path| SBIR
-    ROUTER -.->|CLI query path| TABULAR
+    AGENT -->|retrieve node| ROUTER
+    ROUTER -->|DOC_QA / TABLE| HR
+    ROUTER -->|TABLE| TABULAR
+    ROUTER -->|TOPIC_SEARCH| SBIR
+    ROUTER -.->|CROSS_CHECK| HR
+    ROUTER -.->|CROSS_CHECK| SBIR
     HR -->|dense + sparse| QD
     HR --> OLL
     SBIR -->|dense + sparse| QD
@@ -117,7 +120,6 @@ graph TB
     ANTH -.-> AGENT
     LS -.->|traces all agent steps · evals| AGENT
     GF -.->|OTLP spans + metrics| AGENT
-    GF -.->|httpx · system metrics| OLL
 
     %% Styles (Google palette)
     style UI fill:#e8f0fe,stroke:#4285F4,stroke-width:2px,color:#174ea6
