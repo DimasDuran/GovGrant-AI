@@ -118,6 +118,29 @@ graph TB
     LS -.->|traces all agent steps · evals| AGENT
     GF -.->|OTLP spans + metrics| AGENT
     GF -.->|httpx · system metrics| OLL
+
+    %% Styles (Google palette)
+    style UI fill:#e8f0fe,stroke:#4285F4,stroke-width:2px,color:#174ea6
+    style CLI fill:#e8f0fe,stroke:#4285F4,stroke-width:2px,color:#174ea6
+    style AUTH fill:#e6f4ea,stroke:#34A853,stroke-width:2px,color:#0d652d
+    style C fill:#e8f0fe,stroke:#4285F4,stroke-width:2px,color:#174ea6
+    style R fill:#e8f0fe,stroke:#4285F4,stroke-width:2px,color:#174ea6
+    style V fill:#e8f0fe,stroke:#4285F4,stroke-width:2px,color:#174ea6
+    style F fill:#e8f0fe,stroke:#4285F4,stroke-width:2px,color:#174ea6
+    style S fill:#e8f0fe,stroke:#4285F4,stroke-width:2px,color:#174ea6
+    style CK fill:#e8f0fe,stroke:#4285F4,stroke-width:2px,color:#174ea6
+    style E fill:#fce8e6,stroke:#EA4335,stroke-width:2px,color:#a50e0e
+    style ROUTER fill:#e6f4ea,stroke:#34A853,stroke-width:2px,color:#0d652d
+    style HR fill:#e6f4ea,stroke:#34A853,stroke-width:2px,color:#0d652d
+    style SBIR fill:#e6f4ea,stroke:#34A853,stroke-width:2px,color:#0d652d
+    style TABULAR fill:#e6f4ea,stroke:#34A853,stroke-width:2px,color:#0d652d
+    style QD fill:#fef7e0,stroke:#FBBC05,stroke-width:2px,color:#5c3b00
+    style OLL fill:#fef7e0,stroke:#FBBC05,stroke-width:2px,color:#5c3b00
+    style LLAMA fill:#fef7e0,stroke:#FBBC05,stroke-width:2px,color:#5c3b00
+    style ANTH fill:#fef7e0,stroke:#FBBC05,stroke-width:2px,color:#5c3b00
+    style SBIRAPI fill:#fef7e0,stroke:#FBBC05,stroke-width:2px,color:#5c3b00
+    style LS fill:#fce8e6,stroke:#EA4335,stroke-width:2px,color:#a50e0e
+    style GF fill:#fce8e6,stroke:#EA4335,stroke-width:2px,color:#a50e0e
 ```
 
 ### Why hybrid RAG (dense + sparse + multimodal)
