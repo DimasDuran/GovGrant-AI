@@ -1,0 +1,27 @@
+{
+  "repo_notes": "GovGrant AI is a compliance assistant for U.S. federal SBIR/STTR grant proposals. It uses a LangGraph agent with LLM-driven routing (classify → retrieve → validate → format → self_check) over multimodal hybrid RAG (dense + sparse vectors in Qdrant + SQLite FTS5 + live SBIR.gov API). Key architectural decisions: (1) LlamaIndex owns the data layer (chunking, embedding, indexing), LangGraph owns control flow (branching, retry loops). (2) Every decision point uses real tool-calling — routing, evidence sufficiency, query reformulation, answer quality — not regex heuristics. (3) Multi-tenancy is enforced at the Qdrant storage layer via mandatory metadata filters. (4) Checklist scoring is deliberately deterministic for audit reproducibility. (5) Observability via LangSmith (auto-tracing + evals) and Grafana/OTel (httpx + logging + system metrics). Stack: Python 3.11+, LangGraph, LlamaIndex, Qdrant, Ollama (nomic-embed-text), Anthropic Haiku, Gradio UI, OpenRouter.",
+  "pages": [
+    "Overview",
+    "Architecture",
+    "Getting-Started",
+    "Agent",
+    "Data-Sources",
+    "Observability",
+    "Compliance-Checklist",
+    "Development",
+    "Authentication",
+    "Deployment"
+  ],
+  "page_notes": {
+    "Overview": "Explain the problem SBIR/STTR compliance failures cause, why hybrid RAG + agent are needed together, and the project's narrow goal: reducing undetected compliance errors in proposals. Mention key features: multimodal RAG, LangGraph agent, compliance checklist, proposal scoring.",
+    "Architecture": "Include the full mermaid diagram from README. Explain the pipeline: UI/CLI → Auth → Agent (classify → retrieve → validate → format → self_check) → Router → RAG services. Highlight the retry loop (validate → retrieve with reformulated query) and self-check loop (self_check → format_answer with critique). Mention the Google-palette colors represent component groups.",
+    "Getting-Started": "Step-by-step: venv, pip install, .env config, start Qdrant + Ollama (Docker), ingest fixture PDFs, run agent queries. Include all CLI examples from README. Note SBIR.gov API is currently in maintenance — use --fixtures for topic sync.",
+    "Agent": "Deep dive into each LangGraph node: classify (LLM tool-use routing with 5 tools, heuristic fallback), retrieve (RagToolBelt.ask via QueryRouter), validate_evidence (LLM judge with mark_sufficient / request_more_evidence, 2 retries max), format_answer (LLM synthesis grounded in evidence), self_check (LLM verifies with answer_complete / answer_incomplete, 1 revision max), checklist (deterministic scoring, LLM-interpreted). Explain the AgentState TypedDict and how conditional edges enable retry/revision loops.",
+    "Data-Sources": "Cover the three sources: HybridRAGService (Qdrant dense + sparse, policy docs), TabularStore (SQLite + FTS5, structured tables), SBIRTopicService (Qdrant + live SBIR.gov API, funding topics). Include the SBIR.gov API status note (public API, no key required, currently 429/maintenance). Mention fixture fallback.",
+    "Observability": "Two backends, both optional + no-op when unconfigured. LangSmith: auto-tracing via LANGSMITH_TRACING, @traceable on ChatLLM methods, eval module (govgrant.evals.langsmith_eval), prompt hub integration. Grafana/OTel: setup_otel() initialises OTLP HTTP exporter, instruments httpx (all HTTP calls), logging (trace correlation), system_metrics (CPU/memory). Both wired via setup_telemetry() in CLI and Gradio startup.",
+    "Compliance-Checklist": "Explain how run_checklist works: selects agency packages (DARPA, SBA, SF424), runs deterministic keyword-coverage scoring against a fixed corpus, LLM interprets results. CLI usage: --package, --draft-pdf, --llm-draft, --export. Integration with agent via compliance_checklist tool.",
+    "Development": "Project layout (src/govgrant/{agent,rag,ui,auth,compliance,proposals,core,evals}), quality gates (ruff strict ruleset, mypy strict mode, pytest 51+ tests), CI commands, code style conventions.",
+    "Authentication": "Multi-tenancy: AuthContext with tenant_id, roles, permissions. Qdrant-level metadata filter enforcement (defense in depth). CLI --api-key and Gradio session key flow. Auth registry (tenants JSON).",
+    "Deployment": "Docker setup, environment variables reference (Qdrant, Ollama, Anthropic, LlamaParse, LangSmith, OTel), docker-compose for local Qdrant + Ollama, Gradio UI server config."
+  }
+}
