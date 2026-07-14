@@ -1,27 +1,301 @@
 {
-  "repo_notes": "GovGrant AI is a compliance assistant for U.S. federal SBIR/STTR grant proposals. It uses a LangGraph agent with LLM-driven routing (classify → retrieve → validate → format → self_check) over multimodal hybrid RAG (dense + sparse vectors in Qdrant + SQLite FTS5 + live SBIR.gov API). Key architectural decisions: (1) LlamaIndex owns the data layer (chunking, embedding, indexing), LangGraph owns control flow (branching, retry loops). (2) Every decision point uses real tool-calling — routing, evidence sufficiency, query reformulation, answer quality — not regex heuristics. (3) Multi-tenancy is enforced at the Qdrant storage layer via mandatory metadata filters. (4) Checklist scoring is deliberately deterministic for audit reproducibility. (5) Observability via LangSmith (auto-tracing + evals) and Grafana/OTel (httpx + logging + system metrics). Stack: Python 3.11+, LangGraph, LlamaIndex, Qdrant, Ollama (nomic-embed-text), Anthropic Haiku, Gradio UI, OpenRouter.",
-  "pages": [
-    "Overview",
-    "Architecture",
-    "Getting-Started",
-    "Agent",
-    "Data-Sources",
-    "Observability",
-    "Compliance-Checklist",
-    "Development",
-    "Authentication",
-    "Deployment"
+  "repo_notes": [
+    {
+      "content": "GovGrant AI is a compliance assistant for U.S. federal SBIR/STTR grant proposals. It uses a LangGraph agent with LLM-driven routing (classify → retrieve → validate → format → self_check) over multimodal hybrid RAG (dense + sparse vectors in Qdrant + SQLite FTS5 + live SBIR.gov API). Key architectural decisions: (1) LlamaIndex owns the data layer (chunking, embedding, indexing), LangGraph owns control flow (branching, retry loops). (2) Every decision point uses real tool-calling — routing, evidence sufficiency, query reformulation, answer quality — not regex heuristics. (3) Multi-tenancy is enforced at the Qdrant storage layer via mandatory metadata filters. (4) Checklist scoring is deliberately deterministic for audit reproducibility. (5) Observability via LangSmith (auto-tracing + evals) and Grafana/OTel (httpx + logging + system metrics). Stack: Python 3.11+, LangGraph, LlamaIndex, Qdrant, Ollama (nomic-embed-text), Anthropic Haiku, Gradio UI, OpenRouter."
+    }
   ],
-  "page_notes": {
-    "Overview": "Explain the problem SBIR/STTR compliance failures cause, why hybrid RAG + agent are needed together, and the project's narrow goal: reducing undetected compliance errors in proposals. Mention key features: multimodal RAG, LangGraph agent, compliance checklist, proposal scoring.",
-    "Architecture": "Include the full mermaid diagram from README. Explain the pipeline: UI/CLI → Auth → Agent (classify → retrieve → validate → format → self_check) → Router → RAG services. Highlight the retry loop (validate → retrieve with reformulated query) and self-check loop (self_check → format_answer with critique). Mention the Google-palette colors represent component groups.",
-    "Getting-Started": "Step-by-step: venv, pip install, .env config, start Qdrant + Ollama (Docker), ingest fixture PDFs, run agent queries. Include all CLI examples from README. Note SBIR.gov API is currently in maintenance — use --fixtures for topic sync.",
-    "Agent": "Deep dive into each LangGraph node: classify (LLM tool-use routing with 5 tools, heuristic fallback), retrieve (RagToolBelt.ask via QueryRouter), validate_evidence (LLM judge with mark_sufficient / request_more_evidence, 2 retries max), format_answer (LLM synthesis grounded in evidence), self_check (LLM verifies with answer_complete / answer_incomplete, 1 revision max), checklist (deterministic scoring, LLM-interpreted). Explain the AgentState TypedDict and how conditional edges enable retry/revision loops.",
-    "Data-Sources": "Cover the three sources: HybridRAGService (Qdrant dense + sparse, policy docs), TabularStore (SQLite + FTS5, structured tables), SBIRTopicService (Qdrant + live SBIR.gov API, funding topics). Include the SBIR.gov API status note (public API, no key required, currently 429/maintenance). Mention fixture fallback.",
-    "Observability": "Two backends, both optional + no-op when unconfigured. LangSmith: auto-tracing via LANGSMITH_TRACING, @traceable on ChatLLM methods, eval module (govgrant.evals.langsmith_eval), prompt hub integration. Grafana/OTel: setup_otel() initialises OTLP HTTP exporter, instruments httpx (all HTTP calls), logging (trace correlation), system_metrics (CPU/memory). Both wired via setup_telemetry() in CLI and Gradio startup.",
-    "Compliance-Checklist": "Explain how run_checklist works: selects agency packages (DARPA, SBA, SF424), runs deterministic keyword-coverage scoring against a fixed corpus, LLM interprets results. CLI usage: --package, --draft-pdf, --llm-draft, --export. Integration with agent via compliance_checklist tool.",
-    "Development": "Project layout (src/govgrant/{agent,rag,ui,auth,compliance,proposals,core,evals}), quality gates (ruff strict ruleset, mypy strict mode, pytest 51+ tests), CI commands, code style conventions.",
-    "Authentication": "Multi-tenancy: AuthContext with tenant_id, roles, permissions. Qdrant-level metadata filter enforcement (defense in depth). CLI --api-key and Gradio session key flow. Auth registry (tenants JSON).",
-    "Deployment": "Docker setup, environment variables reference (Qdrant, Ollama, Anthropic, LlamaParse, LangSmith, OTel), docker-compose for local Qdrant + Ollama, Gradio UI server config."
-  }
+  "pages": [
+    {
+      "title": "GovGrant AI — Overview",
+      "purpose": "High-level introduction to GovGrant AI: what it does, who it's for, the core architecture, and how the major subsystems relate. Links to child pages for deeper coverage.",
+      "page_notes": [
+        {
+          "content": "Explain the problem SBIR/STTR compliance failures cause, why hybrid RAG + agent are needed together, and the project's narrow goal: reducing undetected compliance errors in proposals. Mention key features: multimodal RAG, LangGraph agent, compliance checklist, proposal scoring. Include the 'Why the combination matters' argument from README."
+        }
+      ]
+    },
+    {
+      "title": "Getting Started — Setup and Configuration",
+      "purpose": "Step-by-step guide for local development: installing dependencies, configuring environment variables, running the stack health check, and launching the UI or CLI.",
+      "parent": "GovGrant AI — Overview",
+      "page_notes": [
+        {
+          "content": "Step-by-step: venv, pip install -e '.[dev]', cp .env.example .env, set ANTHROPIC_API_KEY and LLAMAPARSE_API_KEY, start Qdrant + Ollama via Docker, ingest fixture PDFs with 'govgrant ingest', then run agent queries. Include all CLI examples from README. Note SBIR.gov API is currently in maintenance — use --fixtures for topic sync."
+        }
+      ]
+    },
+    {
+      "title": "System Architecture — Key Concepts and Data Flow",
+      "purpose": "Explains the bifurcated architecture (LlamaIndex data layer + LangGraph control layer), the hybrid RAG strategy, multi-tenancy model, and how a user query flows end-to-end from the UI through the agent to Qdrant and back.",
+      "parent": "GovGrant AI — Overview",
+      "page_notes": [
+        {
+          "content": "Include the full mermaid diagram from README. Explain the pipeline: UI/CLI → Auth → Agent (classify → retrieve → validate → format → self_check) → Router → RAG services. Highlight the retry loop (validate → retrieve with reformulated query) and self-check loop (self_check → format_answer with critique). Mention why LlamaIndex + LangGraph are used together (not one or the other). Cover multi-tenancy enforcement at the Qdrant storage layer."
+        }
+      ]
+    },
+    {
+      "title": "Agentic Reasoning Layer",
+      "purpose": "Overview of the LangGraph-based agent: its state machine, nodes, and how it orchestrates retrieval, validation, and answer generation. Links to child pages for the graph, LLM interface, tools, and prompts.",
+      "page_notes": [
+        {
+          "content": "Explain that every decision point uses real LLM tool-calling (not regex heuristics). The agent has 6 nodes (classify, retrieve, validate_evidence, format_answer, self_check, checklist) with conditional edges for retry and revision loops. max_retries=2 for evidence, max_self_check_retries=1."
+        }
+      ]
+    },
+    {
+      "title": "Agent Graph — StateGraph and Orchestration Pipeline",
+      "purpose": "Deep dive into build_agent_graph and AgentState: the classify → retrieve → validate_evidence → format_answer → self_check node sequence, conditional edges, retry logic, conversational-turn bypass, and the run_agent entrypoint.",
+      "parent": "Agentic Reasoning Layer",
+      "page_notes": [
+        {
+          "content": "Document AgentState TypedDict fields. Explain each node function: classify (LLM tool-use routing with ROUTING_TOOLS, heuristic fallback when LLM unavailable), retrieve (RagToolBelt.ask via QueryRouter, uses reformulated_query on retry with top_k=14), validate_evidence (LLM judge with JUDGE_TOOLS, 2 retries max, sets insufficient flag). Show the conditional edge routing logic."
+        }
+      ]
+    },
+    {
+      "title": "ChatLLM — Anthropic Integration and Answer Pipeline",
+      "purpose": "Documents the ChatLLM class: classify_with_tools, judge_evidence, answer_from_evidence, self_check_answer, and the strip_unsolicited_digressions post-processing filter. Covers tool-use loops and the grounded generation pattern.",
+      "parent": "Agentic Reasoning Layer",
+      "page_notes": [
+        {
+          "content": "ChatLLM wraps anthropic.Anthropic() SDK. Four public methods: classify_with_tools (tool_choice={'type': 'any'}), judge_evidence (returns mark_sufficient / request_more_evidence with suggested_query), self_check_answer (returns answer_complete / answer_incomplete with critique), answer_from_evidence (calls complete() with ANSWER_SYSTEM prompts). Post-filter strip_unsolicited_digressions removes Volume 5/CCR/cost-volume digressions the user didn't ask about. All methods decorated with @traceable for LangSmith."
+        }
+      ]
+    },
+    {
+      "title": "Agent Tools and Prompt Engineering",
+      "purpose": "Covers the RagToolBelt (belt.py), routing/judge/self-check tool definitions, and the full prompt library. Explains negative constraints and intent-mode rules.",
+      "parent": "Agentic Reasoning Layer",
+      "page_notes": [
+        {
+          "content": "RagToolBelt wires HybridRAGService + SBIRTopicService + QueryRouter. Five routing tools: search_documents, search_tables, search_sbir_topics, cross_check, compliance_checklist. Judge tools: mark_sufficient (reason), request_more_evidence (reason, suggested_query). Self-check tools: answer_complete (reason), answer_incomplete (reason, critique). Prompt files in agent/tools/prompts/: routing.py, judge.py, self_check.py, answer.py. ANSWER_SYSTEM_INTENT_RULES has per-intent rules for cross_check and table modes."
+        }
+      ]
+    },
+    {
+      "title": "RAG Data Layer",
+      "purpose": "Overview of the retrieval-augmented generation data layer: document ingestion, hybrid indexing, query routing, and the SBIR topics connector. Links to child pages for each major subsystem.",
+      "page_notes": [
+        {
+          "content": "Three data sources: HybridRAGService (Qdrant dense + sparse vectors for policy docs), TabularStore (SQLite + FTS5 for structured tables), SBIRTopicService (Qdrant + live SBIR.gov API for funding topics). QueryRouter dispatches by RouteIntent enum."
+        }
+      ]
+    },
+    {
+      "title": "HybridRAGService — Indexing and Retrieval",
+      "purpose": "Detailed coverage of HybridRAGService: the dual dense+sparse retrieval pipeline, Qdrant integration, BM25 sparse vectors, RRF fusion, neighbor-page expansion, forced-phrase inclusion, page-boundary repair, and page assembly.",
+      "parent": "RAG Data Layer",
+      "page_notes": [
+        {
+          "content": "Uses LlamaIndex with Qdrant vector store. Dense: Ollama nomic-embed-text (768-dim). Sparse: native Qdrant BM25. RRF fusion combines both. Neighbor-page expansion brings ±1 adjacent pages. Force-include pages with exact phrase matches via re_search_hits. Page-boundary repair merges split paragraphs."
+        }
+      ]
+    },
+    {
+      "title": "Document Parsers — Prose, Tables, and Figures",
+      "purpose": "Explains the multi-modal ingestion pipeline: ProsePDFParser (LlamaParse) with LocalPDFFallbackParser, TableMarkdownParser for dual-path table extraction, FigureChartParser with optional Ollama vision captioning.",
+      "parent": "RAG Data Layer",
+      "page_notes": [
+        {
+          "content": "Three parser classes: ProsePDFParser uses LlamaParse (cloud) with PyMuPDF fallback. TableMarkdownParser does dual extraction (LlamaParse + PyMuPDF table detection). FigureChartParser extracts embedded images with optional Ollama LLaVA vision model captioning."
+        }
+      ]
+    },
+    {
+      "title": "Tabular Store — SQLite FTS5 for Structured Data",
+      "purpose": "Documents the TabularStore: how extracted tables are stored in SQLite with FTS5 full-text search, the table_registry and table_rows schema, upsert_tables, search_cells, and integration with HybridRAGService.",
+      "parent": "RAG Data Layer",
+      "page_notes": [
+        {
+          "content": "TabularStore in sql_store.py. Schema: table_registry (table_id, doc_id, page_num, caption), table_rows (row_id, table_id, row_index, cells_text, FTS5 index). search_cells() does FTS5 MATCH queries. Used by QueryRouter for TABLE intent alongside HR modality=table."
+        }
+      ]
+    },
+    {
+      "title": "Query Router — Multi-Source Intent Classification",
+      "purpose": "Covers the QueryRouter class: RouteIntent enum (doc_qa, table, figure, topic_search, cross_check, mixed), heuristic regex classifiers, agency alias mapping, and how the router dispatches to services.",
+      "parent": "RAG Data Layer",
+      "page_notes": [
+        {
+          "content": "RouteIntent enum values and heuristic regex classifiers in query_router.py. DOC_CUES, TABLE_CUES, TOPIC_CUES, CROSS_CUES patterns. classify() returns RouteIntent. ask() dispatches to _route_doc, _route_table, _route_sbir, _route_cross. _insufficient() marker for when no hits found. Agency alias mapping (DOD, DARPA, MDA, etc)."
+        }
+      ]
+    },
+    {
+      "title": "SBIR Topics Connector",
+      "purpose": "Documents SBIRTopicService: syncing open solicitations from the SBIR.gov API, fallback to local JSON fixtures, hybrid search over the sbir_topics Qdrant collection, SBIRStructuredStore, data models, normalizer, disclaimer wrapper.",
+      "parent": "RAG Data Layer",
+      "page_notes": [
+        {
+          "content": "SBIRTopicClient fetches from api.www.sbir.gov/public/api/solicitations (public API, no key required, currently returning 429/maintenance). Sync: pull all open solicitations → normalize → upsert to SQLite store + index to Qdrant. Fallback: load JSON fixtures. Search: hybrid Qdrant retrieval with agency/program/status metadata filters. Disclaimer footer appended to all topic answers."
+        }
+      ]
+    },
+    {
+      "title": "RAG Contracts and Configuration",
+      "purpose": "Covers the canonical data contracts (contracts.py): SourceType, Modality, DocumentMeta, build_node_metadata. Also covers the Settings frozen dataclass (config.py): all environment-driven configuration fields.",
+      "parent": "RAG Data Layer",
+      "page_notes": [
+        {
+          "content": "contracts.py: SourceType (USER_DOCS, SBIR_TOPICS, TABULAR), Modality (TEXT, TABLE, FIGURE), DocumentMeta dataclass, build_node_metadata(). config.py: Settings frozen dataclass with field(default_factory=lambda: os.getenv(...)) pattern, get_settings() singleton. All E variables: QDRANT_*, OLLAMA_*, LLAMAPARSE_*, ANTHROPIC_*, SBIR_*, LANGSMITH_*, OTEL_*."
+        }
+      ]
+    },
+    {
+      "title": "Compliance Engine",
+      "purpose": "Overview of the deterministic compliance audit system: how proposals are checked against agency-specific control sets. Links to child pages for the checklist, draft scoring, and report export.",
+      "page_notes": [
+        {
+          "content": "The compliance engine is deliberately deterministic for audit reproducibility. Three agency packages: DARPA, SBA, SF424 (legacy). The agent triggers it via the compliance_checklist tool. The LLM selects which packages to check and interprets the results."
+        }
+      ]
+    },
+    {
+      "title": "Compliance Checklist — Control Items and Scoring",
+      "purpose": "Deep dive into run_checklist: ChecklistItem definitions for DARPA/SBA/SF424 packages, corpus scoring, keyword-based draft scoring, OT-specific items, the ChecklistRun output container.",
+      "parent": "Compliance Engine",
+      "page_notes": [
+        {
+          "content": "run_checklist in checklist.py. For each package, iterates over ChecklistItem definitions (27 items total across packages). _score_corpus checks each rule against the indexed corpus via keyword matching. _score_draft checks against uploaded proposal PDF text. OT-specific items check milestone plan requirements. Returns ChecklistRun with pass/fail per control."
+        }
+      ]
+    },
+    {
+      "title": "LLM-Assisted Draft Scoring",
+      "purpose": "Covers draft_llm.py: the score_drafts_with_llm batched call to Claude Haiku, strict JSON schema enforcement, parse_llm_draft_json, merge_draft_scores fallback logic, DraftJudgment data model.",
+      "parent": "Compliance Engine",
+      "page_notes": [
+        {
+          "content": "score_drafts_with_llm sends proposal text + control items to Haiku for nuanced assessment (keyword-only misses context). Batch calling strategy, strict JSON schema for parseability. merge_draft_scores combines LLM judgments with keyword fallback. DraftJudgment includes pass/fail per item with rationale. max_draft_chars truncation to fit context window."
+        }
+      ]
+    },
+    {
+      "title": "Compliance Report Export",
+      "purpose": "Documents report.py: export_checklist_run writing Markdown and JSON reports to data/eval/reports/, the stable 'latest' pointer pattern, ChecklistRun.to_markdown() and to_dict() methods.",
+      "parent": "Compliance Engine",
+      "page_notes": [
+        {
+          "content": "export_checklist_run writes timestamped .md + .json + 'latest' symlinks. ChecklistRun.to_markdown() creates formatted report with agency-specific sections. to_dict() for JSON consumption. CLI usage: --export flag on checklist subcommand."
+        }
+      ]
+    },
+    {
+      "title": "Proposal Management",
+      "purpose": "Overview of the proposal lifecycle: upload, registry, indexing, retrieval, and deletion. Links to child pages for the service layer and the persistent store.",
+      "page_notes": [
+        {
+          "content": "Proposals are tenant-scoped PDF files stored under data/indexes/proposals/<tenant_id>/. Lifecycle: upload → text extraction → RAG ingest → registry upsert → audit log."
+        }
+      ]
+    },
+    {
+      "title": "ProposalService — Upload, Index, and Delete",
+      "purpose": "Detailed coverage of ProposalService: the upload pipeline (file copy → text extraction → RAG ingest → registry upsert → audit log), list_proposals, get, delete with purge_index option, read_draft_text.",
+      "parent": "Proposal Management",
+      "page_notes": [
+        {
+          "content": "ProposalService in proposals/service.py. upload_proposal: copy PDF → extract text via PyMuPDF → ingest into HybridRAGService → create ProposalRecord in ProposalStore → log audit event. delete: purge from RAG index + remove from registry. read_draft_text returns raw text for LLM-assisted draft scoring."
+        }
+      ]
+    },
+    {
+      "title": "ProposalStore — SQLite Registry and Audit Log",
+      "purpose": "Documents the ProposalStore persistence layer: ProposalRecord and ProposalEvent schemas, the proposals.sqlite database, upsert/get/delete/list_for_tenant operations, and the audit event trail.",
+      "parent": "Proposal Management",
+      "page_notes": [
+        {
+          "content": "ProposalStore in proposals/store.py. Schema: proposal_records table (id, tenant_id, filename, status, created_at, updated_at), proposal_events table (id, proposal_id, event_type, timestamp, details). API: upsert_proposal, get_proposal, delete_proposal, list_proposals_for_tenant, list_events."
+        }
+      ]
+    },
+    {
+      "title": "Authentication and Multi-Tenancy",
+      "purpose": "Overview of the auth subsystem: how tenant isolation is enforced across the UI, CLI, and storage layers. Links to child pages for the context resolver and the registry.",
+      "page_notes": [
+        {
+          "content": "Two layers of tenant isolation: (1) Application-layer AuthContext with allow-list of doc_ids. (2) Storage-layer Qdrant metadata filters — every query includes tenant_id filter, enforced before results are returned."
+        }
+      ]
+    },
+    {
+      "title": "AuthContext and resolve_request_auth",
+      "purpose": "Deep dive into resolve_request_auth: open-local-mode vs AUTH_ENABLED enforcement, API key validation, tenant-spoofing prevention, AuthContext fields, and AuthError.",
+      "parent": "Authentication and Multi-Tenancy",
+      "page_notes": [
+        {
+          "content": "resolve_request_auth() in auth/context.py. Open-local mode (AUTH_ENABLED=false) returns a dev AuthContext. Production mode validates API key against tenant registry, prevents tenant-id spoofing by deriving tenant_id from the API key. AuthContext fields: tenant_id, roles, allowed_doc_ids, public_doc_ids. Methods: may_access_doc, filter_doc_id, has_role, require_role, capabilities()."
+        }
+      ]
+    },
+    {
+      "title": "AuthRegistry — Tenant Records and API Keys",
+      "purpose": "Covers the AuthRegistry data structure: TenantRecord schema, key_to_tenant mapping, public_doc_ids, load_auth_registry file-load order, and configuration format.",
+      "parent": "Authentication and Multi-Tenancy",
+      "page_notes": [
+        {
+          "content": "AuthRegistry in auth/registry.py. TenantRecord dataclass: tenant_id, name, api_key, roles, allowed_doc_ids, public_doc_ids. Load order: AUTH_REGISTRY_PATH env → tenants.local.json → tenants.example.json. get_auth_registry cached via lru_cache. Example file at data/auth/tenants.example.json."
+        }
+      ]
+    },
+    {
+      "title": "User Interface and CLI",
+      "purpose": "Overview of the two user-facing interfaces: the Gradio web UI and the govgrant.rag.cli command-line tool. Links to child pages for each.",
+      "page_notes": [
+        {
+          "content": "Two entry points: Gradio UI (govgrant.ui.app:main) and CLI (govgrant.rag.cli with 10+ subcommands). Both call run_agent() or ask() through the same auth layer. Observability (LangSmith + OTel) initialised at startup via setup_telemetry()."
+        }
+      ]
+    },
+    {
+      "title": "Gradio Web UI",
+      "purpose": "Documents the Gradio app: the main() entrypoint, service initialization, the Assistant tab, Compliance Checklist tab, Proposal Registry tab, SBIR Search, retrieve_only debug mode, and multi-tenant session handling.",
+      "parent": "User Interface and CLI",
+      "page_notes": [
+        {
+          "content": "app.py builds gr.Blocks with tabs: Assistant (chatbot with streaming), Compliance Checklist, Proposal Registry (upload/list/delete), SBIR Search. _services() lazy singleton warms HybridRAGService + SBIRTopicService. Custom grayscale BW theme + CSS. Session-scoped tenant via Gradio state."
+        }
+      ]
+    },
+    {
+      "title": "CLI Reference — govgrant.rag.cli",
+      "purpose": "Reference for all CLI subcommands: ingest, query, tables, agent, ask, sbir, checklist, proposals, eval, and gate. Covers key flags and example invocations.",
+      "parent": "User Interface and CLI",
+      "page_notes": [
+        {
+          "content": "10 subcommands: ingest (pdf ingestion), query (hybrid search), tables (table search), agent (LangGraph agent), ask (router only), sbir (topic sync/search), checklist (compliance run), proposals (upload/list/delete), eval (golden/regression), gate (quality gates). Each with subparser. Main dispatch at __main__ level."
+        }
+      ]
+    },
+    {
+      "title": "Evaluation and Quality Gates",
+      "purpose": "Overview of the evaluation framework: golden datasets, the eval runner, quality gates, LangSmith integration, and CI scripts. Links to child pages for the dataset schema, gate system, and observability.",
+      "page_notes": [
+        {
+          "content": "Three evaluation layers: unit tests (pytest, 51+ tests), golden dataset eval (10 case files with fact precision/recall scoring + 180 router golden evals), quality gates (THRESHOLDS.json for unit/router/hard_llm/checklist_corpus). CI integration via GitHub Actions."
+        }
+      ]
+    },
+    {
+      "title": "Golden Evaluation Datasets",
+      "purpose": "Documents the golden dataset schema: case fields (id, category, difficulty, facts_required, facts_optional, facts_forbidden, should_refuse, source_pages), scoring philosophy, the 10 dataset files, regression_min.json, and how to run evaluations via CLI.",
+      "parent": "Evaluation and Quality Gates",
+      "page_notes": [
+        {
+          "content": "Golden cases in data/eval/case_*.json. Schema includes facts_required (must appear), facts_optional (bonus if present), facts_forbidden (must not appear), should_refuse (question outside scope). SCHEMA.json documents all fields. regression_min.json used for quick smoke tests. run_regression() and run_golden() in eval/runner.py."
+        }
+      ]
+    },
+    {
+      "title": "Quality Gates and CI Integration",
+      "purpose": "Covers THRESHOLDS.json gate definitions, the gates.py runner, run_gates.sh and run_golden_eval.sh scripts, the GitHub Actions eval workflow, and how gate failures block releases.",
+      "parent": "Evaluation and Quality Gates",
+      "page_notes": [
+        {
+          "content": "THRESHOLDS.json defines pass/fail thresholds per gate (unit, router, hard_llm, checklist_corpus). gates.py runs each gate and reports pass/fail. Shell scripts for local runs. GitHub Actions workflow runs all gates on push/PR. Gate failures block merge."
+        }
+      ]
+    }
+  ]
 }
