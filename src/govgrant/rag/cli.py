@@ -152,6 +152,9 @@ def tables_main(argv: list[str] | None = None) -> None:
 
 def agent_main(argv: list[str] | None = None) -> None:
     """R7 LangGraph agent entrypoint (+ optional Anthropic Haiku chat)."""
+    from govgrant.core.telemetry import setup_telemetry
+
+    setup_telemetry()
     from govgrant.agent.graph import run_agent
     from govgrant.agent.llm import ChatLLM
 
@@ -835,6 +838,9 @@ def proposals_main(argv: list[str] | None = None) -> None:
 
 
 if __name__ == "__main__":
+    from govgrant.core.telemetry import setup_telemetry
+
+    setup_telemetry()
     if len(sys.argv) < 2 or sys.argv[1] not in {
         "ingest",
         "query",

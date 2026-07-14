@@ -1031,6 +1031,9 @@ Evaluate your proposal against compliance requirements.
 
 
 def main() -> None:
+    from govgrant.core.telemetry import setup_telemetry
+
+    setup_telemetry()
     try:
         _services()
         print("[ui] services warmed")

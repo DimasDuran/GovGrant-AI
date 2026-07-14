@@ -20,6 +20,7 @@ from govgrant.agent.llm import ChatLLM
 from govgrant.agent.tools import RagToolBelt
 from govgrant.compliance.checklist import run_checklist
 
+
 def _insufficient_message(sources_used: list[str] | None) -> str:
     src = (sources_used or ["unknown"])[0]
     if src == "sbir_topics":

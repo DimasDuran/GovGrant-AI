@@ -63,7 +63,7 @@ graph TB
     AUTH["Auth<br/>tenant · roles · permissions"]
 
     %% Agent (LangGraph) — full pipeline
-    subgraph AGENT["Agent (LangGraph + Claude Haiku)"]
+    subgraph AGENT["Agent (LangGraph + LLM / OpenRouter)"]
         C["classify<br/><i>LLM tool‑use routing</i><br/>or heuristic fallback"]
         R["retrieve<br/><i>Qdrant dense + sparse</i>"]
         V["validate<br/><i>LLM judge</i><br/>mark_sufficient<br/>request_more_evidence"]
@@ -95,8 +95,12 @@ graph TB
     QD[(Qdrant<br/>dense + sparse vectors)]
     OLL(("Ollama<br/>nomic-embed-text"))
     LLAMA("LlamaParse")
-    ANTH("Anthropic<br/>Claude Haiku")
+    ANTH("LLM<br/>OpenRouter")
     SBIRAPI("SBIR.gov API")
+
+    %% Observability
+    LS["LangSmith<br/>traces · evals · prompt hub"]
+    GF["Grafana Cloud<br/>OTLP traces · metrics · logs"]
 
     %% Flows
     UI --> AUTH
@@ -111,6 +115,9 @@ graph TB
     SBIR --> SBIRAPI
     LLAMA -.-> HR
     ANTH -.-> AGENT
+    LS -.->|traces all agent steps · evals| AGENT
+    GF -.->|OTLP spans + metrics| AGENT
+    GF -.->|httpx · system metrics| OLL
 ```
 
 ### Why hybrid RAG (dense + sparse + multimodal)
@@ -127,10 +134,10 @@ SBIR/STTR compliance documents mix two search modes that no single retriever han
 
 Plain RAG can't orchestrate multi-step decisions. The agent structures every response with LLM-driven tool-calling at each stage:
 
-1. **classify** — Claude Haiku selects a retrieval tool via Anthropic function-calling (`search_documents`, `search_tables`, `search_sbir_topics`, `cross_check`, `compliance_checklist`). Heuristic fallback when the LLM is unavailable.
+1. **classify** — LLM selects a retrieval tool via function-calling (`search_documents`, `search_tables`, `search_sbir_topics`, `cross_check`, `compliance_checklist`). Heuristic fallback when the LLM is unavailable.
 2. **retrieve** — hybrid RAG (Qdrant dense + sparse vectors) + neighbor page expansion + force-include pages with exact phrase matches.
 3. **validate** — LLM judge using `mark_sufficient` / `request_more_evidence(reason, suggested_query)` tools. If evidence is insufficient, the LLM reformulates the query and retries (up to 2 times) instead of using hardcoded string-matching heuristics.
-4. **format_answer** — Claude Haiku synthesizes an answer grounded in the retrieved evidence.
+4. **format_answer** — LLM synthesizes an answer grounded in the retrieved evidence.
 5. **self_check** — LLM verifies the answer covers every sub-question using `answer_complete` / `answer_incomplete(critique)`. If incomplete, loops back to `format_answer` with specific revision guidance before returning to the user.
 6. **checklist** — When the user asks for a compliance audit, the LLM selects which agency packages (DARPA, SBA, SF424) to check and dynamically triggers the compliance checklist; the scoring itself stays deterministic (keyword-coverage against a fixed 27-item corpus) so results stay reproducible and auditable, then the LLM interprets the results for the user.
 
@@ -200,6 +207,53 @@ The `QueryRouter` doesn't send every query to the vector store — it picks betw
 | `SBIRTopicService` | Qdrant (dense + sparse) **+ live SBIR.gov API** | SBIR/STTR topics and open funding opportunities, combining its own index with real-time external calls |
 
 In short: two of the three paths sit outside the main vector DB, and one of those (`SBIRTopicService`) also reaches out to a live external API rather than relying solely on indexed data.
+
+## Observability
+
+Two observability backends instrument every agent run. Both are optional — no-op when unconfigured.
+
+### LangSmith — traces, evals, prompt hub
+
+LangSmith traces every LangGraph agent execution automatically: classify, retrieve, validate (including retries), format_answer, and self_check are all captured as spans. The raw Anthropic LLM calls inside each node are also traced via `@traceable` decorators, giving visibility into tool-calling decisions, token usage, and latency per step.
+
+```bash
+# Required env vars (set in .env)
+LANGSMITH_TRACING=true
+LANGSMITH_API_KEY=lsv2_pt_...
+LANGSMITH_PROJECT=govgrant
+
+# Optional: push golden eval dataset to LangSmith
+python -m govgrant.evals.langsmith_eval sync
+
+# Run eval: executes all golden cases and logs intent_match + insufficient scores as feedback
+python -m govgrant.evals.langsmith_eval run
+```
+
+| Feature | What you see in LangSmith |
+|---------|---------------------------|
+| **Traces** | Full graph run: `classify → retrieve → validate_evidence → format_answer → self_check`. Each node's duration and inputs/outputs visible as separate spans. |
+| **LLM calls** | Token counts, model used, system prompt, tool definitions, tool-call results per node. |
+| **Evals** | `intent_match` (1.0 if intent matches golden) and `insufficient` (1.0 if evidence sufficed) scores per golden case, viewable in the LangSmith dashboard. |
+| **Prompt hub** | System prompts can be pushed/pulled from LangSmith for version-controlled prompt management. |
+
+### Grafana Cloud — OTLP traces, metrics, logs
+
+When the OTLP endpoint is configured, the OpenTelemetry SDK initialises at startup and instruments three layers:
+
+```bash
+# Required env vars (set in .env)
+OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-us-east-3.grafana.net/otlp
+OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic <base64(instance-id:api-key)>
+OTEL_SERVICE_NAME=govgrant
+```
+
+| Instrumentation | What it captures |
+|----------------|------------------|
+| **httpx** | All outbound HTTP calls: Anthropic API (LLM), SBIR.gov API (topic sync), Ollama (embeddings), Qdrant (vector search). Traces include request method, URL, status code, and duration. |
+| **Logging** | Python log records correlated with trace IDs — every structured log line includes the active span context so you can jump from a log to the trace that produced it. |
+| **System metrics** | CPU, memory, and process-level resource usage sampled at regular intervals — useful for capacity planning and spotting memory leaks in long-running ingest or UI sessions. |
+
+Both backends are wired into the CLI and Gradio UI startup via `govgrant.core.telemetry.setup_telemetry()`. The function is idempotent and safe to call multiple times — it reads environment variables once and initialises only when the required keys are present.
 
 ## Quick start
 

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import re
 
+from langsmith import traceable
+
 from govgrant.agent.tools import (
     ANSWER_SYSTEM_BASE,
     ANSWER_SYSTEM_FOOTER,
@@ -60,6 +62,7 @@ class ChatLLM:
                 parts.append(text)
         return "\n".join(parts).strip()
 
+    @traceable(run_type="llm")
     def classify_with_tools(self, query: str) -> dict | None:
         """Use Anthropic tool-use to select retrieval route.
 
@@ -84,6 +87,7 @@ class ChatLLM:
             pass
         return None
 
+    @traceable(run_type="llm")
     def judge_evidence(
         self,
         *,
@@ -129,6 +133,7 @@ class ChatLLM:
             pass
         return None
 
+    @traceable(run_type="llm")
     def self_check_answer(
         self,
         *,
@@ -173,6 +178,7 @@ class ChatLLM:
             pass
         return None
 
+    @traceable(run_type="llm")
     def answer_from_evidence(
         self,
         *,
